@@ -32,6 +32,7 @@ std::wstring g_pipe_name;
 // ---- session state (game thread only) ----
 enum class Mode { Normal, Dedicated, Background };
 Mode g_mode = Mode::Normal;
+const char* mode_str(Mode m);
 int g_episode = 0;
 bool g_trace = false;
 // practice / checkpoints (M4); see op_set_practice
@@ -304,6 +305,7 @@ json op_hello(const json& req) {
     r["capabilities"] = {{"step", true}, {"reset", true}, {"startpos", false}, {"checkpoint", true},
                          {"trace", true}, {"modes", {"normal", "dedicated", "background"}}, {"dual", false},
                          {"objects", true}, {"level_string", true}, {"quit_level", true}, {"debug_peek", true}, {"isolation", true}};
+    r["mode"] = mode_str(g_mode);
     r["isolation"] = {{"saves_redirected", g_iso.saves_redirected && g_iso.file_guard},
                       {"http_blocked", g_iso.http_blocked}};
     return r;
@@ -558,6 +560,7 @@ json op_step(const json& req) {
     r["obs"] = obs_json();
     r["events"] = events;
     r["terminal"] = terminal ? json(terminal) : json();
+    r["mode"] = mode_str(g_mode);  // so the trainer can match its own CPU use (threads, priority)
     if (g_trace) r["trace"] = trace;
     return r;
 }
@@ -581,16 +584,106 @@ json op_debug_peek(const json& req) {
     return r;
 }
 
+// ---- run modes ----
+// dedicated : all hardware threads, normal priority, requests served back to back (12 ms per frame)
+// background: below-normal priority, GD limited to 4 hardware threads, 6 ms bursts per frame, so the
+//             user's own apps always win the CPU
+// normal    : real time, one request per frame (parity baselines / watching)
+// The user can override the client at any time: hotkey Ctrl+Alt+B (toggles dedicated/background) or
+// tools/mode.ps1, which writes gdbot/mode.txt ("dedicated" | "background" | "auto"). A user choice
+// persists in that file across trainer restarts; "auto" hands control back to the client's set_mode.
+// Modes change pacing and CPU share only, never simulation results.
+bool g_user_override = false;
+Mode g_client_mode = Mode::Normal;
+std::atomic<bool> g_hotkey_hit{false};
+FILETIME g_mode_file_time{};
+
+const char* mode_str(Mode m) { return m == Mode::Dedicated ? "dedicated" : m == Mode::Background ? "background" : "normal"; }
+
+void apply_mode(Mode m, const char* why) {
+    g_mode = m;
+    HANDLE proc = GetCurrentProcess();
+    DWORD_PTR pmask = 0, smask = 0;
+    GetProcessAffinityMask(proc, &pmask, &smask);
+    DWORD_PTR mask = smask;
+    if (m == Mode::Background) {
+        DWORD_PTR four = 0;
+        int n = 0;
+        for (int b = int(sizeof(DWORD_PTR) * 8) - 1; b >= 0 && n < 4; --b)  // the 4 highest-numbered threads
+            if (smask & (DWORD_PTR(1) << b)) { four |= DWORD_PTR(1) << b; ++n; }
+        if (four) mask = four;
+    }
+    SetProcessAffinityMask(proc, mask);
+    SetPriorityClass(proc, m == Mode::Background ? BELOW_NORMAL_PRIORITY_CLASS : NORMAL_PRIORITY_CLASS);
+    GLOG("mode -> %s (%s); affinity 0x%llx", mode_str(m), why, (unsigned long long)mask);
+}
+
+std::wstring mode_file() { return g_paths.bot_dir + L"/mode.txt"; }
+
+void write_mode_file(const char* text) {
+    FILE* f = _wfopen(mode_file().c_str(), L"w");
+    if (f) { fputs(text, f); fclose(f); }
+    WIN32_FILE_ATTRIBUTE_DATA a{};
+    if (GetFileAttributesExW(mode_file().c_str(), GetFileExInfoStandard, &a)) g_mode_file_time = a.ftLastWriteTime;
+}
+
+// Called about once a second from control_frame: hotkey toggles, then mode.txt changes.
+void poll_user_mode() {
+    if (g_hotkey_hit.exchange(false)) {
+        Mode next = g_mode == Mode::Dedicated ? Mode::Background : Mode::Dedicated;
+        g_user_override = true;
+        write_mode_file(mode_str(next));
+        apply_mode(next, "hotkey Ctrl+Alt+B");
+        return;
+    }
+    WIN32_FILE_ATTRIBUTE_DATA a{};
+    if (!GetFileAttributesExW(mode_file().c_str(), GetFileExInfoStandard, &a)) return;
+    if (CompareFileTime(&a.ftLastWriteTime, &g_mode_file_time) == 0) return;
+    g_mode_file_time = a.ftLastWriteTime;
+    char buf[32] = {0};
+    FILE* f = _wfopen(mode_file().c_str(), L"r");
+    if (!f) return;
+    size_t n = fread(buf, 1, sizeof(buf) - 1, f);
+    fclose(f);
+    std::string t(buf, n);
+    while (!t.empty() && (unsigned char)t.back() <= 32) t.pop_back();  // trim newline/CR/space
+    if (t == "dedicated" || t == "background") {
+        g_user_override = true;
+        Mode m = t == "dedicated" ? Mode::Dedicated : Mode::Background;
+        if (m != g_mode) apply_mode(m, "mode.txt");
+    } else if (t == "auto" && g_user_override) {
+        g_user_override = false;
+        apply_mode(g_client_mode, "mode.txt auto: client decides");
+    }
+}
+
+DWORD WINAPI hotkey_thread(LPVOID) {
+    if (!RegisterHotKey(nullptr, 1, MOD_CONTROL | MOD_ALT | MOD_NOREPEAT, 'B')) {
+        GLOG("hotkey Ctrl+Alt+B unavailable (error %lu); use tools/mode.ps1", GetLastError());
+        return 1;
+    }
+    GLOG("hotkey Ctrl+Alt+B registered (toggle dedicated/background)");
+    MSG msg;
+    while (GetMessageW(&msg, nullptr, 0, 0) > 0)
+        if (msg.message == WM_HOTKEY) g_hotkey_hit = true;
+    return 0;
+}
+
 json op_set_mode(const json& req) {
     std::string m = req.value("mode", "");
-    if (m == "normal") g_mode = Mode::Normal;
-    else if (m == "dedicated") g_mode = Mode::Dedicated;
-    else if (m == "background") g_mode = Mode::Background;
+    Mode want;
+    if (m == "normal") want = Mode::Normal;
+    else if (m == "dedicated") want = Mode::Dedicated;
+    else if (m == "background") want = Mode::Background;
     else return err(req, "BAD_REQUEST", "unknown mode");
-    SetPriorityClass(GetCurrentProcess(), g_mode == Mode::Background ? BELOW_NORMAL_PRIORITY_CLASS : NORMAL_PRIORITY_CLASS);
-    GLOG("mode -> %s", m.c_str());
+    g_client_mode = want;
     json r = ok(req);
-    r["mode"] = m;
+    if (g_user_override) {
+        r["overridden_by_user"] = true;  // the user's hotkey / mode.txt choice stands
+    } else {
+        apply_mode(want, "client set_mode");
+    }
+    r["mode"] = mode_str(g_mode);
     return r;
 }
 
@@ -624,8 +717,8 @@ void release_control(const char* why) {
     press(false);
     g_controlled = false;
     g_trace = false;
-    g_mode = Mode::Normal;
-    SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
+    g_client_mode = Mode::Normal;
+    if (!g_user_override) apply_mode(Mode::Normal, "client disconnected");
     GLOG("control released (%s); game runs normally again", why);
 }
 
@@ -697,6 +790,8 @@ bool start_control() {
     HANDLE t = CreateThread(nullptr, 0, pipe_thread, nullptr, 0, nullptr);
     if (!t) return false;
     CloseHandle(t);
+    if (HANDLE hk = CreateThread(nullptr, 0, hotkey_thread, nullptr, 0, nullptr)) CloseHandle(hk);
+    g_mode_file_time = FILETIME{};  // apply an existing mode.txt (a persisted user choice) on the first poll
     FILE* f = _wfopen((g_paths.bot_dir + L"\\bridge.json").c_str(), L"w");
     if (f) {
         char name[256];
@@ -742,7 +837,9 @@ void control_frame(float) {
         }
         return;  // nothing else is served until the deferred reply is sent
     }
-    const double budget_ms = g_mode == Mode::Dedicated ? 12.0 : 0.0;
+    static int s_mode_poll = 0;
+    if (++s_mode_poll >= 60) { s_mode_poll = 0; poll_user_mode(); }
+    const double budget_ms = g_mode == Mode::Dedicated ? 12.0 : g_mode == Mode::Background ? 6.0 : 0.0;
     const double start = log::now_ms();
     for (;;) {
         double left = budget_ms - (log::now_ms() - start);
@@ -751,7 +848,7 @@ void control_frame(float) {
         json r = handle(g_req);
         if (r.is_null()) return;  // deferred (load_level)
         send_reply(r);
-        if (g_mode != Mode::Dedicated) break;  // normal/background: one request per frame
+        if (g_mode == Mode::Normal) break;  // normal: one request per frame
     }
 }
 

@@ -155,6 +155,13 @@ These clarifications are additive. Clients written to the text above stay compat
   - `reset {kind: "zero"}` turns practice off, so a full run is always clean from 0%.
   - While a client is in control, GD's practice auto-checkpoints are blocked, so "newest" means the bot's own.
   - `reset` replies now include `start`. `capabilities.checkpoint` is true.
+- **Run modes (2026-11-18; live test pending):**
+  - `dedicated` gives all hardware threads, normal priority, and requests served back to back up to 12 ms per frame.
+  - `background` gives below-normal priority, GD limited to the 4 highest-numbered hardware threads, and 6 ms bursts.
+  - `normal` serves one request per frame.
+  - The user can override the client: hotkey **Ctrl+Alt+B** toggles dedicated/background, or `tools/mode.ps1` writes `gdbot/mode.txt`. A user choice wins over `set_mode` (whose reply then has `overridden_by_user: true`) until the user sets `auto`.
+  - `step` and `hello` replies include `mode`.
+  - Modes change pacing and CPU share only, never simulation results.
 - `trace` rows carry per-tick terminal events. `button.queued` is `null` (not mapped).
 - `players[].vx` is x(t)−x(t−1) per physics tick, independent of k. `rot` is visual rotation (degrees) and not gameplay orientation. Per-tick dy ≈ `vy` × 0.225.
 
