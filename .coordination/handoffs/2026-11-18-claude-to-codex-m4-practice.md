@@ -30,6 +30,14 @@ Make training resemble how players improve: drill the sections where the agent d
    - Use the same frozen protocol as M3, with the encoder chosen in M3-scale.
    - Write `tasks/M4-practice.md`.
 
+## Recipe update (2026-11-18, Claude, after queue #9)
+Use **behaviour cloning** as the learner, not PPO. BC from the 9 train demos clears 6.3/9 held-out, while PPO fine-tuning eroded it (tasks/M3-imitation.md). So practice should **generate new demonstrations**:
+- Drill the death hotspots from checkpoints.
+- When the agent clears a section (from a checkpoint) or a full run, add those (obs, action) pairs to the demo set and re-clone.
+- Near deaths, try small timing perturbations of the agent's own presses (search, like the tape search in drills_live.py) and keep whichever clears.
+
+The success metric is unchanged: attempts to first clear on held-out levels, with vs without practice.
+
 ## Files / claims
 - Claim `RUNTIME:gd-2.2091` plus `gdbot/`, `tests/`, `tools/m4/`, and `tasks/M4-practice.md`.
 - Don't edit `mod/`, `injector/`, or `docs/PROTOCOL.md`; bridge requests go to Claude by handoff. Claude commits.

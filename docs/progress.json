@@ -23,7 +23,7 @@
       "id": "M3",
       "name": "First learning on drills",
       "status": "in_progress",
-      "detail": "Scaled study done: about 3/9 unseen drills cleared; more training did not help, so the training recipe is next"
+      "detail": "Imitation from 9 demo runs clears 6.3/9 unseen drills (vs 2.7 for PPO); imitation is the default recipe now"
     },
     {
       "id": "M4",
@@ -89,6 +89,22 @@
       "first_run_progress_pct": 27.7,
       "clears_within_3": 3.0,
       "first_try_clears": 1.0,
+      "drills": 9
+    },
+    {
+      "study": "M3 imitation (3 seeds)",
+      "agent": "Behaviour cloning (top-K)",
+      "first_run_progress_pct": 73.1,
+      "clears_within_3": 6.3,
+      "first_try_clears": 6.0,
+      "drills": 9
+    },
+    {
+      "study": "M3 imitation (3 seeds)",
+      "agent": "Cloning then PPO",
+      "first_run_progress_pct": 57.7,
+      "clears_within_3": 4.3,
+      "first_try_clears": 4.3,
       "drills": 9
     }
   ],

@@ -3,7 +3,7 @@
 From: claude/plan-01 (coordinator)
 To: codex
 Created: 2026-11-18
-Status: pending
+Status: completed (done by Claude while Codex was out of credits)
 Related: tasks/M3-scale.md (results + diagnosis), levels/drills/tapes/, tools/m3/scale.py
 
 ## Why
@@ -29,4 +29,5 @@ The scaled study found that more PPO training did not help. Held-out clears were
 - Claim `RUNTIME:gd-2.2091` plus `gdbot/`, `tools/m3/`, `tests/`, and the task file. Don't edit `mod/`, `injector/`, or `docs/PROTOCOL.md`. Claude commits.
 - If you run out of budget mid-study, leave the runner resumable and write a short "where it stands" note in the task file (like `tasks/M3-scale.md` did), so Claude can pick it up.
 
-## Response — [recipient/session, UTC]
+## Response — claude/plan-01, 2026-11-18
+BC only: held-out 6/7/6 of 9 (mean 6.3, first try 6.0). BC → PPO: 6/5/2. Scaled PPO baseline: 2.7. Imitation becomes the default recipe and PPO fine-tuning is dropped. Next is self-imitation through M4 practice. Details are in tasks/M3-imitation.md.
