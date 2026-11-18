@@ -7,7 +7,7 @@ import random
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from time import perf_counter, process_time, sleep
+from time import perf_counter, process_time
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
@@ -29,7 +29,6 @@ TRAIN_SEED = 1207
 EVAL_SEED = 8210
 MAX_ATTEMPTS = 3
 MAX_TICKS = 6_000
-FINISH_WAIT_SECONDS = 1.2
 CPU_THREADS = 2
 ROLLOUT = 256
 TRAIN_ROUNDS = 2
@@ -108,12 +107,11 @@ def fixtures():
 
 
 class DrillEnv(GDEnv):
-    """Use forward displacement for reward and give the native finish callback time."""
+    """Use forward displacement for reward on the tick-driven bridge."""
 
     def __init__(self, client, layout):
         super().__init__(client, k=4, encoder=ObservationEncoder(layout=layout), max_ticks=MAX_TICKS)
         self.fixture = None
-        self.finishes_waited = 0
 
     def select(self, fixture):
         if self.fixture == fixture:
@@ -134,17 +132,10 @@ class DrillEnv(GDEnv):
         self._start_x = self.raw_observation["players"][0]["x"]
         self._length = self.fixture.final_object_x + 30 - self._start_x
         self._forward_progress = 0.0
-        self._finish_waited = False
         info["progress"] = 0.0
         return encoded, info
 
     def step(self, action):
-        if self._ready and not self._finish_waited:
-            player = self.raw_observation["players"][0]
-            if player["x"] > self.fixture.final_object_x and abs(player["vx"]) < 0.25:
-                sleep(FINISH_WAIT_SECONDS)
-                self._finish_waited = True
-                self.finishes_waited += 1
         encoded, _, terminated, truncated, info = super().step(action)
         player = self.raw_observation["players"][0]
         progress = min(1.0, max(0.0, (player["x"] - self._start_x) / self._length))
@@ -201,7 +192,7 @@ def train(client, pool, order, layout, output, report):
             model.learn(total_timesteps=STEPS_PER_BLOCK, reset_num_timesteps=False)
             entry = {"round": number, "family": fixture.family, "variant": fixture.variant,
                      "steps": model.num_timesteps, "wall_s": perf_counter() - wall_started,
-                     "python_cpu_s": process_time() - cpu_started, "finish_waits": env.finishes_waited}
+                     "python_cpu_s": process_time() - cpu_started}
             results["blocks"].append(entry)
             save_report(output, report)
             print(f"{layout} round {number} {fixture.family}: {model.num_timesteps} train steps", flush=True)
@@ -284,7 +275,7 @@ def run(launcher_pid, output):
             "cpu_threads": CPU_THREADS, "per_encoder_wall_cap_s": WALL_LIMIT_PER_ENCODER_SECONDS,
             "steps_per_block": STEPS_PER_BLOCK, "rollout": ROLLOUT, "ppo_epochs": 4,
             "evaluation_attempt_cap": MAX_ATTEMPTS, "max_episode_ticks": MAX_TICKS,
-            "heldout_training_steps": 0, "online_practice_budget": 0, "finish_wait_s": FINISH_WAIT_SECONDS,
+            "heldout_training_steps": 0, "online_practice_budget": 0, "finish_wait_s": 0,
             "train_order": [[pools["train"][index].variant for index in draw] for draw in order],
         },
         "fixtures": {

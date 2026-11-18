@@ -104,6 +104,14 @@ def test_heuristic_completes_toy_level():
     assert info["terminal"] == "complete"
 
 
+def test_heuristic_jumps_for_a_solid_in_its_path_but_not_floor():
+    heuristic = TimingHeuristic()
+    player = {"mode": "cube", "holding": False, "on_ground": True, "vx": 1.3, "x": 0, "y": 105}
+    solid = {"cat": "solid", "active": True, "x": 42, "y": 75, "w": 30, "h": 30}
+    assert heuristic({"players": [player], "objects": [solid]}) == 0
+    assert heuristic({"players": [player], "objects": [{**solid, "y": 105}]}) == 1
+
+
 @pytest.mark.parametrize("stage", ["ipc", "observation"])
 def test_bench_reports_actual_advanced_ticks(stage):
     with MockBridge().client() as client:

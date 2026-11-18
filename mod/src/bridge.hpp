@@ -34,6 +34,9 @@ constexpr size_t kYVelocity = 0x9a8;                  // f64
 constexpr size_t kIsShip = 0x9c1, kIsBird = 0x9c2, kIsBall = 0x9c3, kIsDart = 0x9c4, kIsRobot = 0x9c5,
                  kIsSpider = 0x9c6, kIsUpsideDown = 0x9c7, kIsDead = 0x9c8, kIsOnGround = 0x9c9, kIsSwing = 0x9cc;
 constexpr size_t kIsDashing = 0x9ec;
+// m_stateJumpBuffered: 1 after a fresh press while held, cleared on release, consumed when a jump/orb fires.
+// Verified 2026-11-18 with tools/m1/orb_probe.py (held-out yellow-orb drill, 3 input cases).
+constexpr size_t kJumpBuffered = 0x98e;
 constexpr size_t kVehicleSize = 0x9f8, kPlayerSpeed = 0x9fc;  // f32
 // M1b (pending live verification): GJBaseGameLayer::m_objects follows m_player1/m_player2/m_levelSettings;
 // GameObject offsets derived from bindings order anchored on the m_unkXXX names (m_unk390, m_unk3D8,

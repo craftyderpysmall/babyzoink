@@ -53,3 +53,26 @@ Carry top-K forward provisionally for the capped-clear objective because it won 
 Both PPO agents failed the held-out single spike, double spike, and yellow orb. These results locate failure regions and do not isolate a bridge field, exploration, or control cadence as the cause. The yellow orb is the clearest diagnostic target. Inspect activation windows, buffered input, and whether the orb remains actionable in a controlled trace before requesting bridge changes. Verified tapes establish reachability with tick-level edges. Their success at the policy's four-tick cadence was not measured.
 
 The live run completed, all 39 local tests passed, and the launcher-owned game was closed. No commits were made.
+
+## Diagnosis
+
+The updated bridge completed every held-out single-spike, double-spike, and yellow-orb tape on all four k=4 phases. The original single-tick pulses were rounded to the nearest phase boundary and held for at least one decision. All phases cleared at ticks 4,144, 3,936, and 3,867 respectively, with no finish wait. A four-tick action grid can solve all three layouts. The baseline runner now uses the bridge's tick-driven completion.
+
+The first spike survived top-K selection in every sampled observation before the no-input deaths. It was first in both layouts, with one unmasked object and no truncation. In the closest sampled train and held-out observations, the raw gaps were approximately 19.0 and 20.1 units. The normalized gaps were 0.0211 and 0.0224. Width and height were 6 and 12 units in both layouts, with corresponding features of 0.00667 and 0.01333. Full vectors and raw fields are in build/m3-diagnose/diagnosis.json.
+
+The orb probe found an input-history distinction. Holding continuously from takeoff gave no boost. A new press during overlap boosted at tick 899 on train and 1,056 on held-out. A new press five ticks before overlap also boosted at entry when held through, while the same early pulse released after one tick did not. Immediately before overlap, the sampled player fields and orb geometry matched exactly between the continuously held and recently re-pressed cases. The next tick differed, with vertical velocity jumping to 11.18 only in the latter. The current observation cannot distinguish the two input histories. The native follow-up asks for a verified pending orb-press flag.
+
+The checkpoint check used three frozen-policy attempts per checkpoint and drill. The first run was deterministic. The table gives first-run progress across the three checkpoints and the clear count over each set of attempts. The saved study has no continuous train-episode histories, so these are checkpoint snapshots.
+
+| Train drill | PPO setup | Initial progress / clears | Round 1 | Round 2 |
+| --- | --- | --- | --- | --- |
+| Single spike | Top-K | 8.5% / 0 | 8.5% / 0 | 8.5% / 0 |
+| Single spike | Masked set | 8.5% / 0 | 56.1% / 0 | 56.1% / 0 |
+| Double spike | Top-K | 9.6% / 0 | 9.6% / 0 | 9.6% / 0 |
+| Double spike | Masked set | 9.6% / 0 | 10.5% / 0 | 10.5% / 0 |
+| Yellow orb | Top-K | 22.0% / 0 | 22.0% / 1 | 23.7% / 0 |
+| Yellow orb | Masked set | 22.0% / 0 | 23.9% / 0 | 23.9% / 0 |
+
+The spike results show a failure to reliably solve the training variants as well as the held-out variants. They do not isolate exploration, data balance, or an optimizer setting as the cause. The existing heuristic's 0.08-second lead died at the first spike. A 0.12-second lead chosen on the train variants reached 99.1%, then died on the final solid tile because the heuristic only considered hazards. The updated heuristic targets solid blocks that intersect the cube's centre height. It cleared the affected single- and double-spike drills on both splits at k=4. It still died at 24.0% train and 28.3% held-out on the yellow-orb drill. The heuristic fix was confirmed without updating PPO weights. The historical baseline table above retains its original values.
+
+All 40 local tests passed. The launcher-owned test window was closed before releasing the runtime. Per-phase outcomes, orb traces, encoder dumps, checkpoint scores, and heuristic reruns are in build/m3-diagnose/diagnosis.json.

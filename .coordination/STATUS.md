@@ -1,6 +1,6 @@
 # Coordination Status
 
-Last updated: 2026-11-18 (codex/m2-rerun-01)
+Last updated: 2026-11-18 (codex/m3-diagnose-01)
 
 ## Codex task queue
 
@@ -23,8 +23,8 @@ One row per run. Don't take rows marked `waiting`. If a handoff conflicts with a
 | 2 | Drills live: load every drill in GD, verify objects, find known-good tapes, set training_ready | handoffs/2026-11-18-claude-to-codex-m3-drills-live.md | yes | done |
 | 3 | M2 gate re-run on the fixed bridge with objects on; bench + profile | handoffs/2026-11-18-claude-to-codex-m2-rerun.md | yes | done |
 | 4 | M3 baseline: heuristic vs PPO top-K vs PPO set encoder, train drills -> held-out drills | handoffs/2026-11-18-claude-to-codex-m3-baseline.md | yes | done |
-| 5 | Diagnose held-out failures (single/double spike, yellow orb): cadence, orb input, encoding | handoffs/2026-11-18-claude-to-codex-m3-diagnose.md | yes | queued |
-| 6 | M3 at scale: 3 seeds x 2 encoders, ~1M transitions, new validation layouts -> pick encoder | handoffs/2026-11-18-claude-to-codex-m3-scale.md | yes | waiting (after 5) |
+| 5 | Diagnose held-out failures (single/double spike, yellow orb): cadence, orb input, encoding | handoffs/2026-11-18-claude-to-codex-m3-diagnose.md | yes | done |
+| 6 | M3 at scale: 3 seeds x 2 encoders, ~1M transitions, new validation layouts -> pick encoder | handoffs/2026-11-18-claude-to-codex-m3-scale.md | yes | queued |
 
 ## Active work
 
@@ -52,6 +52,8 @@ One row per run. Don't take rows marked `waiting`. If a handoff conflicts with a
 | codex | Verify all drills live and capture completion tapes | handoffs/2026-11-18-claude-to-codex-m3-drills-live.md | completed |
 | codex | Re-run fixed-bridge parity and profile with objects | handoffs/2026-11-18-claude-to-codex-m2-rerun.md | completed |
 | codex | Train and evaluate the M3 CPU baselines | handoffs/2026-11-18-claude-to-codex-m3-baseline.md | completed |
+| codex | Diagnose spike and orb failures | handoffs/2026-11-18-claude-to-codex-m3-diagnose.md | completed |
+| claude | Live-verify pending input state for orb activation | handoffs/2026-11-18-codex-to-claude-orb-diagnosis.md | pending |
 
 ## Decisions awaiting user
 

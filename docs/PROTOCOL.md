@@ -145,6 +145,8 @@ These clarifications are additive. Clients written to the text above stay compat
 - `obs.objects` filters out GD's hidden anticheat spike. Its layer offset is learned on the first ticks after the first reset in a process, so only that very first reset may still list it at x=0.
 - `obs.window` is 150 behind to 1200 ahead, with at most 128 objects (`truncated` is set when cut). Object `x`/`y` is the hitbox centre and `w`/`h` the hitbox size, from `GameObject::getObjectRect()`.
 - **`terminal: "complete"` is tick-driven** (from 2026-11-18): it fires on the tick the player crosses the level end (`PlayLayer::playEndAnimationToPos`), deterministically and with no wall-clock wait. That's a few ticks before GD's own `levelComplete`, which arrives later on a real-time timer; under bot control a stale one is suppressed after a reset.
+- **`players[].buffered`** (from 2026-11-18) is GD's `m_stateJumpBuffered`. It is true after a *fresh* press while the button is held, cleared on release, and consumed when a jump or orb fires. A hold that started earlier (e.g. at takeoff) does **not** set it. This is what distinguishes "will hit the orb" from "holding through it". It has been removed from `unsupported`.
+- **`debug_peek {target: "player1"|"layer", off, len<=4096}`** is dev-only. It returns `hex` raw memory plus `tick`, for field mapping (`capabilities.debug_peek`).
 - `trace` rows carry per-tick terminal events. `button.queued` is `null` (not mapped).
 - `players[].vx` is x(t)−x(t−1) per physics tick, independent of k. `rot` is visual rotation (degrees) and not gameplay orientation. Per-tick dy ≈ `vy` × 0.225.
 

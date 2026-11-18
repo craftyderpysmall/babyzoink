@@ -99,7 +99,7 @@ json player_json(void* p) {
         {"on_ground", read_field<uint8_t>(p, kIsOnGround) != 0},
         {"on_ceiling", false},
         {"holding", g_held},
-        {"buffered", false},
+        {"buffered", read_field<uint8_t>(p, kJumpBuffered) != 0},
         {"dashing", read_field<uint8_t>(p, kIsDashing) != 0},
         {"dead", read_field<uint8_t>(p, kIsDead) != 0},
     };
@@ -267,7 +267,7 @@ json obs_json() {
     void* p = player1();
     bool truncated = false;
     json objs = objects_json(read_field<float>(p, fields::kPosTickX), &truncated);
-    json unsupported = json::array({"on_ceiling", "buffered", "button_queue", "object_active", "moving_objects_partial"});
+    json unsupported = json::array({"on_ceiling", "button_queue", "object_active", "moving_objects_partial"});
     if (!g_objects_ok) unsupported.push_back("objects");
     json o = {
         {"players", json::array({player_json(p)})},
@@ -298,7 +298,7 @@ json op_hello(const json& req) {
     r["build"] = {{"exe_sha256", g_build->exe_sha256}, {"game_version", g_build->game_version}};
     r["capabilities"] = {{"step", true}, {"reset", true}, {"startpos", false}, {"checkpoint", false},
                          {"trace", true}, {"modes", {"normal", "dedicated", "background"}}, {"dual", false},
-                         {"objects", true}, {"level_string", true}, {"quit_level", true}, {"isolation", true}};
+                         {"objects", true}, {"level_string", true}, {"quit_level", true}, {"debug_peek", true}, {"isolation", true}};
     r["isolation"] = {{"saves_redirected", g_iso.saves_redirected && g_iso.file_guard},
                       {"http_blocked", g_iso.http_blocked}};
     return r;
@@ -489,6 +489,25 @@ json op_step(const json& req) {
     return r;
 }
 
+// Dev-only: raw memory read for field mapping. target: "player1" | "layer"; len <= 4096.
+json op_debug_peek(const json& req) {
+    std::string target = req.value("target", "player1");
+    long long off = req.value("off", -1), len = req.value("len", 0);
+    if (off < 0 || len <= 0 || len > 4096 || off > 0x10000) return err(req, "BAD_REQUEST", "off/len out of range");
+    void* base = target == "layer" ? g_layer : target == "player1" ? player1() : nullptr;
+    if (!base) return err(req, "NOT_IN_LEVEL", "target not available");
+    std::string bytes(size_t(len), ' ');
+    if (!safe_copy(bytes.data(), static_cast<char*>(base) + off, size_t(len))) return err(req, "INTERNAL", "read faulted");
+    static const char* hx = "0123456789abcdef";
+    std::string out;
+    out.reserve(size_t(len) * 2);
+    for (unsigned char ch : bytes) { out += hx[ch >> 4]; out += hx[ch & 15]; }
+    json r = ok(req);
+    r["tick"] = g_tick;
+    r["hex"] = out;
+    return r;
+}
+
 json op_set_mode(const json& req) {
     std::string m = req.value("mode", "");
     if (m == "normal") g_mode = Mode::Normal;
@@ -515,6 +534,7 @@ json handle(const std::string& text) {
         if (op == "quit_level") return op_quit_level(req);
         if (op == "step") return op_step(req);
         if (op == "set_mode") return op_set_mode(req);
+        if (op == "debug_peek") return op_debug_peek(req);
         if (op == "trace") { g_trace = req.value("enabled", false); return ok(req); }
         if (op == "bye") { press(false); g_close_after_reply = true; return ok(req); }
         return err(req, "UNKNOWN_OP", op);

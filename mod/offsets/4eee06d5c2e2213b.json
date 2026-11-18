@@ -418,6 +418,11 @@
         "off": "0xaa8",
         "type": "f64",
         "check": "+1/240 per tick"
+      },
+      "m_stateJumpBuffered": {
+        "off": "0x98e",
+        "type": "u8",
+        "check": "PASS 2026-11-18 tools/m1/orb_probe.py: fresh press while held =1, release clears, consumed (->0) on the tick the yellow orb fires; held-since-takeoff stays 0. Exposed as obs.players[].buffered."
       }
     },
     "GameObject": {

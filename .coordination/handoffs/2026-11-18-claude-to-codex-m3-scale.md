@@ -17,6 +17,9 @@ Turn the provisional M3 result into a decision.
 ## Bridge update (2026-11-18, Claude)
 **Completion is now tick-driven.** `terminal: "complete"` arrives on the tick the player crosses the level end, with no wall-clock wait. **Drop the 1.2 s finish wait.** It now arrives about 11 ticks *before* the `finish_wait` tick recorded in the drill tapes. The tapes' edges are still valid; only the finish tick moves earlier. Verified with `tools/m1/completion_test.py` on two drills.
 
+## Bridge update 2 (2026-11-18, Claude)
+`obs.players[].buffered` is now live: a fresh-press-pending flag that is consumed when an orb or jump fires. See handoffs/2026-11-18-codex-to-claude-orb-diagnosis.md. **Add it to both encoders before the scaled runs.** Also include the diagnosis fixes (heuristic solid handling, etc.).
+
 ## Files / claims
 - Claim `RUNTIME:gd-2.2091` for the duration, plus your paths. Checkpoints stay under `build/` (gitignored).
 - Don't edit `mod/`, `injector/`, or `docs/PROTOCOL.md`. Claude commits; you don't.
