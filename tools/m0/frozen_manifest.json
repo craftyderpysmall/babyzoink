@@ -1,0 +1,41 @@
+{
+  "source": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Geometry Dash",
+  "steam_buildid": 26002420,
+  "created": "2026-11-18",
+  "excluded_from_copy": [
+    "XINPUT1_4.dll (Mega Hack proxy)",
+    "hackpro.dll (Mega Hack)",
+    "geode/ (leftover Geode data)",
+    "absolllute.megahack/",
+    "replays/",
+    "_gd_backup_20261111_143659/"
+  ],
+  "resources_file_count": 9000,
+  "files": {
+    ".mh_install_data": "700b4221213a220ea0774b971f5477686caececb2ce8febe509f6ed78282392e",
+    "GeometryDash.exe": "4eee06d5c2e2213b4ba2b1f6233dd426bbdd0e9b29d7c375e499516b6f8f69d5",
+    "fmod.dll": "223f0e3fd8af19dbab92b4cef1a77580aef3d0a510b47a76561833e31348b720",
+    "glew32.dll": "842a3f20177eb44ac0413116c66430f9508bf88a05fcdab14284a566d5d0774f",
+    "jpeg62.dll": "de96d250f25fd6a50add6cea1e6abdedd4e56c05aebd1706e8255d5a4e0b2f1d",
+    "legacy.dll": "0e7cda5a19c5313666db3ed74aac84b3d679f8f0704a03044b988bbfa9857042",
+    "libExtensions.dll": "6d6e22a50c7736a3844bbd80a1b43de936feb380a3bf99c3ab550c3a992236ad",
+    "libcocos2d.dll": "79c2f6567e5851225520803f460c6c5f6f49a2eac9afb8f3bd88d4c5697bef4e",
+    "libcrypto-3-x64.dll": "c5976bb8527b63d8667891da7807555b1941d44e1c0bf202c62c72212794535f",
+    "libcurl.dll": "3ffb64501f5dde0a7fd817bea0bda3e470fa58c6ccb7500e1b3758ef316ff396",
+    "liblzma.dll": "b8725ff8b702429be2ccd86d5b91099f08ea7427708348b8ee99566b295d1ee5",
+    "libpng16.dll": "6f2fea5495917571e3df55d20a4cfd266ccdab4a8ff9683445a42cae724ea5d4",
+    "libssl-3-x64.dll": "1bea1193f8f103c077cc09f913216685de246bf9b5234ea89976d07ee4d8f7e5",
+    "pthreadVC3.dll": "7e6417c37145bcb72efbcb97053a793ea92ac3efaa93673b1e4b578be3501ff3",
+    "pthreadVCE3.dll": "49fd35b5d137aa20c97edd9542e9d26072c6668d7769694694a73d7ee9840bae",
+    "pthreadVSE3.dll": "780080e2049076bd4833ec639194de0604829fc0f0ff1a37b9223938ac9e1ef0",
+    "sdkencryptedappticket64.dll": "3ab6108a5bf057fa1290a32b6a341da9de59a4485e6a3934bb691747c12d4f94",
+    "sqlite3.dll": "e1187d49a14af178ca19ed8561aa88be1bd24a0fb61837f78b38136124155007",
+    "steam_api64.dll": "e6d9bafb9a41e42fba7b21553db49f8719027af3f0deb23ff86cfc44d60e776d",
+    "steam_appid.txt": "12ee84570c3c4ccd2debf21f50f82c413edc3db886192226b79ee294f96e6aef",
+    "tiff.dll": "4aa9fbc89abbe56f4d493f5649a2aec1e90230c69919eab223a1de1e48043bc6",
+    "turbojpeg.dll": "b1fcb7c7c8ab4903f6eb84cb3a12ff92597d069f3ec3154fc3782de0385568fb",
+    "uv.dll": "f8a8031438bcc91a8c6b5c7e12f60c95ec6e55012b1b81117780a40e15a0315e",
+    "websockets.dll": "1690f0dc02d8f5232c02c182377efea0a9ef795cb09e98d82e126b0b6e616467",
+    "zlib1.dll": "33a54a66875b05f161475a8207be3b574894696b94a39205892ccb1cb3390d57"
+  }
+}

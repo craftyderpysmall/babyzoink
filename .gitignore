@@ -1,0 +1,9 @@
+game/
+tools/m0/ref/
+__pycache__/
+*.pyc
+build/
+build-*/
+.pytest_cache/
+*.egg-info/
+.venv/

@@ -1,0 +1,168 @@
+# Bridge protocol (mod ⇄ Python)
+
+Protocol version: **0** (draft). Owner: claude/plan-01. Changes: open a handoff. Any change to message shapes bumps the version.
+
+Version 0 is deliberately simple: length-prefixed JSON. M2 benchmarks will show whether serialization dominates. If it does, version 1 adds a compact fixed-width binary observation block (planned below). Neither side may assume field order.
+
+## Transport
+- **Pipe:** a Windows named pipe `\\.\pipe\gdbot-<pid>`, where `<pid>` is the GD process id. The bridge is the server and accepts one client.
+- **Discovery:** the bridge also writes `game/2.2091/gdbot/bridge.json` = `{"pipe": "...", "pid": n, "proto": 0}`. This assumes save redirection puts the bot's data under the game folder.
+- **Framing:** `u32 little-endian length` + `length` bytes of UTF-8 JSON. One request gets exactly one reply, strictly alternating.
+- **Request shape:** `{"op": "<name>", "id": <int>, ...}`.
+- **Reply shape:** `{"id": <same>, "ok": true, ...}` or `{"id": <same>, "ok": false, "error": {"code": "<CODE>", "msg": "..."}}`.
+- **Error codes:**
+  - `BAD_REQUEST`
+  - `UNKNOWN_OP`
+  - `NOT_IN_LEVEL`
+  - `UNSUPPORTED` (a capability is disabled, e.g. a live check failed)
+  - `BUILD_MISMATCH` (sent once, as the hello reply, then the pipe closes)
+  - `EPISODE_MISMATCH`
+  - `INTERNAL`
+
+## Physics freeze guarantee
+Between replies, while it waits for a `step`, the bridge does **not** advance gameplay ticks. Render and UI may keep running.
+
+The bridge runs requests on the game thread. The pipe thread only moves bytes.
+
+## Ticks and stepping
+- A *tick* is one completed physics step at 240 tps: one `processCommands` call with `isLastTick` semantics, to be confirmed in M1.
+- `tick` counts completed ticks since the last reset, starting at 0.
+- `step{action, k}` works as follows:
+  - It applies the input edge (if the action differs from the currently held state) **at the start** of the first tick.
+  - It advances exactly `k` ticks, or stops early at the first tick that produces a terminal event.
+  - It returns the **post-step** observation.
+  - `k` ≥ 1, and the bridge must support `k = 1`.
+
+## Operations
+
+### `hello`
+- **Request:** `{"op": "hello", "id": 1, "proto": 0, "client": "gdbot/0.x"}`
+- **Reply:**
+  ```json
+  {"id": 1, "ok": true, "proto": 0,
+   "build": {"exe_sha256": "...", "game_version": "2.2091"},
+   "capabilities": {"step": true, "reset": true, "startpos": false, "checkpoint": false,
+                    "trace": false, "modes": ["normal"], "dual": false, "isolation": true},
+   "isolation": {"saves_redirected": true, "http_blocked": true}}
+  ```
+- **Isolation rule:** if `isolation.saves_redirected` or `isolation.http_blocked` is false, the client must refuse to play.
+- **Capabilities** become true only after the matching M1/M4 live checks pass.
+
+### `load_level`
+- **Request:** `{"op": "load_level", "id": n, "level": {"kind": "main", "id": 1}}`
+- **`kind` values:**
+  - `main`: an official level by id.
+  - `local`: a local editor level, identified by `name`.
+  - `cached`: a downloaded level, by id.
+  - `level_string`: an inline level string (reserved, levelgen).
+- **Reply:** `{"ok": true, "level": {"kind", "id", "name", "length_x": float, "revision": "..."}}`
+
+### `reset`
+- **Request:** `{"op": "reset", "id": n, "start": {"kind": "zero"}}`
+- **`start` values:**
+  - `{"kind": "startpos", "x": float, "mode": "cube", "speed": 1, "gravity_flipped": false, "mini": false}` (M4)
+  - `{"kind": "checkpoint", "checkpoint_id": int}` (M4)
+- **Reply:** `{"ok": true, "episode": int, "tick": 0, "obs": OBS}`
+- The episode id increments on every reset. The action state resets to released.
+
+### `step`
+- **Request:** `{"op": "step", "id": n, "episode": int, "action": 0|1, "k": int}`
+- **Reply:** `{"ok": true, "episode": int, "tick": int, "ticks_advanced": int, "obs": OBS, "events": [EVENT...], "terminal": null | "death" | "complete"}`
+- **`EVENT`** = `{"type": "death" | "complete" | "mode_change" | "checkpoint" | "trigger", "tick": int, ...}`
+- `step` with a stale `episode` returns `EPISODE_MISMATCH`.
+
+### `set_mode`
+- **Request:** `{"op": "set_mode", "id": n, "mode": "normal" | "dedicated" | "background"}`
+- `normal` means real time with full rendering. It's used for parity baselines and for watching.
+- The mode changes pacing and rendering only, **never** simulation results. M2 parity tests enforce this.
+
+### `trace`
+- **Request:** `{"op": "trace", "id": n, "enabled": bool}`
+- While enabled, each `step` reply adds `"trace": [TRACE_ROW per advanced tick]`.
+- **`TRACE_ROW`** = `{"tick", "players": [PLAYER], "button": {"held": bool, "queued": int}, "events": [...]}`
+- This feeds the M2 parity suite. Rows must contain everything the suite compares.
+
+### `bye`
+- **Request:** `{"op": "bye", "id": n}`. The bridge releases input and closes the pipe.
+
+## OBS (v0)
+```json
+{
+  "players": [PLAYER],
+  "objects": [OBJECT],
+  "progress": 0.0,
+  "window": {"ahead_x": float, "behind_x": float, "max_objects": int, "truncated": bool},
+  "unsupported": ["<mechanic names present in the window that the bridge can't encode>"]
+}
+```
+- `players` has one entry, or two in dual mode once `capabilities.dual` is true.
+- `progress` is the game's own verified level progress, 0..1. It is **not** a policy input; it's for reward and metrics only.
+
+PLAYER:
+```json
+{"x": float, "y": float, "vx": float, "vy": float, "rot": float,
+ "mode": "cube|ship|ball|ufo|wave|robot|spider|swing",
+ "speed": float, "gravity_flipped": bool, "mini": bool,
+ "on_ground": bool, "on_ceiling": bool, "holding": bool, "buffered": bool,
+ "dashing": bool, "dead": bool}
+```
+
+OBJECT, in gameplay coordinates and taken from collision data:
+```json
+{"uid": int, "cat": CAT, "type_id": int,
+ "x": float, "y": float, "w": float, "h": float, "rot": float,
+ "active": bool, "params": {}}
+```
+- **`CAT` values:** `solid`, `hazard`, `orb`, `pad`, `portal_mode`, `portal_gravity`, `portal_size`, `portal_speed`, `portal_dual`, `portal_teleport`, `other`.
+- **`params`** depend on the category. Examples: orb `{"kind": "yellow|pink|red|blue|green|black|dash_green|dash_pink|spider|toggle"}`, portal_mode `{"to": "ship"}`, portal_speed `{"to": 0.5|1|2|3|4}`.
+- **`uid`** is stable for the object's lifetime within an episode. Python uses it to derive per-object velocity from consecutive observations.
+- **Coordinates** are absolute gameplay coordinates. Python makes them relative to the player. The bridge doesn't, so traces stay simple.
+
+## Real bridge behaviour, v0 (measured 2026-11-18)
+These clarifications are additive. Clients written to the text above stay compatible.
+
+- **Observations are post-tick.** On the tick a cube jump is pressed, the game sets `vy` = 11.18 and applies one tick of gravity (−0.216) before the observation is read, so the first `vy` the client sees is 10.964.
+- **Units:**
+  - `x` and `y` are game units, updated every tick (the CCNode position).
+  - `vx` is game units **per tick**, computed by the bridge from consecutive observations. It is 1.2982 at 1x speed.
+  - `vy` is the game's internal `m_yVelocity`.
+- **`hello.capabilities.objects`:** a new boolean, currently `false`. While false, `obs.objects` is `[]` and `obs.unsupported` contains `"objects"`. `on_ceiling` and `buffered` are always false and are listed in `unsupported` because those fields are not mapped yet.
+- **`load_level`:** only `kind: "main"` works, and only from the menu (not while already in a level). The reply is deferred until the level has rendered about 30 frames. `name` and `length_x` are `null`.
+- **`reset`:** only `start.kind: "zero"` works. `startpos` and `checkpoint` return `UNSUPPORTED` until M4.
+- **Control:** a client owns the game from `hello` until disconnect or `bye`. While it does:
+  - Physics advances only inside `step`.
+  - Game-initiated resets (respawn after death) and pause-on-focus-loss are suppressed.
+  - On disconnect, the button is released and the game runs normally again.
+- **Pacing:**
+  - `normal` and `background` serve one request per rendered frame, measured at 60 steps/s while the game window was unfocused.
+  - `dedicated` serves requests back to back for up to 12 ms per frame. Measured with Python as the client: k=1 at 7,546 ticks/s (31× real time), k=4 at 17,838 ticks/s (74×).
+  - `background` also lowers the process priority.
+- **Trace:** one row per physics tick. In the M1 test, the same 468-step input tape played twice from a reset gave identical traces (405 rows, ending in death).
+
+## v0 additions (implemented and verified live 2026-11-18; additive, no version bump)
+- `hello.capabilities` gains `objects`, `level_string`, and `quit_level` (all true).
+- `level.revision` for level_string loads is `fnv1a64:<hex>` of `data`. Clients keep their own sha256 for tapes.
+- `obs.objects` filters out GD's hidden anticheat spike. Its layer offset is learned on the first ticks after the first reset in a process, so only that very first reset may still list it at x=0.
+- `obs.window` is 150 behind to 1200 ahead, with at most 128 objects (`truncated` is set when cut). Object `x`/`y` is the hitbox centre and `w`/`h` the hitbox size, from `GameObject::getObjectRect()`.
+- `trace` rows carry per-tick terminal events. `button.queued` is `null` (not mapped).
+- `players[].vx` is x(t)−x(t−1) per physics tick, independent of k. `rot` is visual rotation (degrees) and not gameplay orientation. Per-tick dy ≈ `vy` × 0.225.
+
+### Original plan text
+- **`load_level {"level": {"kind": "level_string", "name": "<drill id>", "data": "<level string>"}}`**
+  - `data` is the level string **encoded the way GD stores it**: URL-safe base64 of the gzip of the inner level string, which starts with `H4sI`. Python does the encoding; the bridge writes it into a fresh `GJGameLevel` unchanged.
+  - The *inner* string has a header section `kA..,..;`, then one object per `;`-separated record as `key,value` pairs. At minimum it has `1,<object id>,2,<x>,3,<y>`, plus optional `6,<rotation>`, `4,<flipX>`, `5,<flipY>`, `32,<scale>`.
+  - The reply's `level.revision` is the SHA-256 of `data`, so tapes can pin the exact drill.
+- **`quit_level`**: return to the menu so another `load_level` can follow without relaunching.
+- **`hello.capabilities.objects` becomes true** once object extraction lands:
+  - `obs.objects` lists collision-relevant objects inside the window.
+  - Each object has `uid`, `cat`, `type_id`, `x`, `y`, `w`, `h`, `rot`, `active`, and `params`, as defined above.
+
+## Planned v1 (not implemented)
+After `reset`/`step` replies, the bridge may add a binary trailer frame (`u32 len` + bytes):
+- `PLAYER`: N × fixed 64-byte rows.
+- `OBJECT`: M × fixed 40-byte rows, schema id in the JSON header.
+
+It is enabled per session via `hello.capabilities.binary_obs`. This is only built if M2 profiling shows JSON dominates.
+
+## Mock bridge requirement (for Python tests)
+`gdbot` ships a mock bridge that speaks this protocol over the same framing. It can run in-process or on a real named pipe. Its toy physics only needs to exercise plumbing (deaths, completion, k-stepping, episode IDs, traces). It is not a GD physics clone and must not try to be one.

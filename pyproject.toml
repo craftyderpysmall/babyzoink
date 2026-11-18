@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gdbot"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = ["gymnasium>=1.0", "numpy>=1.26"]
+
+[project.optional-dependencies]
+train = ["stable-baselines3>=2.6"]
+test = ["pytest>=8"]
+
+[project.scripts]
+gdbot-bench = "gdbot.bench:main"
+
+[tool.setuptools.packages.find]
+include = ["gdbot*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

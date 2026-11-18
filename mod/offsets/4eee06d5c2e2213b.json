@@ -1,0 +1,463 @@
+{
+  "build": {
+    "game_version": "2.2091",
+    "steam_buildid": 26002420,
+    "exe_sha256": "4eee06d5c2e2213b4ba2b1f6233dd426bbdd0e9b29d7c375e499516b6f8f69d5",
+    "pe_timestamp": "0x6ad2d987",
+    "pdata_functions": 19380
+  },
+  "reference": {
+    "repo": "geode-sdk/bindings",
+    "commit": "c6ce3dc90487ad75a71ded9b95e58d19c871a158",
+    "file": "bindings/2.2091/GeometryDash.bro",
+    "note": "Reference data only (repo has no license file); RVAs re-verified against this exe."
+  },
+  "functions": [
+    {
+      "symbol": "GJBaseGameLayer::update",
+      "sig": "virtual void update(float dt)",
+      "rva": "0x3406d0",
+      "milestone": "M1",
+      "why": "frame/tick driver",
+      "static_check": "pdata_start",
+      "live_check": "PASS 2026-11-18: once per frame; skipping it freezes physics (1 s idle = 0 ticks); calling it with dt=1/240 advances exactly 1 tick (all k=1 steps advanced 1)."
+    },
+    {
+      "symbol": "GJBaseGameLayer::processCommands",
+      "sig": "void processCommands(float dt, bool isHalfTick, bool isLastTick)",
+      "rva": "0x342870",
+      "milestone": "M1",
+      "why": "physics tick boundary (isHalfTick/isLastTick)",
+      "static_check": "pdata_start",
+      "live_check": "PASS 2026-11-18: 240 calls/s, dt=1/240, 2 per frame at 120 fps, isLastTick alternates 0/1, isHalfTick always 0 so far. One call = one physics tick."
+    },
+    {
+      "symbol": "GJBaseGameLayer::handleButton",
+      "sig": "void handleButton(bool down, int button, bool isPlayer1)",
+      "rva": "0x33c5b0",
+      "milestone": "M1",
+      "why": "press/release injection",
+      "static_check": "pdata_start",
+      "live_check": "PASS 2026-11-18 (controlled test): down 1/0, button=1; 3rd arg isPlayer1 = 1 for Space, W and left-click, 0 for Up arrow (player-2 key in two-player mode). The bot sends (down, 1, true)."
+    },
+    {
+      "symbol": "PlayLayer::init",
+      "sig": "bool init(GJGameLevel* level, bool dontCreateObjects)",
+      "rva": "0x5039e0",
+      "milestone": "M1",
+      "why": "level entry / attach bridge",
+      "static_check": "pdata_start",
+      "live_check": "PASS 2026-11-18: fires on level entry, returns 1. Real signature appears to be 2 args (3rd register is garbage)."
+    },
+    {
+      "symbol": "PlayLayer::postUpdate",
+      "sig": "virtual void postUpdate(float dt)",
+      "rva": "0x513ca0",
+      "milestone": "M1",
+      "why": "post-tick observation point",
+      "static_check": "pdata_start",
+      "live_check": "PASS 2026-11-18: per frame, dt=1/120."
+    },
+    {
+      "symbol": "PlayLayer::resetLevel",
+      "sig": "virtual void resetLevel()",
+      "rva": "0x518c00",
+      "milestone": "M1",
+      "why": "full reset",
+      "static_check": "pdata_start",
+      "live_check": "PASS 2026-11-18: fires at attempt start/respawn; bot-called reset returns player to x=0 alive; non-bot resets suppressed while controlled."
+    },
+    {
+      "symbol": "PlayLayer::fullReset",
+      "sig": "void fullReset()",
+      "rva": "0x518920",
+      "milestone": "M1",
+      "why": "full reset from 0%",
+      "static_check": "pdata_start",
+      "live_check": "pending (M1)"
+    },
+    {
+      "symbol": "PlayLayer::destroyPlayer",
+      "sig": "virtual void destroyPlayer(PlayerObject* player, GameObject* object)",
+      "rva": "0x512390",
+      "milestone": "M1",
+      "why": "terminal event: death",
+      "static_check": "pdata_start",
+      "live_check": "PASS with caveat 2026-11-18: real death = 1 call. ALSO called on ~10-13 ticks after every reset with one fixed object per level (consistent with GD's anticheat spike check), so a death event must filter by object or by the player's dead flag."
+    },
+    {
+      "symbol": "PlayLayer::levelComplete",
+      "sig": "void levelComplete()",
+      "rva": "0x5061b0",
+      "milestone": "M1",
+      "why": "terminal event: completion (must be isolated)",
+      "static_check": "pdata_start",
+      "live_check": "NOT YET OBSERVED (no completion in the test)."
+    },
+    {
+      "symbol": "PlayLayer::onQuit",
+      "sig": "void onQuit()",
+      "rva": "0x51b0b0",
+      "milestone": "M1",
+      "why": "detach bridge",
+      "static_check": "pdata_start",
+      "live_check": "PASS 2026-11-18: fires on quit to menu."
+    },
+    {
+      "symbol": "PlayLayer::pauseGame",
+      "sig": "void pauseGame(bool unfocused)",
+      "rva": "0x51a370",
+      "milestone": "M1",
+      "why": "suppress auto-pause when unfocused (background mode)",
+      "static_check": "pdata_start",
+      "live_check": "PASS 2026-11-18: unfocused=1 on focus loss (auto-pause!), unfocused=0 on manual pause."
+    },
+    {
+      "symbol": "PlayerObject::update",
+      "sig": "virtual void update(float dt)",
+      "rva": "0x4e6fc0",
+      "milestone": "M1",
+      "why": "player integration step (reference)",
+      "static_check": "pdata_start",
+      "live_check": "pending (M1)"
+    },
+    {
+      "symbol": "GameStatsManager::completedLevel",
+      "sig": "void completedLevel(GJGameLevel* level)",
+      "rva": "0x2e1c00",
+      "milestone": "M1",
+      "why": "isolation: block completion stats",
+      "static_check": "pdata_start",
+      "live_check": "pending (M1)"
+    },
+    {
+      "symbol": "GameStatsManager::incrementStat",
+      "sig": "void incrementStat(char const* key, int amount)",
+      "rva": "0x2da460",
+      "milestone": "M1",
+      "why": "isolation: block stat writes",
+      "static_check": "pdata_start",
+      "live_check": "pending (M1)"
+    },
+    {
+      "symbol": "GameLevelManager::updateUserScore",
+      "sig": "void updateUserScore()",
+      "rva": "0x236270",
+      "milestone": "M1",
+      "why": "isolation: block score upload",
+      "static_check": "pdata_start",
+      "live_check": "PASS 2026-11-18: called from menus; the no-op hook blocked it."
+    },
+    {
+      "symbol": "PlayLayer::markCheckpoint",
+      "sig": "CheckpointObject* markCheckpoint()",
+      "rva": "0x516630",
+      "milestone": "M4",
+      "why": "practice checkpoints",
+      "static_check": "pdata_start",
+      "live_check": "pending (M1)"
+    },
+    {
+      "symbol": "PlayLayer::storeCheckpoint",
+      "sig": "void storeCheckpoint(CheckpointObject* checkpoint)",
+      "rva": "0x516510",
+      "milestone": "M4",
+      "why": "practice checkpoints",
+      "static_check": "pdata_start",
+      "live_check": "pending (M1)"
+    },
+    {
+      "symbol": "PlayLayer::loadFromCheckpoint",
+      "sig": "void loadFromCheckpoint(CheckpointObject* object)",
+      "rva": "0x516820",
+      "milestone": "M4",
+      "why": "practice checkpoints",
+      "static_check": "pdata_start",
+      "live_check": "pending (M1)"
+    },
+    {
+      "symbol": "PlayLayer::removeCheckpoint",
+      "sig": "void removeCheckpoint(bool first)",
+      "rva": "0x5170d0",
+      "milestone": "M4",
+      "why": "practice checkpoints",
+      "static_check": "pdata_start",
+      "live_check": "pending (M1)"
+    },
+    {
+      "symbol": "GJBaseGameLayer::loadStartPosObject",
+      "sig": "void loadStartPosObject(StartPosObject* startPos)",
+      "rva": "0x33e460",
+      "milestone": "M4",
+      "why": "start positions",
+      "static_check": "pdata_start",
+      "live_check": "pending (M1)"
+    },
+    {
+      "symbol": "PlayLayer::scene",
+      "sig": "static cocos2d::CCScene* scene(GJGameLevel*, bool)",
+      "rva": "0x503930",
+      "milestone": "M1",
+      "why": "load_level: create the play scene",
+      "static_check": "pdata_start",
+      "live_check": "PASS 2026-11-18: load_level main 1 from the menu produced Stereo Madness (screenshots)."
+    },
+    {
+      "symbol": "PlayLayer::getCurrentPercent",
+      "sig": "float getCurrentPercent()",
+      "rva": "0x512300",
+      "milestone": "M1",
+      "why": "obs.progress (reward/metrics only)",
+      "static_check": "pdata_start",
+      "live_check": "PASS 2026-11-18: callable; returns percent used for obs.progress."
+    },
+    {
+      "symbol": "PlayLayer::resetLevelFromStart",
+      "sig": "void resetLevelFromStart()",
+      "rva": "0x518a50",
+      "milestone": "M1",
+      "why": "reset reference",
+      "static_check": "pdata_start",
+      "live_check": "pending (M1)"
+    },
+    {
+      "symbol": "GameLevelManager::sharedState",
+      "sig": "static GameLevelManager* sharedState()",
+      "rva": "0x219280",
+      "milestone": "M1",
+      "why": "load_level: level manager singleton",
+      "static_check": "pdata_start",
+      "live_check": "PASS 2026-11-18 (via load_level)."
+    },
+    {
+      "symbol": "GameLevelManager::getMainLevel",
+      "sig": "GJGameLevel* getMainLevel(int levelID, bool dontGetLevelString)",
+      "rva": "0x21bba0",
+      "milestone": "M1",
+      "why": "load_level: official level by id",
+      "static_check": "pdata_start",
+      "live_check": "PASS 2026-11-18 (via load_level id=1)."
+    },
+    {
+      "symbol": "GameObject::getObjectRect",
+      "sig": "virtual cocos2d::CCRect const& getObjectRect()",
+      "rva": "0x294820",
+      "milestone": "M1b",
+      "why": "obs.objects hitbox",
+      "static_check": "leaf thunk (no .pdata): disassembled 2026-11-18 as mov rax,[rcx]; movss xmm2,[rcx+0x398]; movss xmm1,[rcx+0x394]; jmp [rax+0x4a8] -> virtual getObjectRect(float,float) @0x294840 (pdata start). Safe to call; dispatches virtually.",
+      "live_check": "PASS 2026-11-18 (M1b objects_test)"
+    },
+    {
+      "symbol": "PlayLayer::startGame",
+      "sig": "void startGame()",
+      "rva": "0x506140",
+      "milestone": "M1b",
+      "why": "load_level readiness: reply only after the level has started",
+      "static_check": "pdata_start",
+      "live_check": "PASS 2026-11-18 (M1b objects_test)"
+    },
+    {
+      "symbol": "GameLevelManager::createNewLevel",
+      "sig": "GJGameLevel* createNewLevel()",
+      "rva": "0x21bff0",
+      "milestone": "M1b",
+      "why": "level_string: a local editor level to hold drill strings",
+      "static_check": "pdata_start",
+      "live_check": "PASS 2026-11-18 (M1b objects_test)"
+    }
+  ],
+  "companions": {
+    "libcocos2d.dll": {
+      "sha256": "79c2f6567e5851225520803f460c6c5f6f49a2eac9afb8f3bd88d4c5697bef4e",
+      "pe_timestamp": "0x6ad2d6fc",
+      "hook_by_export": {
+        "getWritablePath": [
+          "?getWritablePath2@CCFileUtils@cocos2d@@UEAA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ",
+          "?getWritablePath2@CCFileUtilsWin32@cocos2d@@UEAA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ"
+        ],
+        "CCScheduler@cocos2d@@.*update|update@CCScheduler": [
+          "?update@CCScheduler@cocos2d@@UEAAXM@Z"
+        ],
+        "drawScene@CCDirector": [
+          "?drawScene@CCDirector@cocos2d@@QEAAXXZ"
+        ]
+      }
+    },
+    "libExtensions.dll": {
+      "sha256": "6d6e22a50c7736a3844bbd80a1b43de936feb380a3bf99c3ab550c3a992236ad",
+      "pe_timestamp": "0x6ad2d956",
+      "hook_by_export": {
+        "send@CCHttpClient": [
+          "?send@CCHttpClient@extension@cocos2d@@QEAAXPEAVCCHttpRequest@23@@Z"
+        ]
+      }
+    }
+  },
+  "fields": {
+    "status": "mapped for M1 surface; verified from live probe data",
+    "evidence": "probe.bin run 3, 2026-11-18 (Stereo Madness, Space only, 8 attempts, 19,532 ticks), tools/m1/find_fields.py + check_fields.py",
+    "layout_method": "anchors found by behaviour, neighbours from bindings member order + MSVC x64 alignment, each checked against the probe",
+    "GJBaseGameLayer": {
+      "m_player1": {
+        "off": "0xdb8",
+        "type": "PlayerObject*",
+        "check": "found by scanning the layer for destroyPlayer's player arg"
+      },
+      "m_objects": {
+        "off": "0xdd0",
+        "type": "CCArray*",
+        "check": "PASS 2026-11-18: 2399 objects in Stereo Madness, 3 in a 1-spike level_string level"
+      },
+      "m_anticheatSpike": {
+        "off": "0x38e0",
+        "type": "GameObject*",
+        "check": "learned at runtime 2026-11-18 by matching destroyPlayer's first-tick object; filtered from obs.objects"
+      }
+    },
+    "PlayerObject": {
+      "pos_tick_x": {
+        "off": "0x4c",
+        "type": "f32",
+        "check": "updates every tick, +1.2982/tick at 1x speed; CCNode base position. USE THIS for lockstep obs"
+      },
+      "pos_tick_y": {
+        "off": "0x50",
+        "type": "f32",
+        "check": "updates every tick, follows vy smoothly during jumps"
+      },
+      "m_position": {
+        "off": "0xa98",
+        "type": "CCPoint(f32,f32)",
+        "check": "same values but updated once per 120 Hz frame (every 2nd tick)"
+      },
+      "m_yVelocity": {
+        "off": "0x9a8",
+        "type": "f64",
+        "check": "0 on ground, 11.18 on cube jump press tick, -0.216/tick gravity"
+      },
+      "m_fallSpeed": {
+        "off": "0x9b0",
+        "type": "f64",
+        "check": "identical to m_yVelocity in this data"
+      },
+      "m_isShip": {
+        "off": "0x9c1",
+        "type": "bool",
+        "check": "1 exactly over the ship section"
+      },
+      "m_isBird": {
+        "off": "0x9c2",
+        "type": "bool",
+        "check": "0 (no UFO in run) - unverified"
+      },
+      "m_isBall": {
+        "off": "0x9c3",
+        "type": "bool",
+        "check": "0 - unverified"
+      },
+      "m_isDart": {
+        "off": "0x9c4",
+        "type": "bool",
+        "check": "0 - unverified (wave)"
+      },
+      "m_isRobot": {
+        "off": "0x9c5",
+        "type": "bool",
+        "check": "0 - unverified"
+      },
+      "m_isSpider": {
+        "off": "0x9c6",
+        "type": "bool",
+        "check": "0 - unverified"
+      },
+      "m_isUpsideDown": {
+        "off": "0x9c7",
+        "type": "bool",
+        "check": "0 - unverified"
+      },
+      "m_isDead": {
+        "off": "0x9c8",
+        "type": "bool",
+        "check": "0 while alive, 1 from death until reset (7/8 attempts; 8th ended by quit)"
+      },
+      "m_isOnGround": {
+        "off": "0x9c9",
+        "type": "bool",
+        "check": "1 on ground, 0 from the press tick"
+      },
+      "m_isSwing": {
+        "off": "0x9cc",
+        "type": "bool",
+        "check": "0 - unverified"
+      },
+      "m_isDashing": {
+        "off": "0x9ec",
+        "type": "bool",
+        "check": "0 - unverified"
+      },
+      "m_vehicleSize": {
+        "off": "0x9f8",
+        "type": "f32",
+        "check": "1.0 (normal size) - mini unverified"
+      },
+      "m_playerSpeed": {
+        "off": "0x9fc",
+        "type": "f32",
+        "check": "0.9 at 1x speed portal tier"
+      },
+      "m_totalTime": {
+        "off": "0xaa8",
+        "type": "f64",
+        "check": "+1/240 per tick"
+      }
+    },
+    "GameObject": {
+      "m_uniqueID": {
+        "off": "0x39c",
+        "type": "int",
+        "check": "400/400 unique (objprobe.bin)"
+      },
+      "m_objectType": {
+        "off": "0x3a0",
+        "type": "GameObjectType",
+        "check": "spike-shaped hitboxes 93% =2 (hazard), mode 7; 0 out-of-range over 2399 objects"
+      },
+      "m_savedObjectType": {
+        "off": "0x3a4",
+        "type": "GameObjectType",
+        "check": "equals m_objectType in probe"
+      },
+      "m_objectID": {
+        "off": "0x40c",
+        "type": "int",
+        "check": "hazards 8/9/39, solids 1/2/3/7/40, decor 5"
+      },
+      "note": "anchor-derived estimates (m_unkXXX names) were 0x18 low in this region"
+    },
+    "GJGameLevel": {
+      "m_levelName": {
+        "off": "0x158",
+        "type": "std::string"
+      },
+      "m_levelString": {
+        "off": "0x198",
+        "type": "std::string",
+        "check": "found at runtime: H4sI string with name 'Stereo Madness' 0x40 earlier"
+      }
+    }
+  },
+  "isolation_checks": [
+    {
+      "date": "2026-11-18",
+      "result": "PASS: init isolation flags all 1; getWritablePath redirected (3 calls); getWritablePath2 never called; 0 file-guard denials; 2 CCHttpClient::send blocked at startup; curl unused; fresh profile created in gdbot/save. All real-save changes predate the bot launch (22:11:17 vs 22:11:36, user's Steam GD exiting)."
+    },
+    {
+      "date": "2026-11-18",
+      "result": "PASS (clean run 2): real save byte-identical before/after (65 files, .dat/.json hashed); 3 HTTP sends and 1 updateUserScore blocked; 0 file-guard denials."
+    },
+    {
+      "date": "2026-11-18",
+      "result": "PASS (M1 live test, unattended): real save unchanged during and after the run; 0 file-guard denials."
+    }
+  ]
+}

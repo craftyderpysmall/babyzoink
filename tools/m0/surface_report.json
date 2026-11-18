@@ -1,0 +1,324 @@
+{
+  "exe": "GeometryDash.exe",
+  "sha256": "4eee06d5c2e2213b4ba2b1f6233dd426bbdd0e9b29d7c375e499516b6f8f69d5",
+  "pe_timestamp": "0x6ad2d987",
+  "pdata_functions": 19380,
+  "surface": [
+    {
+      "cls": "GJBaseGameLayer",
+      "name": "update",
+      "sig": "virtual void update(float dt)",
+      "why": "frame/tick driver",
+      "milestone": "M1",
+      "rva": "0x3406d0",
+      "status": "PDATA_START",
+      "size": 6408
+    },
+    {
+      "cls": "GJBaseGameLayer",
+      "name": "processCommands",
+      "sig": "void processCommands(float dt, bool isHalfTick, bool isLastTick)",
+      "why": "physics tick boundary (isHalfTick/isLastTick)",
+      "milestone": "M1",
+      "rva": "0x342870",
+      "status": "PDATA_START",
+      "size": 606
+    },
+    {
+      "cls": "GJBaseGameLayer",
+      "name": "handleButton",
+      "sig": "void handleButton(bool down, int button, bool isPlayer1)",
+      "why": "press/release injection",
+      "milestone": "M1",
+      "rva": "0x33c5b0",
+      "status": "PDATA_START",
+      "size": 672
+    },
+    {
+      "cls": "PlayLayer",
+      "name": "init",
+      "sig": "bool init(GJGameLevel* level, bool dontCreateObjects)",
+      "why": "level entry / attach bridge",
+      "milestone": "M1",
+      "rva": "0x5039e0",
+      "status": "PDATA_START",
+      "size": 2727
+    },
+    {
+      "cls": "PlayLayer",
+      "name": "postUpdate",
+      "sig": "virtual void postUpdate(float dt)",
+      "why": "post-tick observation point",
+      "milestone": "M1",
+      "rva": "0x513ca0",
+      "status": "PDATA_START",
+      "size": 17
+    },
+    {
+      "cls": "PlayLayer",
+      "name": "resetLevel",
+      "sig": "virtual void resetLevel()",
+      "why": "full reset",
+      "milestone": "M1",
+      "rva": "0x518c00",
+      "status": "PDATA_START",
+      "size": 4400
+    },
+    {
+      "cls": "PlayLayer",
+      "name": "fullReset",
+      "sig": "void fullReset()",
+      "why": "full reset from 0%",
+      "milestone": "M1",
+      "rva": "0x518920",
+      "status": "PDATA_START",
+      "size": 260
+    },
+    {
+      "cls": "PlayLayer",
+      "name": "destroyPlayer",
+      "sig": "virtual void destroyPlayer(PlayerObject* player, GameObject* object)",
+      "why": "terminal event: death",
+      "milestone": "M1",
+      "rva": "0x512390",
+      "status": "PDATA_START",
+      "size": 4876
+    },
+    {
+      "cls": "PlayLayer",
+      "name": "levelComplete",
+      "sig": "void levelComplete()",
+      "why": "terminal event: completion (must be isolated)",
+      "milestone": "M1",
+      "rva": "0x5061b0",
+      "status": "PDATA_START",
+      "size": 4118
+    },
+    {
+      "cls": "PlayLayer",
+      "name": "onQuit",
+      "sig": "void onQuit()",
+      "why": "detach bridge",
+      "milestone": "M1",
+      "rva": "0x51b0b0",
+      "status": "PDATA_START",
+      "size": 635
+    },
+    {
+      "cls": "PlayLayer",
+      "name": "pauseGame",
+      "sig": "void pauseGame(bool unfocused)",
+      "why": "suppress auto-pause when unfocused (background mode)",
+      "milestone": "M1",
+      "rva": "0x51a370",
+      "status": "PDATA_START",
+      "size": 980
+    },
+    {
+      "cls": "PlayerObject",
+      "name": "update",
+      "sig": "virtual void update(float dt)",
+      "why": "player integration step (reference)",
+      "milestone": "M1",
+      "rva": "0x4e6fc0",
+      "status": "PDATA_START",
+      "size": 4941
+    },
+    {
+      "cls": "GameStatsManager",
+      "name": "completedLevel",
+      "sig": "void completedLevel(GJGameLevel* level)",
+      "why": "isolation: block completion stats",
+      "milestone": "M1",
+      "rva": "0x2e1c00",
+      "status": "PDATA_START",
+      "size": 321
+    },
+    {
+      "cls": "GameStatsManager",
+      "name": "incrementStat",
+      "sig": "void incrementStat(char const* key)",
+      "why": "isolation: block stat writes",
+      "milestone": "M1",
+      "status": "INLINE"
+    },
+    {
+      "cls": "GameStatsManager",
+      "name": "incrementStat",
+      "sig": "void incrementStat(char const* key, int amount)",
+      "why": "isolation: block stat writes",
+      "milestone": "M1",
+      "rva": "0x2da460",
+      "status": "PDATA_START",
+      "size": 398
+    },
+    {
+      "cls": "GameLevelManager",
+      "name": "updateUserScore",
+      "sig": "void updateUserScore()",
+      "why": "isolation: block score upload",
+      "milestone": "M1",
+      "rva": "0x236270",
+      "status": "PDATA_START",
+      "size": 6900
+    },
+    {
+      "cls": "PlayLayer",
+      "name": "markCheckpoint",
+      "sig": "CheckpointObject* markCheckpoint()",
+      "why": "practice checkpoints",
+      "milestone": "M4",
+      "rva": "0x516630",
+      "status": "PDATA_START",
+      "size": 195
+    },
+    {
+      "cls": "PlayLayer",
+      "name": "storeCheckpoint",
+      "sig": "void storeCheckpoint(CheckpointObject* checkpoint)",
+      "why": "practice checkpoints",
+      "milestone": "M4",
+      "rva": "0x516510",
+      "status": "PDATA_START",
+      "size": 102
+    },
+    {
+      "cls": "PlayLayer",
+      "name": "loadFromCheckpoint",
+      "sig": "void loadFromCheckpoint(CheckpointObject* object)",
+      "why": "practice checkpoints",
+      "milestone": "M4",
+      "rva": "0x516820",
+      "status": "PDATA_START",
+      "size": 2218
+    },
+    {
+      "cls": "PlayLayer",
+      "name": "removeCheckpoint",
+      "sig": "void removeCheckpoint(bool first)",
+      "why": "practice checkpoints",
+      "milestone": "M4",
+      "rva": "0x5170d0",
+      "status": "PDATA_START",
+      "size": 44
+    },
+    {
+      "cls": "GJBaseGameLayer",
+      "name": "loadStartPosObject",
+      "sig": "void loadStartPosObject(StartPosObject* startPos)",
+      "why": "start positions",
+      "milestone": "M4",
+      "rva": "0x33e460",
+      "status": "PDATA_START",
+      "size": 528
+    },
+    {
+      "cls": "PlayLayer",
+      "name": "scene",
+      "sig": "static cocos2d::CCScene* scene(GJGameLevel*, bool)",
+      "why": "load_level: create the play scene",
+      "milestone": "M1",
+      "rva": "0x503930",
+      "status": "PDATA_START",
+      "size": 168
+    },
+    {
+      "cls": "PlayLayer",
+      "name": "getCurrentPercent",
+      "sig": "float getCurrentPercent()",
+      "why": "obs.progress (reward/metrics only)",
+      "milestone": "M1",
+      "rva": "0x512300",
+      "status": "PDATA_START",
+      "size": 140
+    },
+    {
+      "cls": "PlayLayer",
+      "name": "resetLevelFromStart",
+      "sig": "void resetLevelFromStart()",
+      "why": "reset reference",
+      "milestone": "M1",
+      "rva": "0x518a50",
+      "status": "PDATA_START",
+      "size": 431
+    },
+    {
+      "cls": "GameLevelManager",
+      "name": "sharedState",
+      "sig": "static GameLevelManager* sharedState()",
+      "why": "load_level: level manager singleton",
+      "milestone": "M1",
+      "rva": "0x219280",
+      "status": "PDATA_START",
+      "size": 67
+    },
+    {
+      "cls": "GameLevelManager",
+      "name": "getMainLevel",
+      "sig": "GJGameLevel* getMainLevel(int levelID, bool dontGetLevelString)",
+      "why": "load_level: official level by id",
+      "milestone": "M1",
+      "rva": "0x21bba0",
+      "status": "PDATA_START",
+      "size": 983
+    },
+    {
+      "cls": "GameObject",
+      "name": "getObjectRect",
+      "sig": "virtual cocos2d::CCRect const& getObjectRect()",
+      "why": "obs.objects hitbox",
+      "milestone": "M1b",
+      "rva": "0x294820",
+      "status": "NOT_FUNCTION_START"
+    },
+    {
+      "cls": "GameObject",
+      "name": "getObjectRect",
+      "sig": "virtual cocos2d::CCRect getObjectRect(float width, float height)",
+      "why": "obs.objects hitbox",
+      "milestone": "M1b",
+      "rva": "0x294840",
+      "status": "PDATA_START",
+      "size": 404
+    },
+    {
+      "cls": "PlayLayer",
+      "name": "onQuit",
+      "sig": "void onQuit()",
+      "why": "quit_level",
+      "milestone": "M1b",
+      "rva": "0x51b0b0",
+      "status": "PDATA_START",
+      "size": 635
+    }
+  ],
+  "companions": {
+    "libcocos2d.dll": {
+      "sha256": "79c2f6567e5851225520803f460c6c5f6f49a2eac9afb8f3bd88d4c5697bef4e",
+      "pe_timestamp": "0x6ad2d6fc",
+      "matches": {
+        "getWritablePath": [
+          "?getWritablePath2@CCFileUtils@cocos2d@@UEAA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ",
+          "?getWritablePath2@CCFileUtilsWin32@cocos2d@@UEAA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ",
+          "?getWritablePath@CCFileUtilsWin32@cocos2d@@UEAA?AV?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@XZ"
+        ],
+        "CCScheduler@cocos2d@@.*update|update@CCScheduler": [
+          "?update@CCScheduler@cocos2d@@UEAAXM@Z"
+        ],
+        "drawScene@CCDirector": [
+          "?drawScene@CCDirector@cocos2d@@QEAAXXZ"
+        ],
+        "setAnimationInterval@CCDirector": []
+      }
+    },
+    "libExtensions.dll": {
+      "sha256": "6d6e22a50c7736a3844bbd80a1b43de936feb380a3bf99c3ab550c3a992236ad",
+      "pe_timestamp": "0x6ad2d956",
+      "matches": {
+        "send@CCHttpClient": [
+          "?send@CCHttpClient@extension@cocos2d@@QEAAXPEAVCCHttpRequest@23@@Z"
+        ]
+      }
+    }
+  }
+}
