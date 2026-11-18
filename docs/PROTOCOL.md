@@ -144,6 +144,7 @@ These clarifications are additive. Clients written to the text above stay compat
 - `level.revision` for level_string loads is `fnv1a64:<hex>` of `data`. Clients keep their own sha256 for tapes.
 - `obs.objects` filters out GD's hidden anticheat spike. Its layer offset is learned on the first ticks after the first reset in a process, so only that very first reset may still list it at x=0.
 - `obs.window` is 150 behind to 1200 ahead, with at most 128 objects (`truncated` is set when cut). Object `x`/`y` is the hitbox centre and `w`/`h` the hitbox size, from `GameObject::getObjectRect()`.
+- **`terminal: "complete"` is tick-driven** (from 2026-11-18): it fires on the tick the player crosses the level end (`PlayLayer::playEndAnimationToPos`), deterministically and with no wall-clock wait. That's a few ticks before GD's own `levelComplete`, which arrives later on a real-time timer; under bot control a stale one is suppressed after a reset.
 - `trace` rows carry per-tick terminal events. `button.queued` is `null` (not mapped).
 - `players[].vx` is x(t)−x(t−1) per physics tick, independent of k. `rot` is visual rotation (degrees) and not gameplay orientation. Per-tick dy ≈ `vy` × 0.225.
 

@@ -264,6 +264,15 @@
       "why": "level_string: a local editor level to hold drill strings",
       "static_check": "pdata_start",
       "live_check": "PASS 2026-11-18 (M1b objects_test)"
+    },
+    {
+      "symbol": "PlayLayer::playEndAnimationToPos",
+      "sig": "void playEndAnimationToPos(cocos2d::CCPoint position)",
+      "rva": "0x50a2a0",
+      "milestone": "M3",
+      "why": "tick-driven completion terminal (player crossed the level end)",
+      "static_check": "pdata_start",
+      "live_check": "PASS 2026-11-18: fires on the end-crossing tick (single-spike 3936, gravity-portal 4075; identical across trials); stale levelComplete in the next episode suppressed"
     }
   ],
   "companions": {

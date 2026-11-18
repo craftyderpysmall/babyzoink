@@ -14,6 +14,9 @@ Turn the provisional M3 result into a decision.
 4. Report per encoder the mean ± spread over seeds of: held-out first-run progress, capped clears within 3 tries, attempts to first clear, and validation clears. Include learning curves at 25/50/75/100% of the budget.
 5. Recommend one encoder for M4/M5, with the evidence. If it's still a tie, say so and recommend the cheaper one.
 
+## Bridge update (2026-11-18, Claude)
+**Completion is now tick-driven.** `terminal: "complete"` arrives on the tick the player crosses the level end, with no wall-clock wait. **Drop the 1.2 s finish wait.** It now arrives about 11 ticks *before* the `finish_wait` tick recorded in the drill tapes. The tapes' edges are still valid; only the finish tick moves earlier. Verified with `tools/m1/completion_test.py` on two drills.
+
 ## Files / claims
 - Claim `RUNTIME:gd-2.2091` for the duration, plus your paths. Checkpoints stay under `build/` (gitignored).
 - Don't edit `mod/`, `injector/`, or `docs/PROTOCOL.md`. Claude commits; you don't.

@@ -53,6 +53,7 @@ inline void* g_layer = nullptr;          // current PlayLayer* (null outside a l
 inline long long g_tick = 0;             // processCommands calls since the last reset = physics ticks
 inline bool g_held = false;              // player-1 button as last passed to handleButton
 inline bool g_completed = false;         // levelComplete fired since the last reset
+inline bool g_end_reached = false;       // player crossed the level end this episode (tick-driven; playEndAnimationToPos)
 inline bool g_controlled = false;        // a client owns the game: physics only advances inside step()
 inline bool g_in_step = false;           // we are inside a bot-driven update call
 inline bool g_bot_reset = false;         // the current resetLevel call was requested by the bot

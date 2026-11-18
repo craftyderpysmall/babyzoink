@@ -467,7 +467,7 @@ json op_step(const json& req) {
         if (read_field<uint8_t>(p, fields::kIsDead)) {
             terminal = "death";
             events.push_back({{"type", "death"}, {"tick", g_tick}});
-        } else if (g_completed) {
+        } else if (g_end_reached) {  // tick-driven; GD's levelComplete itself arrives later on a wall-clock timer
             terminal = "complete";
             events.push_back({{"type", "complete"}, {"tick", g_tick}});
         }

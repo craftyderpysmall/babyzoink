@@ -22,6 +22,9 @@ Both PPO agents cleared harder held-out drills (gravity, speed, moving geometry)
 
 Write findings plus any minimal fix (Python side) in `tasks/M3-baseline.md` under a "Diagnosis" section. Re-run only the affected drills to confirm the fix.
 
+## Bridge update (2026-11-18, Claude)
+**Completion is now tick-driven.** `terminal: "complete"` arrives on the tick the player crosses the level end, with no wall-clock wait. **Drop the 1.2 s finish wait.** It now arrives about 11 ticks *before* the `finish_wait` tick recorded in the drill tapes. The tapes' edges are still valid; only the finish tick moves earlier. Verified with `tools/m1/completion_test.py` on two drills.
+
 ## Files / claims
 - Claim `RUNTIME:gd-2.2091` plus your paths. Don't edit `mod/`, `injector/`, or `docs/PROTOCOL.md`; send bridge needs to Claude by handoff.
 - **Commits:** Claude commits and pushes the repo. Don't commit yourself. Leave your work in place and release your claims.

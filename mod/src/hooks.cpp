@@ -71,6 +71,7 @@ void __fastcall h_resetLevel(void* self) {
     if (!g_controlled) GLOG("PlayLayer::resetLevel (tick was %lld)", g_tick);
     g_tick = 0;
     g_completed = false;
+    g_end_reached = false;
     o_resetLevel(self);
 }
 
@@ -80,7 +81,19 @@ void __fastcall h_startGame(void* self) {
     o_startGame(self);
     g_started = true;
 }
+using EndAnim_t = void(__fastcall*)(void*, uint64_t);  // CCPoint (2 x f32) passed by value in one register
+EndAnim_t o_endAnim;
+void __fastcall h_endAnim(void* self, uint64_t pos) {
+    GLOG("PlayLayer::playEndAnimationToPos tick=%lld (level end reached)", g_tick);
+    g_end_reached = true;
+    o_endAnim(self, pos);
+}
 void __fastcall h_levelComplete(void* self) {
+    if (g_controlled && !g_end_reached) {
+        // A real-time end-animation callback from an episode the bot already reset: ignore it.
+        GLOG("suppressed stale levelComplete at tick %lld (bot in control, episode was reset)", g_tick);
+        return;
+    }
     GLOG("PlayLayer::levelComplete tick=%lld", g_tick);
     g_completed = true;
     o_levelComplete(self);
@@ -148,6 +161,7 @@ bool install_hooks() {
     ok &= hook(PlayLayer__levelComplete, (void*)h_levelComplete, (void**)&o_levelComplete);
     ok &= hook(PlayLayer__onQuit, (void*)h_onQuit, (void**)&o_onQuit);
     ok &= hook(PlayLayer__destroyPlayer, (void*)h_destroyPlayer, (void**)&o_destroyPlayer);
+    ok &= hook(PlayLayer__playEndAnimationToPos, (void*)h_endAnim, (void**)&o_endAnim);
     ok &= hook(PlayLayer__startGame, (void*)h_startGame, (void**)&o_startGame);
     ok &= hook(PlayLayer__pauseGame, (void*)h_pauseGame, (void**)&o_pauseGame);
 
