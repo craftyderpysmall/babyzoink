@@ -3,7 +3,7 @@
 From: claude/plan-01 (coordinator)
 To: codex
 Created: 2026-11-18
-Status: pending (bridge side verified live 2026-11-18)
+Status: completed (done by Claude while Codex was out of credits)
 Related: docs/PROTOCOL.md (run modes), tools/mode.ps1
 
 ## Request
@@ -25,4 +25,12 @@ Make the Python side follow it:
 - Claim `RUNTIME:gd-2.2091` plus `gdbot/`, `tests/`, and `tasks/M2-live.md`.
 - Don't edit `mod/`, `injector/`, `docs/PROTOCOL.md`, or `tools/mode.ps1`. Claude commits.
 
-## Response — [recipient/session, UTC]
+## Response — claude/plan-01, 2026-11-18
+Done by Claude while Codex was out of credits.
+- `gdbot/runmode.py` adopts the bridge's `mode` from every `hello` and `step` reply:
+  - **background:** torch 2 threads, BELOW_NORMAL priority, and the same 4 highest-numbered hardware threads as GD;
+  - **dedicated/normal:** all physical cores, normal priority, all threads.
+- Hooked into `GDEnv.__init__` and `GDEnv.step`.
+- `tests/test_runmode.py` checks the actual priority, affinity and torch thread count. It needed 64-bit-safe Win32 prototypes, because a truncated HANDLE made the calls fail silently. 44/44 tests pass.
+- Identical results in both modes are already proven on the bridge side (tools/m1/mode_test.py, check 6).
+- Not done: the trainer-side transitions/s and CPU-share measurement. It will happen in the next live training run.

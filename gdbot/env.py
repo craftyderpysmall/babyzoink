@@ -3,6 +3,7 @@
 import gymnasium as gym
 from gymnasium import spaces
 
+from . import runmode
 from .obs import ObservationEncoder
 from .protocol import BridgeClient, ProtocolError
 
@@ -21,6 +22,7 @@ class GDEnv(gym.Env):
             raise ValueError("max_ticks must be a positive integer")
         self.client = client
         self.hello = client.require_isolated()
+        runmode.follow(self.hello.get("mode"))  # the user's dedicated/background toggle
         capabilities = self.hello.get("capabilities", {})
         if any(capabilities.get(key) is not True for key in ("reset", "step")):
             raise ProtocolError("bridge must support reset and step")
@@ -67,6 +69,7 @@ class GDEnv(gym.Env):
         except (ProtocolError, OSError, EOFError):
             self._ready = False
             raise
+        runmode.follow(reply.get("mode"))
         advanced = reply["ticks_advanced"]
         terminal = reply["terminal"]
         self.tick = reply["tick"]
