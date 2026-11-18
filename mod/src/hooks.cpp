@@ -76,6 +76,16 @@ void __fastcall h_resetLevel(void* self) {
 }
 
 Void0_t o_levelComplete, o_onQuit, o_startGame;
+using StoreCp_t = void(__fastcall*)(void*, void*);
+StoreCp_t o_storeCheckpoint;
+long long g_blocked_cps = 0;
+void __fastcall h_storeCheckpoint(void* self, void* cp) {
+    if (g_controlled && !g_bot_checkpoint) {  // practice auto-checkpoints: the bot manages its own
+        if ((++g_blocked_cps % 50) == 1) GLOG("blocked non-bot storeCheckpoint #%lld (bot in control)", g_blocked_cps);
+        return;
+    }
+    o_storeCheckpoint(self, cp);
+}
 void __fastcall h_startGame(void* self) {
     GLOG("PlayLayer::startGame");
     o_startGame(self);
@@ -162,6 +172,7 @@ bool install_hooks() {
     ok &= hook(PlayLayer__onQuit, (void*)h_onQuit, (void**)&o_onQuit);
     ok &= hook(PlayLayer__destroyPlayer, (void*)h_destroyPlayer, (void**)&o_destroyPlayer);
     ok &= hook(PlayLayer__playEndAnimationToPos, (void*)h_endAnim, (void**)&o_endAnim);
+    ok &= hook(PlayLayer__storeCheckpoint, (void*)h_storeCheckpoint, (void**)&o_storeCheckpoint);
     ok &= hook(PlayLayer__startGame, (void*)h_startGame, (void**)&o_startGame);
     ok &= hook(PlayLayer__pauseGame, (void*)h_pauseGame, (void**)&o_pauseGame);
 

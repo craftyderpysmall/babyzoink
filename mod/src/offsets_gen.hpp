@@ -16,6 +16,7 @@ enum Fn : int {
     GameObject__getObjectRect,
     GameStatsManager__completedLevel,
     GameStatsManager__incrementStat,
+    PlayLayer__createCheckpoint,
     PlayLayer__destroyPlayer,
     PlayLayer__fullReset,
     PlayLayer__getCurrentPercent,
@@ -33,6 +34,7 @@ enum Fn : int {
     PlayLayer__scene,
     PlayLayer__startGame,
     PlayLayer__storeCheckpoint,
+    PlayLayer__togglePracticeMode,
     PlayerObject__update,
     FnCount
 };
@@ -49,6 +51,7 @@ inline const char* const kFnNames[FnCount] = {
     "GameObject::getObjectRect",
     "GameStatsManager::completedLevel",
     "GameStatsManager::incrementStat",
+    "PlayLayer::createCheckpoint",
     "PlayLayer::destroyPlayer",
     "PlayLayer::fullReset",
     "PlayLayer::getCurrentPercent",
@@ -66,6 +69,7 @@ inline const char* const kFnNames[FnCount] = {
     "PlayLayer::scene",
     "PlayLayer::startGame",
     "PlayLayer::storeCheckpoint",
+    "PlayLayer::togglePracticeMode",
     "PlayerObject::update",
 };
 
@@ -77,7 +81,7 @@ struct Build {
 };
 
 inline const Build kBuilds[] = {
-    {"2.2091", "4eee06d5c2e2213b4ba2b1f6233dd426bbdd0e9b29d7c375e499516b6f8f69d5", "4eee06d5c2e2213b.json", {0x33c5b0, 0x33e460, 0x342870, 0x3406d0, 0x21bff0, 0x21bba0, 0x219280, 0x236270, 0x294820, 0x2e1c00, 0x2da460, 0x512390, 0x518920, 0x512300, 0x5039e0, 0x5061b0, 0x516820, 0x516630, 0x51b0b0, 0x51a370, 0x50a2a0, 0x513ca0, 0x5170d0, 0x518c00, 0x518a50, 0x503930, 0x506140, 0x516510, 0x4e6fc0}},
+    {"2.2091", "4eee06d5c2e2213b4ba2b1f6233dd426bbdd0e9b29d7c375e499516b6f8f69d5", "4eee06d5c2e2213b.json", {0x33c5b0, 0x33e460, 0x342870, 0x3406d0, 0x21bff0, 0x21bba0, 0x219280, 0x236270, 0x294820, 0x2e1c00, 0x2da460, 0x5141a0, 0x512390, 0x518920, 0x512300, 0x5039e0, 0x5061b0, 0x516820, 0x516630, 0x51b0b0, 0x51a370, 0x50a2a0, 0x513ca0, 0x5170d0, 0x518c00, 0x518a50, 0x503930, 0x506140, 0x516510, 0x519ff0, 0x4e6fc0}},
 };
 
 }  // namespace gdbot::offsets

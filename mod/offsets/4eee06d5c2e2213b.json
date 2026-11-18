@@ -273,6 +273,24 @@
       "why": "tick-driven completion terminal (player crossed the level end)",
       "static_check": "pdata_start",
       "live_check": "PASS 2026-11-18: fires on the end-crossing tick (single-spike 3936, gravity-portal 4075; identical across trials); stale levelComplete in the next episode suppressed"
+    },
+    {
+      "symbol": "PlayLayer::togglePracticeMode",
+      "sig": "void togglePracticeMode(bool practiceMode)",
+      "rva": "0x519ff0",
+      "milestone": "M4",
+      "why": "practice/checkpoints",
+      "static_check": "pdata_start",
+      "live_check": "pending (M4)"
+    },
+    {
+      "symbol": "PlayLayer::createCheckpoint",
+      "sig": "CheckpointObject* createCheckpoint()",
+      "rva": "0x5141a0",
+      "milestone": "M4",
+      "why": "practice/checkpoints",
+      "static_check": "pdata_start",
+      "live_check": "pending (M4)"
     }
   ],
   "companions": {

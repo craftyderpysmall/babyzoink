@@ -34,6 +34,11 @@ enum class Mode { Normal, Dedicated, Background };
 Mode g_mode = Mode::Normal;
 int g_episode = 0;
 bool g_trace = false;
+// practice / checkpoints (M4); see op_set_practice
+bool g_practice = false;
+struct BotCheckpoint { int id; void* obj; long long tick; float x; };
+std::vector<BotCheckpoint> g_cps;
+int g_next_cp_id = 1;
 float g_prev_x = 0.0f;
 long long g_prev_tick = -1;
 float g_tick_x = 0.0f;   // player x after the most recent tick
@@ -296,7 +301,7 @@ json op_hello(const json& req) {
     json r = ok(req);
     r["proto"] = kProto;
     r["build"] = {{"exe_sha256", g_build->exe_sha256}, {"game_version", g_build->game_version}};
-    r["capabilities"] = {{"step", true}, {"reset", true}, {"startpos", false}, {"checkpoint", false},
+    r["capabilities"] = {{"step", true}, {"reset", true}, {"startpos", false}, {"checkpoint", true},
                          {"trace", true}, {"modes", {"normal", "dedicated", "background"}}, {"dual", false},
                          {"objects", true}, {"level_string", true}, {"quit_level", true}, {"debug_peek", true}, {"isolation", true}};
     r["isolation"] = {{"saves_redirected", g_iso.saves_redirected && g_iso.file_guard},
@@ -408,6 +413,8 @@ int g_quit_wait_frames = 0;
 json op_quit_level(const json& req) {
     if (!g_layer) return err(req, "NOT_IN_LEVEL", "no level loaded");
     press(false);
+    g_practice = false;  // the layer (and its checkpoints) goes away with the level
+    g_cps.clear();
     reinterpret_cast<Void0_t>(rva_ptr(PlayLayer__onQuit))(g_layer);
     g_objs.clear();
     g_objects_ok = false;
@@ -417,10 +424,75 @@ json op_quit_level(const json& req) {
     return json();
 }
 
+// ---- practice / checkpoints (M4) ----
+// Practice mode on: GD's resetLevel restores the newest stored checkpoint. While the bot controls the game
+// only bot checkpoints are stored (hooks.cpp blocks practice auto-checkpoints), so "newest" = newest bot one.
+
+void set_practice(bool on) {
+    if (!g_layer || g_practice == on) return;
+    reinterpret_cast<void(__fastcall*)(void*, bool)>(rva_ptr(PlayLayer__togglePracticeMode))(g_layer, on);
+    g_practice = on;
+    if (!on) g_cps.clear();
+    GLOG("practice mode -> %d", on);
+}
+
+json op_set_practice(const json& req) {
+    if (!g_layer) return err(req, "NOT_IN_LEVEL", "no level loaded");
+    if (!rva_ptr(PlayLayer__togglePracticeMode)) return err(req, "UNSUPPORTED", "togglePracticeMode not mapped");
+    set_practice(req.value("enabled", false));
+    json r = ok(req);
+    r["practice"] = g_practice;
+    return r;
+}
+
+json op_checkpoint_create(const json& req) {
+    if (!g_layer) return err(req, "NOT_IN_LEVEL", "no level loaded");
+    if (!g_practice) return err(req, "BAD_REQUEST", "enable practice mode first (set_practice)");
+    void* p = player1();
+    if (read_field<uint8_t>(p, fields::kIsDead)) return err(req, "BAD_REQUEST", "player is dead");
+    g_bot_checkpoint = true;
+    void* cp = reinterpret_cast<void*(__fastcall*)(void*)>(rva_ptr(PlayLayer__markCheckpoint))(g_layer);
+    g_bot_checkpoint = false;
+    if (!cp) return err(req, "INTERNAL", "markCheckpoint returned null");
+    BotCheckpoint c{g_next_cp_id++, cp, g_tick, read_field<float>(p, fields::kPosTickX)};
+    g_cps.push_back(c);
+    GLOG("checkpoint %d at tick %lld x=%.2f (%p)", c.id, c.tick, c.x, cp);
+    json r = ok(req);
+    r["checkpoint_id"] = c.id;
+    r["tick"] = c.tick;
+    r["x"] = c.x;
+    r["count"] = g_cps.size();
+    return r;
+}
+
+json op_checkpoint_pop(const json& req) {
+    if (!g_layer) return err(req, "NOT_IN_LEVEL", "no level loaded");
+    if (g_cps.empty()) return err(req, "BAD_REQUEST", "no bot checkpoints");
+    reinterpret_cast<void(__fastcall*)(void*, bool)>(rva_ptr(PlayLayer__removeCheckpoint))(g_layer, false);
+    int id = g_cps.back().id;
+    g_cps.pop_back();
+    json r = ok(req);
+    r["removed"] = id;
+    r["count"] = g_cps.size();
+    return r;
+}
+
 json op_reset(const json& req) {
     if (!g_layer) return err(req, "NOT_IN_LEVEL", "no level loaded");
     const json& st = req.value("start", json::object());
-    if (st.value("kind", "zero") != "zero") return err(req, "UNSUPPORTED", "v0 bridge supports start.kind=zero only");
+    std::string kind = st.value("kind", "zero");
+    json start_info = {{"kind", kind}};
+    if (kind == "checkpoint") {
+        if (!g_practice || g_cps.empty()) return err(req, "BAD_REQUEST", "no bot checkpoint to restore (practice off or none created)");
+        int want = st.value("checkpoint_id", g_cps.back().id);
+        if (want != g_cps.back().id)
+            return err(req, "UNSUPPORTED", "only the newest checkpoint can be restored; checkpoint_pop newer ones first");
+        start_info["checkpoint_id"] = want;
+    } else if (kind == "zero") {
+        set_practice(false);  // a full run always starts clean from 0% (plan: clean-start gate)
+    } else {
+        return err(req, "UNSUPPORTED", "start.kind must be zero or checkpoint (startpos: use a level_string with a start position)");
+    }
     press(false);
     g_bot_reset = true;
     reinterpret_cast<Void0_t>(rva_ptr(PlayLayer__resetLevel))(g_layer);  // goes through our hook
@@ -433,6 +505,7 @@ json op_reset(const json& req) {
     json r = ok(req);
     r["episode"] = g_episode;
     r["tick"] = g_tick;
+    r["start"] = start_info;
     r["obs"] = obs_json();
     return r;
 }
@@ -535,6 +608,9 @@ json handle(const std::string& text) {
         if (op == "step") return op_step(req);
         if (op == "set_mode") return op_set_mode(req);
         if (op == "debug_peek") return op_debug_peek(req);
+        if (op == "set_practice") return op_set_practice(req);
+        if (op == "checkpoint_create") return op_checkpoint_create(req);
+        if (op == "checkpoint_pop") return op_checkpoint_pop(req);
         if (op == "trace") { g_trace = req.value("enabled", false); return ok(req); }
         if (op == "bye") { press(false); g_close_after_reply = true; return ok(req); }
         return err(req, "UNKNOWN_OP", op);

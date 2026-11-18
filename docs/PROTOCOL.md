@@ -147,6 +147,14 @@ These clarifications are additive. Clients written to the text above stay compat
 - **`terminal: "complete"` is tick-driven** (from 2026-11-18): it fires on the tick the player crosses the level end (`PlayLayer::playEndAnimationToPos`), deterministically and with no wall-clock wait. That's a few ticks before GD's own `levelComplete`, which arrives later on a real-time timer; under bot control a stale one is suppressed after a reset.
 - **`players[].buffered`** (from 2026-11-18) is GD's `m_stateJumpBuffered`. It is true after a *fresh* press while the button is held, cleared on release, and consumed when a jump or orb fires. A hold that started earlier (e.g. at takeoff) does **not** set it. This is what distinguishes "will hit the orb" from "holding through it". It has been removed from `unsupported`.
 - **`debug_peek {target: "player1"|"layer", off, len<=4096}`** is dev-only. It returns `hex` raw memory plus `tick`, for field mapping (`capabilities.debug_peek`).
+- **Practice (M4; live verification pending):**
+  - `set_practice {enabled}` → `{practice}`.
+  - `checkpoint_create` → `{checkpoint_id, tick, x, count}`. It needs practice on and the player alive.
+  - `checkpoint_pop` → `{removed, count}`.
+  - `reset {start: {kind: "checkpoint", checkpoint_id?}}` restores the **newest** bot checkpoint. An older id returns UNSUPPORTED; pop first.
+  - `reset {kind: "zero"}` turns practice off, so a full run is always clean from 0%.
+  - While a client is in control, GD's practice auto-checkpoints are blocked, so "newest" means the bot's own.
+  - `reset` replies now include `start`. `capabilities.checkpoint` is true.
 - `trace` rows carry per-tick terminal events. `button.queued` is `null` (not mapped).
 - `players[].vx` is x(t)−x(t−1) per physics tick, independent of k. `rot` is visual rotation (degrees) and not gameplay orientation. Per-tick dy ≈ `vy` × 0.225.
 

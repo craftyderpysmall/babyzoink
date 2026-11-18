@@ -1,0 +1,214 @@
+<meta name="dash-one-writer">
+<style>
+.bz { display: grid; gap: var(--cds-gap-lg); max-width: 1100px; }
+.bz h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; text-wrap: balance; }
+.bz h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0 0 var(--cds-gap-sm); }
+.bz .lede { color: var(--color-fg-muted); margin: var(--cds-gap-xs) 0 0; max-width: 70ch; }
+.bz .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--cds-gap-md); }
+.bz .tile { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: grid; gap: var(--cds-gap-xs); min-width: 0; }
+.bz .tile .k { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); text-transform: uppercase; letter-spacing: .04em; }
+.bz .tile .v { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: 2rem; font-variant-numeric: tabular-nums; }
+.bz .tile .s { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.bz .card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); min-width: 0; }
+.bz .chart { position: relative; min-height: 220px; }
+.bz .chart svg text { fill: var(--cds-text-secondary); font-size: var(--cds-font-size-caption); }
+.bz .tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); box-shadow: var(--cds-shadow-popover); border-radius: var(--cds-radius); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); white-space: nowrap; }
+.bz .scroll { overflow-x: auto; }
+.bz table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+.bz th, .bz td { text-align: left; padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); vertical-align: top; }
+.bz th { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-weight: var(--cds-font-weight-medium); }
+.bz td.num, .bz th.num { text-align: right; }
+.bz .pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: var(--cds-font-size-caption); border: 1px solid var(--color-border-line); white-space: nowrap; }
+.bz .pill.done { color: var(--color-ok); border-color: var(--color-ok); }
+.bz .pill.in_progress { color: var(--color-warn); border-color: var(--color-warn); }
+.bz .pill.not_started { color: var(--color-fg-muted); }
+.bz .muted { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+.bz details summary { cursor: pointer; color: var(--color-fg-muted); }
+</style>
+
+<div class="bz">
+  <header id="intro">
+    <h1>babyzoink Progress</h1>
+    <p class="lede" data-read lang="en">The Geometry Dash bot has used an estimated <b data-draw="kwh_total" data-source="totals" data-field="kwh" data-row="0">—</b> kWh of CPU energy so far, about <b data-draw="cost_total" data-source="totals" data-field="cost_usd" data-row="0">—</b> at California's average residential electricity price. <span data-draw="milestone_line">—</span></p>
+  </header>
+
+  <section class="tiles" id="tiles">
+    <div class="tile" id="tile-energy"><span class="k">Energy used, all tracked days</span><span class="v"><span data-draw="kwh_tile" data-source="totals" data-field="kwh" data-row="0">—</span> kWh</span><span class="s">Estimated from CPU time</span></div>
+    <div class="tile" id="tile-cost"><span class="k">Cost at California average</span><span class="v" data-draw="cost_tile" data-source="totals" data-field="cost_usd" data-row="0">—</span><span class="s">At <span data-draw="price_inline" data-source="price" data-field="cents_per_kwh" data-row="0">—</span>¢ per kWh</span></div>
+    <div class="tile" id="tile-today"><span class="k">Latest day</span><span class="v"><span data-draw="kwh_today" data-source="latest" data-field="kwh" data-row="0">—</span> kWh</span><span class="s" data-draw="today_date">—</span></div>
+    <div class="tile" id="tile-cpu"><span class="k">CPU hours, all tracked days</span><span class="v" data-draw="cpu_total" data-source="totals" data-field="cpu_hours" data-row="0">—</span><span class="s">Game copy plus training</span></div>
+  </section>
+
+  <section class="card" id="daily-energy">
+    <h2>Energy per day</h2>
+    <p class="muted">Bars split into the bot's copy of the game and its Python training. Point at a bar for exact values.</p>
+    <div class="chart" data-draw="daily_chart" data-source="energy_daily"></div>
+  </section>
+
+  <section class="card" id="milestones">
+    <h2>Milestones</h2>
+    <div class="scroll">
+      <table data-source="milestones" data-row-key="id">
+        <thead><tr><th data-field="id">Step</th><th data-field="name">Milestone</th><th data-field="status">Status</th><th data-field="detail">Where it stands</th></tr></thead>
+        <tbody data-draw="milestone_rows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card" id="results">
+    <h2>Learning results on unseen drills</h2>
+    <p class="muted">Each agent is scored on held-out practice levels it never trained on.</p>
+    <div class="scroll">
+      <table data-source="results" data-row-key="agent">
+        <thead><tr><th data-field="study">Study</th><th data-field="agent">Agent</th><th class="num" data-field="first_run_progress_pct">First-run progress</th><th class="num" data-field="first_try_clears">Cleared first try</th><th class="num" data-field="clears_within_3">Cleared within 3 tries</th><th class="num" data-field="drills">Drills</th></tr></thead>
+        <tbody data-draw="result_rows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <details id="method">
+    <summary>How the energy and cost are estimated</summary>
+    <p data-read lang="en">A background logger records, once a minute, the CPU time used by the bot's own copy of Geometry Dash and by its Python training and test processes. Each CPU-second counts as 1.75 joules: the laptop processor's default 28 W package power spread over its 16 threads. The screen, graphics and the rest of the laptop are not counted, so the real figure is somewhat higher. Cost uses the U.S. Energy Information Administration's latest California residential average price. Tracking began on 18 November 2026; earlier test runs were not measured. The numbers refresh every evening around 8 pm.</p>
+  </details>
+</div>
+
+<script>
+dash.calc('totals', {
+  title: 'Totals across all tracked days',
+  description: 'Sums of energy, cost and CPU hours from the daily rows.',
+  inputs: ['energy_daily'],
+  fn: (energy) => {
+    const n = (v) => +v || 0;
+    return [{
+      kwh: d3.sum(energy, (r) => n(r.kwh)),
+      cost_usd: d3.sum(energy, (r) => n(r.cost_usd)),
+      cpu_hours: d3.sum(energy, (r) => n(r.gd_cpu_hours) + n(r.training_cpu_hours)),
+      days: energy.length,
+    }];
+  },
+});
+dash.calc('latest', {
+  title: 'Latest tracked day',
+  description: 'The most recent daily row.',
+  inputs: ['energy_daily'],
+  fn: (energy) => {
+    const r = energy.slice().sort((a, b) => d3.ascending(a.date, b.date)).pop();
+    return r ? [{date: r.date, kwh: +r.kwh || 0, cost_usd: +r.cost_usd || 0}] : [];
+  },
+});
+
+window.bzFmt = {
+  kwh: (v) => (v < 0.01 ? d3.format('.4f')(v) : v < 10 ? d3.format('.3f')(v) : d3.format(',.1f')(v)),
+  usd: (v) => (v < 1 ? '$' + d3.format('.4f')(v) : d3.format('$,.2f')(v)),
+  day: (s) => d3.utcFormat('%a %b %-d')(new Date(s + 'T00:00:00Z')),
+};
+
+function bzValue(id, field, fmt) {
+  return (el) => {
+    const d = dash.data(id);
+    if (d.status !== 'ok' || !d.data.length) { el.textContent = '—'; return; }
+    el.textContent = fmt(+d.data[0][field] || 0);
+  };
+}
+dash.draw('kwh_total', bzValue('totals', 'kwh', (v) => bzFmt.kwh(v)));
+dash.draw('kwh_tile', bzValue('totals', 'kwh', (v) => bzFmt.kwh(v)));
+dash.draw('cost_total', bzValue('totals', 'cost_usd', (v) => bzFmt.usd(v)));
+dash.draw('cost_tile', bzValue('totals', 'cost_usd', (v) => bzFmt.usd(v)));
+dash.draw('cpu_total', bzValue('totals', 'cpu_hours', (v) => d3.format(',.2f')(v)));
+dash.draw('kwh_today', bzValue('latest', 'kwh', (v) => bzFmt.kwh(v)));
+dash.draw('price_inline', bzValue('price', 'cents_per_kwh', (v) => d3.format('.2f')(v)));
+dash.draw('today_date', (el) => {
+  const d = dash.data('latest');
+  el.textContent = d.status === 'ok' && d.data.length ? bzFmt.day(d.data[0].date) : '—';
+});
+dash.draw('milestone_line', (el) => {
+  const d = dash.data('milestones');
+  if (d.status !== 'ok') { el.textContent = '—'; return; }
+  const done = d.data.filter((r) => r.status === 'done').length;
+  const active = d.data.filter((r) => r.status === 'in_progress').map((r) => r.id);
+  el.textContent = `${done} of ${d.data.length} milestones are done` + (active.length ? `; ${active.join(' and ')} in progress.` : '.');
+});
+
+const BZ_STATUS = {done: 'Done', in_progress: 'In progress', not_started: 'Not started'};
+dash.draw('milestone_rows', (tb) => {
+  const d = dash.data('milestones');
+  tb.replaceChildren();
+  if (d.status !== 'ok') return;
+  for (const r of d.data) {
+    const tr = document.createElement('tr');
+    const pill = document.createElement('span');
+    pill.className = 'pill ' + r.status;
+    pill.textContent = BZ_STATUS[r.status] || r.status;
+    const cells = [r.id, r.name, null, r.detail].map((v) => { const td = document.createElement('td'); if (v !== null) td.textContent = v; return td; });
+    cells[2].appendChild(pill);
+    tr.append(...cells);
+    tb.appendChild(tr);
+  }
+});
+
+dash.draw('result_rows', (tb) => {
+  const d = dash.data('results');
+  tb.replaceChildren();
+  if (d.status !== 'ok') return;
+  for (const r of d.data) {
+    const tr = document.createElement('tr');
+    const vals = [[r.study], [r.agent], [d3.format('.1f')(+r.first_run_progress_pct) + '%', 'num'],
+                  [`${r.first_try_clears} / ${r.drills}`, 'num'], [`${r.clears_within_3} / ${r.drills}`, 'num'], [r.drills, 'num']];
+    for (const [v, cls] of vals) { const td = document.createElement('td'); td.textContent = v; if (cls) td.className = cls; tr.appendChild(td); }
+    tb.appendChild(tr);
+  }
+});
+
+dash.draw('daily_chart', (el) => {
+  const d = dash.data('energy_daily');
+  el.replaceChildren();
+  if (d.status === 'error') { el.textContent = 'Failed to load'; return; }
+  if (d.status !== 'ok') { el.textContent = '—'; return; }
+  if (!d.data.length) { el.textContent = 'No tracked days yet.'; return; }
+  const rows = d.data.map((r) => {
+    const gd = +r.gd_cpu_hours || 0, tr = +r.training_cpu_hours || 0, tot = gd + tr, kwh = +r.kwh || 0;
+    return {date: r.date, kwh, cost: +r.cost_usd || 0, game: tot ? kwh * gd / tot : 0, train: tot ? kwh * tr / tot : 0};
+  });
+  const W = Math.max(280, el.clientWidth), H = 220, m = {t: 10, r: 10, b: 28, l: 10};
+  const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`)
+    .attr('role', 'img').attr('aria-label', 'Estimated kWh per day, split into game and training');
+  const y = d3.scaleLinear().domain([0, d3.max(rows, (r) => r.kwh) || 1]).nice().range([H - m.b, m.t]);
+  const yAxis = svg.append('g').call(d3.axisLeft(y).ticks(4).tickFormat((v) => bzFmt.kwh(v)));
+  let wMax = 0;
+  yAxis.selectAll('text').each(function () { wMax = Math.max(wMax, this.getComputedTextLength()); });
+  m.l = wMax + 14;
+  yAxis.attr('transform', `translate(${m.l},0)`);
+  yAxis.selectAll('line,path').style('stroke', 'var(--cds-chart-axis)');
+  const x = d3.scaleBand().domain(rows.map((r) => r.date)).range([m.l, W - m.r]).padding(0.25);
+  svg.append('g').selectAll('line').data(y.ticks(4)).join('line')
+    .attr('x1', m.l).attr('x2', W - m.r).attr('y1', y).attr('y2', y).style('stroke', 'var(--cds-chart-grid)');
+  const step = Math.max(1, Math.ceil(rows.length / Math.max(1, Math.floor((W - m.l) / 70))));
+  svg.append('g').attr('transform', `translate(0,${H - m.b})`)
+    .call(d3.axisBottom(x).tickValues(rows.map((r) => r.date).filter((_, i) => i % step === 0)).tickFormat((s) => bzFmt.day(s)))
+    .selectAll('line,path').style('stroke', 'var(--cds-chart-axis)');
+  const tip = d3.select(el).append('div').attr('class', 'tip').style('opacity', 0);
+  const g = svg.append('g');
+  for (const [key, ci] of [['game', 0], ['train', 1]]) {
+    g.selectAll(`rect.${key}`).data(rows).join('rect').attr('class', key)
+      .attr('x', (r) => x(r.date)).attr('width', x.bandwidth())
+      .attr('y', (r) => y(key === 'game' ? r.game : r.game + r.train))
+      .attr('height', (r) => y(0) - y(key === 'game' ? r.game : r.train))
+      .style('fill', dash.colors[ci]);
+  }
+  svg.append('g').selectAll('rect').data(rows).join('rect')
+    .attr('x', (r) => x(r.date)).attr('width', x.bandwidth()).attr('y', m.t).attr('height', H - m.b - m.t)
+    .style('fill', 'transparent')
+    .on('pointerenter pointermove', (ev, r) => {
+      const [px, py] = d3.pointer(ev, el);
+      tip.style('opacity', 1).style('left', Math.min(px + 12, el.clientWidth - 190) + 'px').style('top', Math.max(0, py - 40) + 'px')
+        .text(`${bzFmt.day(r.date)}: ${bzFmt.kwh(r.kwh)} kWh, ${bzFmt.usd(r.cost)}`);
+    })
+    .on('pointerleave', () => tip.style('opacity', 0));
+  const leg = d3.select(el).append('div').attr('class', 'muted').style('display', 'flex').style('gap', '16px').style('margin-top', '6px');
+  [['Game copy', 0], ['Training', 1]].forEach(([t, ci]) => {
+    const s = leg.append('span');
+    s.append('span').style('display', 'inline-block').style('width', '10px').style('height', '10px').style('margin-right', '6px').style('background', dash.colors[ci]);
+    s.append('span').text(t);
+  });
+});
+</script>
