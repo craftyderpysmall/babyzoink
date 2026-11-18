@@ -29,7 +29,7 @@
       "id": "M4",
       "name": "Practice: checkpoints and start positions",
       "status": "in_progress",
-      "detail": "Checkpoint support built, waiting for a live parity test"
+      "detail": "Checkpoints verified in-game (exact replay from a checkpoint); practice curriculum queued"
     },
     {
       "id": "M5",

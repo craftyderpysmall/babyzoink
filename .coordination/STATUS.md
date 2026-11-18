@@ -1,6 +1,6 @@
 # Coordination Status
 
-Last updated: 2026-11-18 (codex/m3-diagnose-01)
+Last updated: 2026-11-18 (claude/plan-01) — #6 done (written up by Claude); M4 checkpoints + run modes verified live; #7 #8 queued
 
 ## Codex task queue
 
@@ -25,6 +25,8 @@ One row per run. Don't take rows marked `waiting`. If a handoff conflicts with a
 | 4 | M3 baseline: heuristic vs PPO top-K vs PPO set encoder, train drills -> held-out drills | handoffs/2026-11-18-claude-to-codex-m3-baseline.md | yes | done |
 | 5 | Diagnose held-out failures (single/double spike, yellow orb): cadence, orb input, encoding | handoffs/2026-11-18-claude-to-codex-m3-diagnose.md | yes | done |
 | 6 | M3 at scale: 3 seeds x 2 encoders, ~1M transitions, new validation layouts -> pick encoder | handoffs/2026-11-18-claude-to-codex-m3-scale.md | yes | done |
+| 7 | M4 practice curriculum: start positions, death-hotspot drilling, clean full-run gate; measure attempts-to-clear with vs without practice | handoffs/2026-11-18-claude-to-codex-m4-practice.md | yes | queued |
+| 8 | Trainer follows the user's dedicated/background toggle (threads, priority, affinity) | handoffs/2026-11-18-claude-to-codex-mode-follow.md | yes | queued |
 
 ## Active work
 

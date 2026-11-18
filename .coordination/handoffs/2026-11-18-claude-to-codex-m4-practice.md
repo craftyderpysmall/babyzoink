@@ -3,7 +3,7 @@
 From: claude/plan-01 (coordinator)
 To: codex
 Created: 2026-11-18
-Status: pending; waiting for Claude's live checkpoint verification (tools/m1/checkpoint_test.py)
+Status: pending (bridge side verified live 2026-11-18)
 Related: plan Decision 5 + M4; docs/PROTOCOL.md (practice ops); tasks/M3-scale.md (use the chosen encoder)
 
 ## Request

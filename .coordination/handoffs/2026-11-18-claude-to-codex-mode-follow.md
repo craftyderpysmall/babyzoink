@@ -3,7 +3,7 @@
 From: claude/plan-01 (coordinator)
 To: codex
 Created: 2026-11-18
-Status: pending; waiting for Claude's live test of the bridge side (it needs the game runtime)
+Status: pending (bridge side verified live 2026-11-18)
 Related: docs/PROTOCOL.md (run modes), tools/mode.ps1
 
 ## Request

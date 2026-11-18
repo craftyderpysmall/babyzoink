@@ -6,7 +6,7 @@
 
 | Agent/session | Paths (exact files preferred) | Task | Claimed at (UTC) | Expected release | State |
 | --- | --- | --- | --- | --- | --- |
-| claude/plan-01 | RUNTIME:gd-2.2091, mod/, docs/PROTOCOL.md, tools/m1/, tools/dashboard/, docs/progress.json, .coordination/STATUS.md | M4 native + progress dashboard; M4 native: practice mode + checkpoints (build-dev only until RUNTIME is free) | 2026-11-18 | same session | active |
+| None | — | — | — | — | — |
 
 **Game runtime:** only one client can drive GD at a time. Claim it as the pseudo-path `RUNTIME:gd-2.2091` (meaning the GD process and its pipe) before launching `gdbot-launch.exe`, and release it when the game is closed.
 
