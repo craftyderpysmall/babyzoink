@@ -163,10 +163,10 @@ def save_report(output, report):
     staging.replace(path)
 
 
-def model_for(env, layout):
+def model_for(env, layout, *, seed=TRAIN_SEED):
     is_set = layout == "set"
     return PPO(
-        "MultiInputPolicy" if is_set else "MlpPolicy", env, device="cpu", seed=TRAIN_SEED,
+        "MultiInputPolicy" if is_set else "MlpPolicy", env, device="cpu", seed=seed,
         learning_rate=3e-4, n_steps=ROLLOUT, batch_size=64, n_epochs=4, gamma=0.997,
         policy_kwargs={"features_extractor_class": PooledSetExtractor if is_set else TopKExtractor},
     )

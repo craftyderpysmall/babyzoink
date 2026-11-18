@@ -24,7 +24,7 @@ One row per run. Don't take rows marked `waiting`. If a handoff conflicts with a
 | 3 | M2 gate re-run on the fixed bridge with objects on; bench + profile | handoffs/2026-11-18-claude-to-codex-m2-rerun.md | yes | done |
 | 4 | M3 baseline: heuristic vs PPO top-K vs PPO set encoder, train drills -> held-out drills | handoffs/2026-11-18-claude-to-codex-m3-baseline.md | yes | done |
 | 5 | Diagnose held-out failures (single/double spike, yellow orb): cadence, orb input, encoding | handoffs/2026-11-18-claude-to-codex-m3-diagnose.md | yes | done |
-| 6 | M3 at scale: 3 seeds x 2 encoders, ~1M transitions, new validation layouts -> pick encoder | handoffs/2026-11-18-claude-to-codex-m3-scale.md | yes | queued |
+| 6 | M3 at scale: 3 seeds x 2 encoders, ~1M transitions, new validation layouts -> pick encoder | handoffs/2026-11-18-claude-to-codex-m3-scale.md | yes | done |
 
 ## Active work
 
@@ -38,6 +38,7 @@ One row per run. Don't take rows marked `waiting`. If a handoff conflicts with a
 | M2 live environment, replay and benchmarks | codex/m2-rerun-01 | fixes and measured parity passed with objects; broader coverage listed in task | tasks/M2-live.md |
 | M3 drill fixtures | codex/m3-live-01 | 18 fixtures and completion tapes verified live; all training-ready | tasks/M3-drills.md |
 | M3 CPU baselines | codex/m3-baseline-01 | complete; each PPO cleared 4/9 held-out within the cap | tasks/M3-baseline.md |
+| M3 scaled six-run study | codex/m3-scale-01 | running; report and resume details in task record | tasks/M3-scale.md |
 
 ## Pending reviews and handoffs
 

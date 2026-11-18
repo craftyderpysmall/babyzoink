@@ -92,6 +92,26 @@ def test_time_to_contact_uses_game_units_per_tick():
     assert encoded["objects"][0, 8] == pytest.approx((60 - 0.35) / (1.25 * 240 * 0.25))
 
 
+@pytest.mark.parametrize("layout", ["topk", "set"])
+def test_both_policy_encoders_expose_pending_orb_input(layout):
+    from gdbot.obs import PLAYER_FLAGS
+
+    with MockBridge().client() as client:
+        env = GDEnv(client, level=MOCK_LEVEL)
+        env.reset()
+        held = deepcopy(env.raw_observation)
+    held["players"][0]["holding"] = True
+    buffered = deepcopy(held)
+    buffered["players"][0]["buffered"] = True
+    plain = ObservationEncoder(layout=layout).encode(held, 0)
+    pending = ObservationEncoder(layout=layout).encode(buffered, 0)
+    if layout == "set":
+        plain, pending = plain["player"], pending["player"]
+    buffered_slot = 16 + PLAYER_FLAGS.index("buffered")
+    assert np.flatnonzero(plain != pending).tolist() == [buffered_slot]
+    assert (plain[buffered_slot], pending[buffered_slot]) == (0, 1)
+
+
 def test_heuristic_completes_toy_level():
     heuristic = TimingHeuristic()
     with MockBridge().client() as client:

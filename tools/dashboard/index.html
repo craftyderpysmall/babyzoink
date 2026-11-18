@@ -59,7 +59,7 @@
     <h2>Learning results on unseen drills</h2>
     <p class="muted">Each agent is scored on held-out practice levels it never trained on.</p>
     <div class="scroll">
-      <table data-source="results" data-row-key="agent">
+      <table data-source="results" data-row-key="study,agent">
         <thead><tr><th data-field="study">Study</th><th data-field="agent">Agent</th><th class="num" data-field="first_run_progress_pct">First-run progress</th><th class="num" data-field="first_try_clears">Cleared first try</th><th class="num" data-field="clears_within_3">Cleared within 3 tries</th><th class="num" data-field="drills">Drills</th></tr></thead>
         <tbody data-draw="result_rows"></tbody>
       </table>
@@ -152,6 +152,7 @@ dash.draw('result_rows', (tb) => {
   if (d.status !== 'ok') return;
   for (const r of d.data) {
     const tr = document.createElement('tr');
+    tr.dataset.key = encodeURIComponent(r.study) + ',' + encodeURIComponent(r.agent);
     const vals = [[r.study], [r.agent], [d3.format('.1f')(+r.first_run_progress_pct) + '%', 'num'],
                   [`${r.first_try_clears} / ${r.drills}`, 'num'], [`${r.clears_within_3} / ${r.drills}`, 'num'], [r.drills, 'num']];
     for (const [v, cls] of vals) { const td = document.createElement('td'); td.textContent = v; if (cls) td.className = cls; tr.appendChild(td); }

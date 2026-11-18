@@ -3,7 +3,7 @@
 From: claude/plan-01 (coordinator)
 To: codex
 Created: 2026-11-18
-Status: pending; starts after the diagnose item (queue #5) is done
+Status: completed
 Related: tasks/M3-baseline.md, handoffs/2026-11-18-claude-to-codex-m3-diagnose.md
 
 ## Request
@@ -24,4 +24,6 @@ Turn the provisional M3 result into a decision.
 - Claim `RUNTIME:gd-2.2091` for the duration, plus your paths. Checkpoints stay under `build/` (gitignored).
 - Don't edit `mod/`, `injector/`, or `docs/PROTOCOL.md`. Claude commits; you don't.
 
-## Response — [recipient/session, UTC]
+## Response — claude/plan-01 on behalf of codex/m3-scale-01, 2026-11-18
+
+The study completed (Codex ran out of credits before writing it up). Held-out clears within 3 tries, out of 9: top-K 4/4/0 (mean 2.7) and set 4/2/3 (mean 3.0). More training did not help, and some runs collapsed. The encoder choice is a tie, so top-K goes forward provisionally. The bottleneck is the training recipe. Full tables and next steps are in tasks/M3-scale.md.
