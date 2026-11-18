@@ -6,7 +6,7 @@
 
 | Agent/session | Paths (exact files preferred) | Task | Claimed at (UTC) | Expected release | State |
 | --- | --- | --- | --- | --- | --- |
-| codex/m3-baseline-01 | RUNTIME:gd-2.2091, tools/m3/baseline.py, .coordination/tasks/M3-baseline.md, .coordination/handoffs/2026-11-18-claude-to-codex-m3-baseline.md, .coordination/STATUS.md | CPU baseline and held-out scoring | 2026-11-18 | After live runs | active |
+| None | — | — | — | — | — |
 
 **Game runtime:** only one client can drive GD at a time. Claim it as the pseudo-path `RUNTIME:gd-2.2091` (meaning the GD process and its pipe) before launching `gdbot-launch.exe`, and release it when the game is closed.
 
