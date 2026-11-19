@@ -565,6 +565,58 @@ json op_step(const json& req) {
     return r;
 }
 
+// Search helper (M5c): apply a whole action sequence in one request, k ticks per action, stopping
+// at the first terminal. Returns only the outcome and the final player state (no objects), so a
+// solver can evaluate a candidate continuation from a checkpoint with a single round trip.
+// {op, episode, actions:[0|1,...], k} -> {tick, ticks_advanced, decisions, terminal, player, xs?}
+// "xs": true adds the player x after every completed decision.
+json op_step_seq(const json& req) {
+    if (!g_layer) return err(req, "NOT_IN_LEVEL", "no level loaded");
+    if (req.value("episode", -1) != g_episode) return err(req, "EPISODE_MISMATCH", "stale episode");
+    const json& actions = req.value("actions", json::array());
+    int k = req.value("k", 4);
+    bool want_xs = req.value("xs", false);
+    if (!actions.is_array() || actions.empty() || actions.size() > 20000 || k < 1 || k > 240)
+        return err(req, "BAD_REQUEST", "actions must be a non-empty array (<= 20000) and 1 <= k <= 240");
+    const long long t0 = g_tick;
+    const char* terminal = nullptr;
+    int decisions = 0;
+    json xs = json::array();
+    for (const json& a : actions) {
+        if (!a.is_number_integer() || (a.get<int>() != 0 && a.get<int>() != 1)) return err(req, "BAD_REQUEST", "actions must be 0/1");
+        press(a.get<int>() == 1);
+        const long long d0 = g_tick;
+        int calls = 0;
+        while (g_tick - d0 < k && !terminal) {
+            long long before = g_tick;
+            g_in_step = true;
+            o_bglUpdate(g_layer, kTickDt);
+            g_in_step = false;
+            if (++calls > 4 * k + 16) return err(req, "INTERNAL", "update calls are not producing physics ticks");
+            if (g_tick == before) continue;
+            void* p = player1();
+            float x = read_field<float>(p, fields::kPosTickX);
+            g_tick_vx = (x - g_tick_x) / float(g_tick - before);
+            g_tick_x = x;
+            if (read_field<uint8_t>(p, fields::kIsDead)) terminal = "death";
+            else if (g_end_reached) terminal = "complete";
+        }
+        if (terminal) break;
+        ++decisions;
+        if (want_xs) xs.push_back(read_field<float>(player1(), fields::kPosTickX));
+    }
+    json r = ok(req);
+    r["episode"] = g_episode;
+    r["tick"] = g_tick;
+    r["ticks_advanced"] = g_tick - t0;
+    r["decisions"] = decisions;
+    r["terminal"] = terminal ? json(terminal) : json();
+    r["player"] = player_json(player1());
+    if (want_xs) r["xs"] = xs;
+    r["mode"] = mode_str(g_mode);
+    return r;
+}
+
 // Dev-only: raw memory read for field mapping. target: "player1" | "layer"; len <= 4096.
 json op_debug_peek(const json& req) {
     std::string target = req.value("target", "player1");
@@ -740,6 +792,7 @@ json handle(const std::string& text) {
         if (op == "set_mode") return op_set_mode(req);
         if (op == "debug_peek") return op_debug_peek(req);
         if (op == "snapshot") return op_snapshot(req);
+        if (op == "step_seq") return op_step_seq(req);
         if (op == "set_practice") return op_set_practice(req);
         if (op == "checkpoint_create") return op_checkpoint_create(req);
         if (op == "checkpoint_pop") return op_checkpoint_pop(req);

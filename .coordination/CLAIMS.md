@@ -6,7 +6,7 @@
 
 | Agent/session | Paths (exact files preferred) | Task | Claimed at (UTC) | Expected release | State |
 | --- | --- | --- | --- | --- | --- |
-| claude/plan-01 | RUNTIME:gd-2.2091 (slot 0 only), tools/m3/near_field.py, tools/m3/triple_spike.py, build/m3-triple/ | #11 triple spike | 2026-11-19 | ~1 h | active |
+| claude/plan-01 | RUNTIME:gd-2.2091 (slot 0 only), mod/src/, tools/m5c/, build/m5c/, tools/m3/near_field.py | #16 M5c search teacher, #11 triple spike | 2026-11-19 | ~1 h | active |
 
 **Game runtime:** only one client can drive GD at a time. Claim it as the pseudo-path `RUNTIME:gd-2.2091` (meaning the GD process and its pipe) before launching `gdbot-launch.exe`, and release it when the game is closed. Parallel instances: claim `RUNTIME:gd-2.2091/slot<N>` for `gdbot-launch.exe --instance N`; plain `RUNTIME:gd-2.2091` means slot 0. One client per slot.
 
