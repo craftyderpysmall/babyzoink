@@ -34,20 +34,20 @@
     {
       "id": "M5",
       "name": "Curriculum: drills to official levels",
-      "status": "in_progress",
-      "detail": "The search teacher verified three official clears from 0%. Cloning those clears gave 0/5 official and 0/10 online. Adding one training search tape yielded a clean clear on an unseen triple-spike drill."
+      "status": "done",
+      "detail": "Curriculum of 54 drills built and verified. The search teacher (M5c) cleared Stereo Madness, Back on Track and Polargeist from 0% with no human input. The trained policy still can't play official levels (best 7.6%)."
     },
     {
       "id": "M6",
       "name": "Held-out evaluation and polish",
-      "status": "not_started",
-      "detail": "Frozen protocol on unseen levels; attempts-to-first-clear over time"
+      "status": "in_progress",
+      "detail": "Search-teacher data at scale: 59 of 63 training drills verified; 0 online levels cleared so far (Skill Gotten Gains saved mid-search). Paused by the user on 19 Nov; DAgger and the attempts curve are queued."
     },
     {
       "id": "M7",
       "name": "Stretch goals",
-      "status": "not_started",
-      "detail": "Parallel game instances, cloud GPU, platformer mode"
+      "status": "in_progress",
+      "detail": "Parallel game slots work (2x throughput). Draw-skip adds 7-9%. Low textures save about 100 MB per slot. A memory guard restarts slots automatically. Cloud GPU and platformer mode not started."
     }
   ],
   "results": [
