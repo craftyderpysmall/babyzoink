@@ -34,13 +34,13 @@ One row per run. Don't take rows marked `waiting`. If a handoff conflicts with a
 | 13 | ChatGPT Sites dashboard: static site + per-mode performance rating (survival-hazard IRT anchored to GDDL) | handoffs/2026-11-19-claude-to-codex-site-dashboard.md | no | deployed privately with real telemetry |
 | 14 | M5b official-level transfer: diagnose why it dies <6% on official 1-5, fix, then learn official levels by practice; held-out = downloaded online levels | handoffs/2026-11-19-claude-to-codex-m5b-official-transfer.md | yes (slot 1) | done (codex study, claude write-up): route encoder 19->22/27 drills; official 2-8%, online 0/10 |
 | 15 | (small, do between #14 runs) Patch slot 1's bot save for windowed display; relaunch on the new bridge | handoffs/2026-11-19-claude-to-codex-display-fix.md | no | done (claude): slot 1 save patched while closed |
-| 16 | M5c search-based teacher: deterministic segment search finds verified clears without humans; then expert iteration (BC on search clears) | tasks/M5c-search-teacher.md | yes (slot 0) | in progress (claude) |
+| 16 | M5c search-based teacher: deterministic segment search finds verified clears without humans; then expert iteration (BC on search clears) | tasks/M5c-search-teacher.md | yes (slot 0) | done (claude): Stereo Madness, Back on Track, Polargeist verified; Dry Out + Base After Base stall (#22) |
 | 17 | Codex takes over: deploy ChatGPT Site, finish M5c solves (official 2/4/5), expert iteration, attempt logging, triple-spike follow-up | handoffs/2026-11-19-claude-to-codex-catchup.md | yes (slots 1+; slot 0 after Claude releases) | done (items 1/3/4/5); item 2 remains with Claude under #16 |
-| 18 | Finish addenda: site front-page performance summary (redeploy) + Dry Out solver stall | handoffs/2026-11-19-claude-to-codex-site-performance.md, handoffs/2026-11-19-claude-to-codex-dryout.md | Dry Out: yes | in progress (codex/site-overview-01; Dry Out waits for claim transfer) |
-| 19 | M6 search-teacher data at scale: ~60 online training levels + all drill variants solved in parallel slots; scaling curve (held-out vs # solved levels) | handoffs/2026-11-19-claude-to-codex-m6-scale.md (B) | yes | queued |
+| 18 | Finish addenda: site front-page performance summary (redeploy) + Dry Out solver stall | handoffs/2026-11-19-claude-to-codex-site-performance.md, handoffs/2026-11-19-claude-to-codex-dryout.md | Dry Out: yes | blocked: Overview deployed; Dry Out awaits solver claim transfer |
+| 19 | M6 search-teacher data at scale: ~60 online training levels + all drill variants solved in parallel slots; scaling curve (held-out vs # solved levels) | handoffs/2026-11-19-claude-to-codex-m6-scale.md (B) | yes | in progress (codex/m6-scale-01) |
 | 20 | DAgger with the search teacher (label states the policy visits) | handoffs/2026-11-19-claude-to-codex-m6-scale.md (C) | yes | queued |
 | 21 | Fewer-attempts curve: policy-guided search, evaluations per new level across generations | handoffs/2026-11-19-claude-to-codex-m6-scale.md (D) | yes | queued |
-| 22 | (claude) Base After Base: confirm the slot-0 solve finished (`build/m5c/main_5.json`); if not, resume it (`--level main:5`, progress file); then release the slot-0 claim and commit | (claude) | yes (slot 0) | queued (claude) |
+| 22 | (claude) Solver stalls on Dry Out (x≈1,370) and Base After Base (x≈10,150, segment 244, ~14k evals with no progress, not drift): find what the candidate set / 4-tick grid / backtrack depth misses (use `snapshot` at the saved prefix), fix, then resume both (`--level main:4 --level main:5`; progress files saved). Coordinate with Codex #18, which has the Dry Out half | (claude) | yes | queued (claude) |
 | 23 | (claude) Bridge throughput for M6: skip rendering in dedicated mode (the plan's draw-skip, never built) and measure ticks/s and CPU per slot; verify step_seq/trace parity with drawing off | (claude) | yes | queued (claude) |
 | 24 | (claude) RAM per GD slot: low-detail and texture settings in the bot saves (`tools/gd_save.py`), measure working set per slot, so M6 can run more parallel slots (a run was killed at 2.2 GB free) | (claude) | yes | queued (claude) |
 | 25 | (claude) Dashboards: check that the Claude artifact's "Attempts by level" renders after the 8:20 pm routine; once the user confirms the ChatGPT Site works for them, ask before retiring the Claude artifact + routine | (claude) | no | queued (claude) |
@@ -90,6 +90,7 @@ One row per run. Don't take rows marked `waiting`. If a handoff conflicts with a
 | codex | ChatGPT Sites dashboard + mode ratings | handoffs/2026-11-19-claude-to-codex-site-dashboard.md | completed locally |
 | claude | Restore sequential custom level loads in slot 0 so M5 can resume | handoffs/2026-11-19-codex-to-claude-m5-bridge.md | completed |
 | codex | Record M5 telemetry and point the site at the public main-branch feed | handoffs/2026-11-19-claude-to-codex-telemetry.md | completed |
+| claude | Transfer Dry Out solver files for #18 | handoffs/2026-11-19-codex-to-claude-dryout-claim.md | pending |
 
 ## Decisions awaiting user
 

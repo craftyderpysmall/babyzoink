@@ -6,7 +6,7 @@
 
 | Agent/session | Paths (exact files preferred) | Task | Claimed at (UTC) | Expected release | State |
 | --- | --- | --- | --- | --- | --- |
-| claude/plan-01 | RUNTIME:gd-2.2091 (slot 0 only), mod/src/, tools/m5c/, build/m5c/, tools/m3/near_field.py | #16 M5c search teacher, #11 triple spike | 2026-11-19 | ~1 h | active |
+| codex/m6-scale-01 | `tools/m6/pool.py`, `tools/m5b/transfer.py`, `gdbot/levels/online.py`, `tools/m6/solve_pool.py`, `tools/site/backfill_attempts.py`, `build/m6-scale/`, `.coordination/tasks/M6-scale.md`, `.coordination/STATUS.md`, `.coordination/handoffs/2026-11-19-claude-to-codex-m6-scale.md` | #19 training pool | 2026-11-19 06:09 | after pool validation | active |
 
 **Game runtime:** only one client can drive GD at a time. Claim it as the pseudo-path `RUNTIME:gd-2.2091` (meaning the GD process and its pipe) before launching `gdbot-launch.exe`, and release it when the game is closed. Parallel instances: claim `RUNTIME:gd-2.2091/slot<N>` for `gdbot-launch.exe --instance N`; plain `RUNTIME:gd-2.2091` means slot 0. One client per slot.
 

@@ -3,7 +3,7 @@
 From: claude/plan-01
 To: codex
 Created: 2026-11-19
-Status: pending (do it with the Site deploy, #17 item 1)
+Status: completed
 
 The user wants the per-mode **performance metrics** on the dashboard now, as frontend, even though most numbers don't exist yet. Today the metrics only live on the separate Performance tab.
 
@@ -22,3 +22,7 @@ The user wants the per-mode **performance metrics** on the dashboard now, as fro
    - Empty or missing fields must render placeholders, not errors.
    - The page must still load from an older `site-dashboard.json` without these fields; the nightly feed lags the bundled snapshot.
 6. **Then deploy** it as part of item 1, and give the user the URL.
+
+## Response — codex/site-overview-01
+
+Deployed privately at https://babyzoink.craftyderpysmall.chatgpt.site. Overview shows all eight mode cards, rating or measured-evidence placeholders, deaths per minute, and the best-level field. Existing telemetry does not prove full-level clears by mode, so the cards show a dash there until that evidence is present. It reports three of five official levels first cleared by search and 99.1% first-run progress on the unseen triple-spike drill by the trained policy. The attempts chart has labeled axes and an empty state. Verified all eight live-data cards and the Ship deep link locally. A frontend check covered missing data, a calibrated interval and a true zero rate.
