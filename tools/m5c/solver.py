@@ -102,66 +102,120 @@ class Solver:
                 break
         return False, False, best
 
-    def solve(self):
-        self.c.load_level(self.level)
+    # -- re-anchoring ----------------------------------------------------------------------------
+    # A checkpoint restore is not always bit-exact (Codex measured 257/272 parity windows in M4), so
+    # a path stitched from restores can drift from a real run. Every ANCHOR_EVERY commits the solver
+    # replays the committed prefix from a clean 0% start, compares each segment's end x with what it
+    # recorded, cuts back to the last matching segment, and rebuilds its checkpoints from that true
+    # replay. Drift can then never compound.
+    ANCHOR_EVERY = 16
+    KEEP_CHECKPOINTS = 12
+
+    def drop_checkpoints(self):
+        while True:
+            try:
+                if self.c.request("checkpoint_pop")["count"] == 0:
+                    return
+            except RemoteError:
+                return
+
+    def rebuild(self, target):
+        """Replay committed[:target] from 0% (practice on), creating checkpoints for the last
+        KEEP_CHECKPOINTS depths. Returns the depth that actually matched (<= target)."""
+        self.anchors += 1
+        self.drop_checkpoints()
         self.reset_zero()
         self.c.request("set_practice", enabled=True)
-        self.c.request("checkpoint_create")
-        committed = []            # list of committed segments
-        stack = [candidates(self.seg, 0)]   # candidate iterators per depth (depth = len(committed))
-        furthest, t0 = 0.0, time.perf_counter()
+        self.cps = []
+        for depth in range(target + 1):
+            if depth >= target - self.KEEP_CHECKPOINTS:
+                self.c.request("checkpoint_create")
+                self.cps.append(depth)
+            if depth == target:
+                return target
+            r = self.run(self.committed[depth], xs=True)
+            if r["terminal"] or abs(r["xs"][-1] - self.seg_x[depth]) > 1e-3:
+                self.drifts += 1
+                self.log(f"  drift at segment {depth} (replay {r['terminal'] or round(r['xs'][-1], 3)} vs "
+                         f"search {round(self.seg_x[depth], 3)}): cutting back and re-anchoring")
+                del self.committed[depth:], self.seg_x[depth:]
+                del self.stack[depth + 1:]
+                self.stack[depth] = candidates(self.seg, self.committed[-1][-1] if self.committed else 0)
+                return self.rebuild(depth)
+        return target
+
+    def solve(self):
+        self.c.load_level(self.level)
+        self.committed, self.seg_x = [], []   # committed segments and the x recorded at each one's end
+        self.stack = [candidates(self.seg, 0)]  # candidate iterators per depth (depth = len(committed))
+        self.anchors = self.drifts = 0
+        self.rebuild(0)
+        furthest, t0, since_anchor = 0.0, time.perf_counter(), 0
         while self.evals < self.budget:
-            depth = len(committed)
-            it = stack[-1]
+            depth = len(self.committed)
             chosen = None
-            for cand in it:
+            for cand in self.stack[-1]:
                 ok, complete, survived = self.evaluate(cand)
                 if complete:
-                    actions = [a for s in committed for a in s] + survived  # survived = finishing inputs
+                    actions = [a for s in self.committed for a in s] + survived  # survived = finishing inputs
                     self.log(f"  complete in search at segment {depth} ({self.evals} evals, {self.ticks} ticks)")
-                    return self.finish(actions, t0)
+                    result = self.finish(actions, t0)
+                    if result["verified"]:
+                        return result
+                    self.rebuild(len(self.committed))  # locate the drift, cut back, keep searching
+                    break
                 if ok:
                     chosen = cand
                     break
                 if self.evals >= self.budget:
                     break
-            if chosen is None:
+            else:
                 if depth == 0:
                     self.log("  no candidate survives the first segment")
                     return None
-                # backtrack one segment
+                # every candidate failed: backtrack one segment
                 self.c.request("checkpoint_pop")
-                committed.pop()
-                stack.pop()
+                self.cps.pop()
+                self.committed.pop(), self.seg_x.pop(), self.stack.pop()
+                if not self.cps or self.cps[-1] != len(self.committed):
+                    self.rebuild(len(self.committed))
+                continue
+            if chosen is None:
                 continue
             self.restore()
             r = self.run(chosen, xs=True)
             if r["terminal"]:
-                self.log(f"  commit diverged from evaluation ({r['terminal']}); budget spent")
-                return None
+                self.log(f"  commit died where evaluation survived ({r['terminal']}): re-anchoring")
+                self.rebuild(len(self.committed))
+                continue
             self.c.request("checkpoint_create")
-            committed.append(chosen)
-            stack.append(candidates(self.seg, chosen[-1]))
+            self.cps.append(depth + 1)
+            self.committed.append(chosen)
+            self.seg_x.append(r["xs"][-1])
+            self.stack.append(candidates(self.seg, chosen[-1]))
+            since_anchor += 1
+            if since_anchor >= self.ANCHOR_EVERY:
+                since_anchor = 0
+                self.rebuild(len(self.committed))
             x = r["xs"][-1]
             if x > furthest + 300:
                 furthest = x
-                self.log(f"  x={x:7.0f} segments={len(committed)} evals={self.evals} ticks={self.ticks}")
-        self.log(f"  budget exhausted at {len(committed)} segments (furthest x {furthest:.0f})")
+                self.log(f"  x={x:7.0f} segments={len(self.committed)} evals={self.evals} ticks={self.ticks} "
+                         f"anchors={self.anchors} drifts={self.drifts}")
+        self.log(f"  budget exhausted at {len(self.committed)} segments (furthest x {furthest:.0f})")
         return None
 
     def finish(self, actions, t0):
         """Verify the full action list from a clean 0% run (practice off)."""
-        while True:  # drop practice checkpoints
-            try:
-                if self.c.request("checkpoint_pop")["count"] == 0:
-                    break
-            except RemoteError:
-                break
+        self.drop_checkpoints()
+        self.cps = []
         self.reset_zero()
         r = self.run(actions)
         verified = r["terminal"] == "complete"
-        self.log(f"  verification from 0%: {r['terminal']} after {r['decisions']} decisions")
+        self.log(f"  verification from 0%: {r['terminal']} after {r['decisions']} decisions "
+                 f"(anchors {self.anchors}, drifts {self.drifts})")
         return {"actions": actions, "k": K, "verified": verified, "evals": self.evals, "search_ticks": self.ticks,
+                "anchors": self.anchors, "drifts": self.drifts,
                 "wall_s": round(time.perf_counter() - t0, 2), "decisions": len(actions)}
 
 
