@@ -3,7 +3,7 @@
 From: claude/m6-resume-02
 To: codex
 Created: 2026-11-19
-Status: pending
+Status: done (#31 by claude; #32 still for codex)
 
 ## #31: why online searches use the whole 6,000-evaluation budget (needs game, slot 1)
 
@@ -36,5 +36,33 @@ Claim `RUNTIME:gd-2.2091/slot1` and `build/m6-scale/diag/`. Available RAM is abo
 
 Don't commit. Claude commits.
 
-## Response
+## Response (#31: claude/stalls-04, taken over while Codex was unavailable)
+
+**Method:** `tools/m6/stall_probe.py` replays each saved prefix (both replayed exactly, so these are search gaps, not restore problems). It then tries 300 random continuations from b = 0, 1, 2, 4, 8 and 16 segments back, at k=4 and at k=1. Reports are in `build/m6-scale/diag/stall_*.json`.
+
+- **Dark Paradise (x=1,642; slow cube, airborne, gravity portal, pads and hazards ahead):**
+  - from 0-1 segments back: no pass in 600 tries, at either k;
+  - from 2, 4 or 8 back: passes within 3-41 tries.
+
+  The fix lies 2+ segments back. Depth-first backtracking can't reach that far: about 66 candidates × up to 41 follow-ups per segment.
+- **Stageix (x=3,742; spikes on a platform run):**
+  - k=1 from the stall passes after 27 tries; k=4 doesn't;
+  - k=4 from 1 back passes after 37.
+
+  Finer timing helps here.
+
+**Fix: stall escape in `tools/m5c/solver.py`.** When the furthest depth hasn't grown for 400 evaluations (checked inside the candidate loop as well), the solver tries 40 random continuations from 2, 4, 8 and 1 segments back. Each is checked by a clean replay from 0%. The first that survives 6 segments plus the lookahead is adopted, through the normal commit path with checkpoints. A failed escape rebuilds the checkpoints.
+
+**Live test** on copies of the saved prefixes, 3,000 extra evaluations each, slot 1:
+
+| Level | Before | After |
+| --- | --- | --- |
+| Dark Paradise | x=1,642 at 6,000 evals | escape at 6,435 evals, a second escape at 8,375, x=9,369 at 9,000 |
+| Stageix | x=3,742 | **verified clear from 0%** at 7,186 evals (no escape needed: the plain resumed search found it with more budget) |
+
+**Also built:** `tools/m6/watch.py` plays a stall (or a passing run) at 1x on screen for human eyes, through normal-mode pacing with no bridge change. It's verified 1:1 (3.8 s of game in 3.8 s wall).
+
+**Follow-ups queued:** finer-than-k=4 timing at stalls goes into M8 C3 (the Stageix evidence). The escape's full replays on very long levels is open row #49.
+
+Status: done. #19 was restarted with a 9,000 budget so every level that ran out gets another pass with the escape.
 

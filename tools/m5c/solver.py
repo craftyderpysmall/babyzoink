@@ -11,6 +11,7 @@ Usage: python tools/m5c/solver.py --slot 0 --level main:1 [--level drill:triple-
 """
 import argparse
 import json
+import random
 import sys
 import time
 from pathlib import Path
@@ -61,6 +62,15 @@ class Solver:
     """
     ANCHOR_EVERY = 16
     KEEP_CHECKPOINTS = 12
+    # Stall escape (#31): depth-first backtracking only reaches about one segment back within budget, but
+    # tools/m6/stall_probe.py found stalls whose fix is 2-8 segments back (Dark Paradise: no pass from 0-1
+    # back in 600 random tries; passes within 3-11 tries from 2-8 back). When the furthest depth hasn't
+    # grown for STALL_EVALS evaluations, try random continuations from a few segments back and adopt one
+    # that survives past the stall.
+    STALL_EVALS = 400
+    ESCAPE_BACKS = (2, 4, 8, 1)
+    ESCAPE_TRIES = 40
+    ESCAPE_AHEAD = 6       # segments past the stall a continuation must survive (plus the lookahead)
 
     def __init__(self, client, level: dict, *, seg=8, look=28, budget=20000, log=print, progress=None):
         self.c, self.level, self.seg, self.look, self.budget, self.log = client, level, seg, look, budget, log
@@ -196,6 +206,74 @@ class Solver:
             return self.run(seg[-1:], xs=True)
         return self.run(seg, xs=True)
 
+    # -- stall escape (#31) ------------------------------------------------------------------------
+    def _random_tail(self, rng, n):
+        out, state = [], rng.random() < 0.5
+        while len(out) < n:
+            out += [int(state)] * (1 + int(rng.expovariate(1.0 / 3)))
+            state = not state
+        return out[:n]
+
+    def escape(self):
+        """Random continuations from a few segments back, each checked by a clean replay from 0%.
+        Returns True if the committed path was replaced by one that survives past the stall."""
+        depth = len(self.committed)
+        rng = random.Random(1000003 * depth + self.evals)
+        self.escapes += 1
+        for b in self.ESCAPE_BACKS:
+            if b > depth:
+                continue
+            base = depth - b
+            prefix = [a for s in self.committed[:base] for a in s]
+            n_seg = b + self.ESCAPE_AHEAD
+            for _ in range(self.ESCAPE_TRIES):
+                if self.evals >= self.budget:
+                    self.rebuild(len(self.committed))
+                    return False
+                tail = self._random_tail(rng, n_seg * self.seg + self.look)
+                self.reset_zero()
+                self.evals += 1
+                r = self.run(prefix + tail)
+                done = r["decisions"] - len(prefix)
+                if r["terminal"] != "complete" and done < len(tail):
+                    continue
+                keep = tail[:n_seg * self.seg]
+                self.log(f"  stall escape at segment {depth}: rewound {b}, adopted {n_seg} segments "
+                         f"({r['terminal'] or 'survived'}; {self.evals} evals)")
+                self.drop_checkpoints()
+                self.cps = [0]
+                del self.committed[base:], self.seg_x[base:]
+                del self.stack[base + 1:]
+                self.rebuild(base)
+                for i in range(n_seg):
+                    if not self.adopt(keep[i * self.seg:(i + 1) * self.seg]):
+                        break
+                return True
+        self.log(f"  stall escape at segment {depth}: no continuation from {self.ESCAPE_BACKS} segments back")
+        # trials reset to 0% with practice off, which drops every checkpoint: rebuild the restore points
+        self.rebuild(len(self.committed))
+        return False
+
+    def adopt(self, seg):
+        """Commit a given segment on the live path (same steps as a searched commit)."""
+        depth = len(self.committed)
+        self.restore()
+        pr = self.run(self.prefix())
+        if pr["terminal"] or (depth and abs(pr["player"]["x"] - self.seg_x[-1]) > 1e-3):
+            self.repair_boundary()
+            return False
+        self.committed.append(seg)
+        r = self.run_segment(seg, depth + 1, checkpoint=self.can_checkpoint(depth + 1))
+        if r["terminal"]:
+            self.committed.pop()
+            if self.cps[-1] == depth + 1:
+                self.c.request("checkpoint_pop")
+                self.cps.pop()
+            return False
+        self.seg_x.append(r["xs"][-1])
+        self.stack.append(self.choices(seg[-1]))
+        return True
+
     # -- re-anchoring (backstop) ------------------------------------------------------------------
     def rebuild(self, target, *, allow_older_checkpoint=True):
         """Replay from 0% and rebuild recent checkpoints, falling back to an older release if needed."""
@@ -240,10 +318,23 @@ class Solver:
         self.load_progress()
         self.rebuild(len(self.committed))
         furthest, t0, since_anchor = 0.0, time.perf_counter(), 0
+        self.escapes = 0
+        best_depth, best_at = len(self.committed), self.evals
         while self.evals < self.budget:
             depth = len(self.committed)
+            if depth > best_depth:
+                best_depth, best_at = depth, self.evals
+            elif self.evals - best_at >= self.STALL_EVALS:
+                best_at = self.evals          # one escape attempt per STALL_EVALS without progress
+                if self.escape():
+                    self.save_progress()
+                    continue
             chosen = None
+            stalled = False
             for cand in self.stack[-1]:
+                if depth <= best_depth and self.evals - best_at >= self.STALL_EVALS:
+                    stalled = True            # one segment's candidates can cost ~2,500 evals: check inside too
+                    break
                 trial = self.evaluate(cand)
                 if trial is None:
                     self.repair_boundary()
@@ -274,7 +365,7 @@ class Solver:
                 self.committed.pop(), self.seg_x.pop(), self.stack.pop()
                 continue
             if chosen is None:
-                continue
+                continue                      # (also when stalled: the escape runs at the top of the loop)
             self.restore()
             base = self.cps[-1]
             pr = self.run(self.prefix())      # warm-up + skipped segments up to the current depth
