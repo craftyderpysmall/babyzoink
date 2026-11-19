@@ -22,7 +22,19 @@ Status: in progress (claude/plan-01).
 | pillar-gaps heldout-2104 | 255 | 34,826 | yes |
 | gravity-portal heldout-2106 | 168 | 26,631 | yes |
 
-Official levels 1–5: running.
+**Stereo Madness was solved** (verified from 0%): 21,161 evaluations, about 1.7M search ticks, and 45 re-anchors that caught 3 drifts.
+
+## Checkpoint restore exactness (`tools/m5c/restore_probe.py`)
+Probe method: walk the verified Stereo Madness clear. At each released segment boundary, checkpoint, run the next segment, restore, run it again, and compare the full player state.
+- **Restore then press immediately:** 36/197 probes mismatched. There were 26 `buffered` mismatches (an immediate press after a restore is queued as a buffered jump) and 10 vy/y/rot mismatches in the ship section.
+- **One released warm-up decision replayed between restore and segment:** 0/107 mismatched.
+- **Solver changes:**
+  - Checkpoints are created one decision before a boundary, only where that decision is a release, and every evaluation replays it first.
+  - Depth 0 uses a clean reset instead of a checkpoint.
+  - Re-anchoring stays as a backstop. A drift now excludes a window of 4 restore points at once.
+  - A replay that dies stops immediately, because practice mode respawns the player.
+- **Effect on Polargeist:** without the warm-up, it drifted at segment 13 and looped. With it, there was no drift until segment 373 (x≈15,500).
+- The Back on Track run (pre-warm-up) stalled at x≈13,300. A likely contributor is inexact restores making real paths look fatal. Rerunning.
 
 ## Next
 1. Turn verified solutions into demonstrations by replaying them through the env with the route encoder. Re-clone (expert iteration): search solves the train levels → BC learns → evaluate zero-shot on held-out (drills, then the frozen online set).

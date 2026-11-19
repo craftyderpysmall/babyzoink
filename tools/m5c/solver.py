@@ -1,11 +1,11 @@
 """M5c search-based teacher: find a clear of a level by deterministic search, no human input.
 
-GD in lockstep is deterministic and bot checkpoints restore exactly, so a level can be solved
-segment by segment: from a checkpoint, try candidate input patterns for the next S decisions
-(k=4 ticks each), keep the first one that survives the segment plus a short lookahead, commit it,
-checkpoint, and continue. If no candidate works, back up one segment and take that segment's next
-candidate (depth-first search with a bounded budget). The final action list is verified by a clean
-run from 0% (practice off); only verified clears are written as solutions/demos.
+GD in lockstep is deterministic, so a level can be solved segment by segment: from a restore point,
+try candidate input patterns for the next S decisions (k=4 ticks each), keep the first one that
+survives the segment plus a lookahead, commit it, checkpoint, and continue. If no candidate works,
+back up one segment and take that segment's next candidate (depth-first search, bounded budget).
+The final action list is verified by a clean run from 0% (practice off); only verified clears are
+written as solutions/demos.
 
 Usage: python tools/m5c/solver.py --slot 0 --level main:1 [--level drill:triple-spike/heldout-2102] --output build/m5c
 """
@@ -44,14 +44,24 @@ def candidates(seg: int, prev: int):
                 yield from add(p)
 
 
-CONTINUATIONS = ("zeros", "ones", "alt")
-
-
-def continuation(kind: str, n: int):
-    return [0] * n if kind == "zeros" else [1] * n if kind == "ones" else [(i // 2) % 2 for i in range(n)]
+def alternating(n: int):
+    return [(i // 2) % 2 for i in range(n)]
 
 
 class Solver:
+    """Checkpoint-backed depth-first segment search.
+
+    Restore exactness (tools/m5c/restore_probe.py on the verified Stereo Madness clear): restoring a
+    GD practice checkpoint and pressing immediately differs from the real run (the press is buffered;
+    ship vy/y/rot also drift): 36/197 segment probes mismatched. With ONE released warm-up decision
+    replayed between restore and the segment, 0/107 mismatched. So the checkpoint for depth d is
+    created one decision before the boundary, only where that last decision is released (0), and
+    every evaluation replays that 0 first. Depth 0 needs no checkpoint: its restore is a clean reset.
+    Re-anchoring from a clean replay every ANCHOR_EVERY commits remains as a backstop.
+    """
+    ANCHOR_EVERY = 16
+    KEEP_CHECKPOINTS = 12
+
     def __init__(self, client, level: dict, *, seg=8, look=28, budget=20000, log=print):
         self.c, self.level, self.seg, self.look, self.budget, self.log = client, level, seg, look, budget, log
         self.evals = 0
@@ -59,19 +69,30 @@ class Solver:
 
     # -- bridge helpers -------------------------------------------------------------------------
     def reset_zero(self):
-        r = self.c.request("reset", start={"kind": "zero"})
-        self.ep = r["episode"]
-        return r
+        self.ep = self.c.request("reset", start={"kind": "zero"})["episode"]
 
     def restore(self):
-        r = self.c.request("reset", start={"kind": "checkpoint"})
-        self.ep = r["episode"]
-        return r
+        """Go to the newest restore point: a real checkpoint, or a clean 0% start for depth 0."""
+        if self.cps[-1] == 0:
+            self.reset_zero()
+            self.c.request("set_practice", enabled=True)
+        else:
+            self.ep = self.c.request("reset", start={"kind": "checkpoint"})["episode"]
 
     def run(self, actions, xs=False):
+        if not actions:
+            return {"terminal": None, "decisions": 0, "xs": [], "ticks_advanced": 0}
         r = self.c.request("step_seq", episode=self.ep, actions=actions, k=K, xs=xs)
         self.ticks += r["ticks_advanced"]
         return r
+
+    def drop_checkpoints(self):
+        while True:
+            try:
+                if self.c.request("checkpoint_pop")["count"] == 0:
+                    return
+            except RemoteError:
+                return
 
     # -- search ---------------------------------------------------------------------------------
     def followups(self):
@@ -82,19 +103,31 @@ class Solver:
         for j in range(L):                    # a single tap at every point
             yield [0] * j + [1] + [0] * (L - j - 1)
         yield [1] * L
-        yield continuation("alt", L)
+        yield alternating(L)
+
+    def can_checkpoint(self, depth):
+        """The checkpoint for `depth` sits before the last decision of segment depth-1, which must be
+        a release (it is replayed as the warm-up); never at depths proven bad."""
+        return depth > 0 and depth not in self.bad and self.committed[depth - 1][-1] == 0
+
+    def prefix(self):
+        """Inputs from the newest restore point to the current depth: the released warm-up decision
+        (for a real checkpoint) plus any committed segments whose checkpoints were skipped."""
+        base = self.cps[-1]
+        warm = [0] if base > 0 else []
+        return warm + [a for s in self.committed[base:] for a in s]
 
     def evaluate(self, cand):
-        """Viability of a candidate from the current checkpoint: (ok, complete, decisions_survived)."""
+        """Viability of a candidate at the current depth: (ok, complete, survived | finishing inputs)."""
+        pre = self.prefix()
         best = -1
         for follow in self.followups():
             self.restore()
             self.evals += 1
-            r = self.run(cand + follow)
+            r = self.run(pre + cand + follow)
+            survived = r["decisions"] - len(pre)
             if r["terminal"] == "complete":
-                # the level ended during decision number `decisions`: keep the inputs up to it
-                return True, True, (cand + follow)[:r["decisions"] + 1]
-            survived = r["decisions"]
+                return True, True, (cand + follow)[:survived + 1]
             if survived >= len(cand) + len(follow):
                 return True, False, survived
             best = max(best, survived)
@@ -102,42 +135,45 @@ class Solver:
                 break
         return False, False, best
 
-    # -- re-anchoring ----------------------------------------------------------------------------
-    # A checkpoint restore is not always bit-exact (Codex measured 257/272 parity windows in M4), so
-    # a path stitched from restores can drift from a real run. Every ANCHOR_EVERY commits the solver
-    # replays the committed prefix from a clean 0% start, compares each segment's end x with what it
-    # recorded, cuts back to the last matching segment, and rebuilds its checkpoints from that true
-    # replay. Drift can then never compound.
-    ANCHOR_EVERY = 16
-    KEEP_CHECKPOINTS = 12
+    def run_segment(self, seg, depth_after, *, checkpoint):
+        """Run one segment on the live path. With `checkpoint`, create the checkpoint for
+        depth_after just before its last (released) decision. Returns the reply for the final part."""
+        if checkpoint:
+            r = self.run(seg[:-1])
+            if r["terminal"]:
+                return r
+            self.c.request("checkpoint_create")
+            self.cps.append(depth_after)
+            return self.run(seg[-1:], xs=True)
+        return self.run(seg, xs=True)
 
-    def drop_checkpoints(self):
-        while True:
-            try:
-                if self.c.request("checkpoint_pop")["count"] == 0:
-                    return
-            except RemoteError:
-                return
-
+    # -- re-anchoring (backstop) ------------------------------------------------------------------
     def rebuild(self, target):
-        """Replay committed[:target] from 0% (practice on), creating checkpoints for the last
-        KEEP_CHECKPOINTS depths. Returns the depth that actually matched (<= target)."""
+        """Replay committed[:target] from a clean 0% start (practice on), re-creating checkpoints for
+        the last KEEP_CHECKPOINTS depths and checking each segment's end x against the search. On a
+        mismatch, cut back to the last matching segment. Returns the matched depth."""
         self.anchors += 1
         self.drop_checkpoints()
+        self.cps = [0]
         self.reset_zero()
         self.c.request("set_practice", enabled=True)
-        self.cps = []
-        for depth in range(target + 1):
-            if depth >= target - self.KEEP_CHECKPOINTS:
-                self.c.request("checkpoint_create")
-                self.cps.append(depth)
-            if depth == target:
-                return target
-            r = self.run(self.committed[depth], xs=True)
-            if r["terminal"] or abs(r["xs"][-1] - self.seg_x[depth]) > 1e-3:
+        for depth in range(target):
+            want = depth + 1 >= target - self.KEEP_CHECKPOINTS and self.can_checkpoint(depth + 1)
+            r = self.run_segment(self.committed[depth], depth + 1, checkpoint=want)
+            end = r["xs"][-1] if r.get("xs") else None
+            if r["terminal"] or end is None or abs(end - self.seg_x[depth]) > 1e-3:
                 self.drifts += 1
-                self.log(f"  drift at segment {depth} (replay {r['terminal'] or round(r['xs'][-1], 3)} vs "
-                         f"search {round(self.seg_x[depth], 3)}): cutting back and re-anchoring")
+                # The search reached this segment from an inexact restore at some depth <= `depth`.
+                # Exclude a window of restore points below the first not-yet-excluded depth at once,
+                # rather than one per re-anchor cycle.
+                mark = depth
+                while mark in self.bad and mark > 0:
+                    mark -= 1
+                for m in range(max(1, mark - 3), mark + 1):
+                    self.bad.add(m)
+                self.log(f"  drift at segment {depth} (replay {r['terminal'] or end} vs search "
+                         f"{round(self.seg_x[depth], 3)}): cutting back; no checkpoints at "
+                         f"{sorted(b for b in self.bad if b > depth - 20)}")
                 del self.committed[depth:], self.seg_x[depth:]
                 del self.stack[depth + 1:]
                 self.stack[depth] = candidates(self.seg, self.committed[-1][-1] if self.committed else 0)
@@ -149,6 +185,8 @@ class Solver:
         self.committed, self.seg_x = [], []   # committed segments and the x recorded at each one's end
         self.stack = [candidates(self.seg, 0)]  # candidate iterators per depth (depth = len(committed))
         self.anchors = self.drifts = 0
+        self.bad = set()                      # depths whose checkpoint proved inexact anyway
+        self.cps = [0]                        # restore points (depths); 0 = clean reset, not a checkpoint
         self.rebuild(0)
         furthest, t0, since_anchor = 0.0, time.perf_counter(), 0
         while self.evals < self.budget:
@@ -174,23 +212,31 @@ class Solver:
                     self.log("  no candidate survives the first segment")
                     return None
                 # every candidate failed: backtrack one segment
-                self.c.request("checkpoint_pop")
-                self.cps.pop()
+                if self.cps[-1] == depth:
+                    self.c.request("checkpoint_pop")
+                    self.cps.pop()
                 self.committed.pop(), self.seg_x.pop(), self.stack.pop()
-                if not self.cps or self.cps[-1] != len(self.committed):
-                    self.rebuild(len(self.committed))
                 continue
             if chosen is None:
                 continue
             self.restore()
-            r = self.run(chosen, xs=True)
-            if r["terminal"]:
-                self.log(f"  commit died where evaluation survived ({r['terminal']}): re-anchoring")
+            base = self.cps[-1]
+            pr = self.run(self.prefix())      # warm-up + skipped segments up to the current depth
+            if pr["terminal"]:
+                # In practice mode a dead player is respawned, so never keep running after a death.
+                self.log(f"  replay to depth {depth} died ({pr['terminal']}, base {base}): re-anchoring")
                 self.rebuild(len(self.committed))
                 continue
-            self.c.request("checkpoint_create")
-            self.cps.append(depth + 1)
             self.committed.append(chosen)
+            r = self.run_segment(chosen, depth + 1, checkpoint=self.can_checkpoint(depth + 1))
+            if r["terminal"]:
+                self.committed.pop()
+                if self.cps[-1] == depth + 1:
+                    self.c.request("checkpoint_pop")
+                    self.cps.pop()
+                self.log(f"  commit died where evaluation survived ({r['terminal']}, base {base}): re-anchoring")
+                self.rebuild(len(self.committed))
+                continue
             self.seg_x.append(r["xs"][-1])
             self.stack.append(candidates(self.seg, chosen[-1]))
             since_anchor += 1
@@ -208,7 +254,7 @@ class Solver:
     def finish(self, actions, t0):
         """Verify the full action list from a clean 0% run (practice off)."""
         self.drop_checkpoints()
-        self.cps = []
+        self.cps = [0]
         self.reset_zero()
         r = self.run(actions)
         verified = r["terminal"] == "complete"
