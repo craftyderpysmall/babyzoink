@@ -62,10 +62,28 @@ class Solver:
     ANCHOR_EVERY = 16
     KEEP_CHECKPOINTS = 12
 
-    def __init__(self, client, level: dict, *, seg=8, look=28, budget=20000, log=print):
+    def __init__(self, client, level: dict, *, seg=8, look=28, budget=20000, log=print, progress=None):
         self.c, self.level, self.seg, self.look, self.budget, self.log = client, level, seg, look, budget, log
         self.evals = 0
         self.ticks = 0
+        self.progress = progress              # Path for resumable state (saved at every re-anchor)
+
+    def save_progress(self):
+        if self.progress:
+            tmp = self.progress.with_suffix(".tmp")
+            tmp.write_text(json.dumps({"committed": self.committed, "seg_x": self.seg_x,
+                                       "bad": sorted(self.bad), "evals": self.evals, "ticks": self.ticks}),
+                           encoding="utf-8")
+            tmp.replace(self.progress)
+
+    def load_progress(self):
+        if self.progress and self.progress.exists():
+            d = json.loads(self.progress.read_text(encoding="utf-8"))
+            self.committed, self.seg_x, self.bad = d["committed"], d["seg_x"], set(d["bad"])
+            self.evals, self.ticks = d["evals"], d["ticks"]
+            self.stack = [candidates(self.seg, 0)] + [candidates(self.seg, s[-1]) for s in self.committed]
+            self.log(f"  resuming at segment {len(self.committed)} (x {self.seg_x[-1] if self.seg_x else 0:.0f}); "
+                     f"the replay check re-verifies the saved prefix")
 
     # -- bridge helpers -------------------------------------------------------------------------
     def reset_zero(self):
@@ -187,7 +205,8 @@ class Solver:
         self.anchors = self.drifts = 0
         self.bad = set()                      # depths whose checkpoint proved inexact anyway
         self.cps = [0]                        # restore points (depths); 0 = clean reset, not a checkpoint
-        self.rebuild(0)
+        self.load_progress()
+        self.rebuild(len(self.committed))
         furthest, t0, since_anchor = 0.0, time.perf_counter(), 0
         while self.evals < self.budget:
             depth = len(self.committed)
@@ -243,6 +262,7 @@ class Solver:
             if since_anchor >= self.ANCHOR_EVERY:
                 since_anchor = 0
                 self.rebuild(len(self.committed))
+                self.save_progress()
             x = r["xs"][-1]
             if x > furthest + 300:
                 furthest = x
@@ -302,9 +322,13 @@ def main():
         client.request("set_mode", mode="dedicated")
         for name in a.level:
             print(f"{name}:", flush=True)
-            res = Solver(client, level_spec(name), seg=a.seg, look=a.look, budget=a.budget,
-                         log=lambda m: print(m, flush=True)).solve()
             out = a.output / (name.replace(":", "_").replace("/", "_") + ".json")
+            prior = json.loads(out.read_text(encoding="utf-8")) if out.exists() else None
+            if prior and prior.get("result") and prior["result"].get("verified"):
+                print("  already solved (verified); skipping", flush=True)
+                continue
+            res = Solver(client, level_spec(name), seg=a.seg, look=a.look, budget=a.budget,
+                         log=lambda m: print(m, flush=True), progress=out.with_suffix(".progress.json")).solve()
             out.write_text(json.dumps({"level": name, "result": res}, indent=1), encoding="utf-8")
             print(f"  -> {out.name}: {'VERIFIED CLEAR' if res and res['verified'] else 'no verified clear'}", flush=True)
             client.request("quit_level")
