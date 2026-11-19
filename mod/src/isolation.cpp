@@ -153,6 +153,51 @@ using Void0_t = void(__fastcall*)(void*);
 Void0_t o_updateUserScore;
 void __fastcall h_updateUserScore(void*) { GLOG("ISOLATION blocked GameLevelManager::updateUserScore"); }
 
+// ---- exit diagnostics: who ends the process (parallel instances died with no crash report) ----
+void log_exit_stack(const char* what, unsigned code) {
+    void* frames[24] = {};
+    USHORT n = RtlCaptureStackBackTrace(1, 24, frames, nullptr);
+    GLOG("%s(code=%u) called; stack:", what, code);
+    for (USHORT i = 0; i < n; ++i) {
+        HMODULE m = nullptr;
+        wchar_t name[MAX_PATH] = L"?";
+        if (GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                               (LPCWSTR)frames[i], &m) && m) {
+            GetModuleFileNameW(m, name, MAX_PATH);
+            const wchar_t* base = wcsrchr(name, L'\\');
+            GLOG("  #%u %ls+0x%llx", i, base ? base + 1 : name, (unsigned long long)((char*)frames[i] - (char*)m));
+        } else {
+            GLOG("  #%u %p", i, frames[i]);
+        }
+    }
+}
+LONG CALLBACK log_access_violation(EXCEPTION_POINTERS* e) {
+    static std::atomic<int> s_n{0};
+    DWORD c = e->ExceptionRecord->ExceptionCode;
+    if ((c == EXCEPTION_ACCESS_VIOLATION || c == 0xC0000409 || c == EXCEPTION_ILLEGAL_INSTRUCTION) && s_n++ < 3) {
+        HMODULE m = nullptr;
+        wchar_t name[MAX_PATH] = L"?";
+        void* at = e->ExceptionRecord->ExceptionAddress;
+        if (GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCWSTR)at, &m) && m)
+            GetModuleFileNameW(m, name, MAX_PATH);
+        const wchar_t* base = wcsrchr(name, L'\\');
+        GLOG("exception 0x%08lx at %ls+0x%llx (first-chance; addr %p, info %llx)", c, base ? base + 1 : name,
+             (unsigned long long)((char*)at - (char*)m), at,
+             (unsigned long long)(e->ExceptionRecord->NumberParameters > 1 ? e->ExceptionRecord->ExceptionInformation[1] : 0));
+        log_exit_stack("  at exception", c);
+    }
+    return EXCEPTION_CONTINUE_SEARCH;
+}
+using ExitProcess_t = void(WINAPI*)(UINT);
+ExitProcess_t o_ExitProcess;
+void WINAPI h_ExitProcess(UINT code) { log_exit_stack("ExitProcess", code); o_ExitProcess(code); }
+using TerminateProcess_t = BOOL(WINAPI*)(HANDLE, UINT);
+TerminateProcess_t o_TerminateProcess;
+BOOL WINAPI h_TerminateProcess(HANDLE h, UINT code) {
+    if (h == GetCurrentProcess() || GetProcessId(h) == GetCurrentProcessId()) log_exit_stack("TerminateProcess(self)", code);
+    return o_TerminateProcess(h, code);
+}
+
 // ---- helpers ----
 bool api_hook(const wchar_t* mod, const char* fn, void* detour, void** orig) {
     MH_STATUS s = MH_CreateHookApi(mod, fn, detour, orig);
@@ -200,6 +245,9 @@ bool install_isolation() {
                           (void*)h_HttpSend, (void**)&o_HttpSend);
     hb &= export_hook(L"libcurl.dll", "curl_easy_perform", (void*)h_curl_easy_perform, (void**)&o_curl_easy_perform);
     export_hook(L"libcurl.dll", "curl_multi_perform", (void*)h_curl_multi_perform, (void**)&o_curl_multi_perform);
+    api_hook(L"kernel32", "ExitProcess", (void*)h_ExitProcess, (void**)&o_ExitProcess);
+    AddVectoredExceptionHandler(1, log_access_violation);
+    api_hook(L"kernelbase", "TerminateProcess", (void*)h_TerminateProcess, (void**)&o_TerminateProcess);
     g_iso.http_blocked = hb;
 
     if (void* p = rva_ptr(offsets::GameLevelManager__updateUserScore)) {

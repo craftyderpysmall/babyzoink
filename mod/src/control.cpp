@@ -768,6 +768,32 @@ LRESULT CALLBACK no_minimize_wndproc(HWND h, UINT msg, WPARAM wp, LPARAM lp) {
     return CallWindowProcW(g_orig_wndproc, h, msg, wp, lp);
 }
 
+// The bot copy's save runs GD fullscreen (borderless popup). A fullscreen GLFW window minimizes
+// itself whenever it loses focus, which is what kept stalling the bridge while the user used the
+// PC (and what crashed freshly launched parallel copies, which start unfocused). Run windowed.
+void force_windowed() {
+    static bool s_done = false;
+    if (s_done) return;
+    s_done = true;
+    HMODULE cc = GetModuleHandleW(L"libcocos2d.dll");
+    using View_t = void*(__cdecl*)();
+    using IsFs_t = bool(__fastcall*)(void*);
+    using Toggle_t = void(__fastcall*)(void*, bool, bool, bool);
+    auto view_fn = cc ? (View_t)GetProcAddress(cc, "?sharedOpenGLView@CCEGLView@cocos2d@@SAPEAV12@XZ") : nullptr;
+    auto is_fs = cc ? (IsFs_t)GetProcAddress(cc, "?getIsFullscreen@CCEGLView@cocos2d@@QEBA_NXZ") : nullptr;
+    auto is_bl = cc ? (IsFs_t)GetProcAddress(cc, "?getIsBorderless@CCEGLView@cocos2d@@QEBA_NXZ") : nullptr;
+    auto toggle = cc ? (Toggle_t)GetProcAddress(cc, "?toggleFullScreen@CCEGLView@cocos2d@@QEAAX_N00@Z") : nullptr;
+    void* view = view_fn ? view_fn() : nullptr;
+    if (!view || !is_fs || !is_bl || !toggle) { GLOG("force_windowed: cocos exports missing"); return; }
+    bool fs = is_fs(view), bl = is_bl(view);
+    if (fs || bl) {
+        toggle(view, false, false, false);
+        GLOG("display: was fullscreen=%d borderless=%d; switched to windowed (fullscreen minimizes on focus loss)", fs, bl);
+    } else {
+        GLOG("display: already windowed");
+    }
+}
+
 void install_no_minimize() {
     static bool s_done = false;
     if (s_done) return;
@@ -850,6 +876,7 @@ bool start_control() {
 }
 
 void control_frame(float) {
+    force_windowed();
     install_no_minimize();
     if (g_client_gone.exchange(false)) release_control("client disconnected");
     if (g_quit_pending) {

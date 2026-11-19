@@ -192,7 +192,10 @@ It is enabled per session via `hello.capabilities.binary_obs`. This is only buil
   - The launcher starts GD shown and unfocused.
 - **`quit_level` timing fix.** The reply now waits for 45 frames *and* at least 1 s after the level layer is gone. At uncapped frame rates, 45 frames alone ended before the fade to the menu did, and the next `load_level` never started. Verified: `tools/m1/sequential_test.py 3` passes 6/6.
 - **Audio:** `tools/mute_gd.ps1` mutes the bot copy through the Windows per-app mixer.
-- **Parallel instances (experimental).**
-  - `gdbot-launch.exe --instance N` (1–63) sets `GDBOT_INSTANCE`. Slot N keeps `bridge.json`, `bridge.log` and `save/` in `gdbot/inst<N>/`; a new slot's save is seeded from slot 0's bot save.
-  - `bridge.json` gains `"instance"`. `mode.txt` stays shared, so one toggle drives every slot. Python helpers are in `gdbot/instances.py`.
-  - Slot 0 is unchanged. Slots 1+ still fail on level load (open, queue #12). Don't use them for training yet.
+- **Windowed display.** The bot's save runs GD fullscreen, and a fullscreen GLFW window minimizes itself whenever it loses focus. That was the real cause of the "minimized GD" stalls and of new parallel copies dying, since they start unfocused. On its first frame the bridge switches the window to windowed mode with `CCEGLView::toggleFullScreen(false, false, false)`.
+- **Parallel instances (verified 2026-11-19, `tools/m1/instances_test.py` 12/12).**
+  - `gdbot-launch.exe --instance N` (1–63) sets `GDBOT_INSTANCE`. Slot N keeps `bridge.json`, `bridge.log` and `save/` in `gdbot/inst<N>/`; a new slot's save is seeded from slot 0's bot save. `bridge.json` gains `"instance"`.
+  - `mode.txt` stays shared, so one toggle drives every slot. Python helpers are in `gdbot/instances.py`.
+  - Two slots running the same tape at once both match a solo trace exactly. Aggregate throughput was 6,211 ticks/s, against 3,086 for one instance.
+  - Claim a slot as `RUNTIME:gd-2.2091/slot<N>`; plain `RUNTIME:gd-2.2091` means slot 0.
+- **Diagnostics:** `ExitProcess`, self-`TerminateProcess` and the first three access violations are logged to `bridge.log` with a module+offset stack.

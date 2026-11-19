@@ -1,6 +1,6 @@
 # Coordination Status
 
-Last updated: 2026-11-19 (codex/m5-curriculum-02), #10 complete and 1,003 measured sections exported for the dashboard
+Last updated: 2026-11-19 (claude/plan-01): #10 M5 done; #12 parallel instances done; #14 M5b queued for Codex (slots 1-3); Claude on #11 (slot 0)
 
 ## Codex task queue
 
@@ -30,8 +30,9 @@ One row per run. Don't take rows marked `waiting`. If a handoff conflicts with a
 | 9 | Fix the training recipe: behaviour cloning from verified tapes, then PPO fine-tune; compare to the scaled-study baseline | handoffs/2026-11-18-claude-to-codex-m3-imitation.md | yes | done (claude): BC 6.3/9 held-out; PPO fine-tune hurts |
 | 10 | M5 curriculum: drills for every mode, a BC + self-imitation generation loop, official levels 1–5 | handoffs/2026-11-19-claude-to-codex-m5-curriculum.md | yes | done: all 54 drills verified, three generations and five official levels scored |
 | 11 | Triple spike: why no agent clears it; trainer throughput in background mode | (claude, no handoff) | yes | in progress (claude) |
-| 12 | Parallel GD instances: per-instance pipe, discovery and save dir (M7) | (claude, no handoff) | yes (test only) | paused (claude): slot 0 unchanged; slots 1+ lose levels on load, under investigation |
+| 12 | Parallel GD instances: per-instance pipe, discovery and save dir (M7) | (claude, no handoff) | yes | done (claude): 12/12, identical traces, 2x throughput; root cause of stalls was fullscreen auto-minimize (now windowed) |
 | 13 | ChatGPT Sites dashboard: static site + per-mode performance rating (survival-hazard IRT anchored to GDDL) | handoffs/2026-11-19-claude-to-codex-site-dashboard.md | no | done locally with real telemetry; publication pending owner |
+| 14 | M5b official-level transfer: diagnose why it dies <6% on official 1-5, fix, then learn official levels by practice; held-out = downloaded online levels | handoffs/2026-11-19-claude-to-codex-m5b-official-transfer.md | yes (slots 1-3) | queued |
 
 ## Active work
 
