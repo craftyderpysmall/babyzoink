@@ -51,6 +51,34 @@ function attempts() {
   }), "No attempts recorded for this group yet.", 6);
 }
 
+function jobQueue() {
+  const jobs = snapshot.jobs ?? [];
+  const open = jobs.filter((job) => job.status !== "done");
+  const openNumbers = open.map((job) => `#${job.number}`).join(", ");
+  byId("jobs-summary").textContent = jobs.length
+    ? `${jobs.length - open.length} of ${jobs.length} jobs are done.${open.length ? ` ${open.length} still open (${openNumbers}).` : ""}`
+    : "";
+  renderRows("jobs-rows", jobs.map((job) => [job.number, job.task, job.owner, job.status, job.progress]),
+    "No job queue data is available.", 5);
+}
+
+const generationLabel = (generation) => generation < 0 ? "Unguided" : `Gen ${generation}`;
+
+function attemptsTrend() {
+  const runs = snapshot.attempts_curve ?? [];
+  byId("attempts-trend-empty").hidden = runs.length > 0;
+  byId("attempts-trend-data").hidden = runs.length === 0;
+  if (!runs.length) return;
+  const common = runs[0].matched_clears;
+  byId("attempts-trend-summary").textContent =
+    `Mean attempts use ${common} of ${runs[0].levels} levels cleared by every generation and the unguided search.`;
+  const metric = (value) => value === null ? "—" : format(value, 2);
+  renderRows("attempts-trend-rows", runs.map((run) => [generationLabel(run.generation), `${run.clears} / ${run.levels}`,
+    metric(run.mean_evaluations), metric(run.mean_normal_attempts)]), "No completed comparisons.", 4);
+  chart("attempts-trend-chart", runs.map((run) => ({ label: generationLabel(run.generation), value: run.mean_evaluations })),
+    { baseline: 0, empty: "No levels were cleared by every generation.", digits: 0 });
+}
+
 function latestModeRow(name) {
   return (snapshot.performance?.zero_shot?.trend ?? []).reduce((latest, row) => {
     return row.mode === name && (!latest || row.generation > latest.generation) ? row : latest;
@@ -115,6 +143,7 @@ function overview() {
   ]), "No study results are available.", 5);
   overviewPerformance();
   attempts();
+  jobQueue();
   renderRows("energy-rows", energy.rows.map((row) => [
     row.date, `${format(row.kwh, 4)} kWh`, usd.format(row.cost_usd),
   ]), "No power samples are available.", 3);
@@ -288,6 +317,7 @@ function draw() {
   if (byId("overview").hidden) {
     performance();
   } else {
+    attemptsTrend();
     const entries = snapshot.energy.rows.map((row) => ({ label: row.date.slice(5), value: row.cumulative_kwh }));
     chart("energy-chart", entries, { baseline: 0, digits: 3, empty: "No energy samples recorded." });
     byId("energy-chart").setAttribute("aria-label", entries.length
@@ -330,6 +360,10 @@ async function init() {
     if (remote.status === "fulfilled" && (bundled.status !== "fulfilled" ||
       Date.parse(remote.value.updated_at) >= Date.parse(bundled.value.updated_at))) {
       snapshot = remote.value;
+      if (bundled.status === "fulfilled") {
+        snapshot.jobs ??= bundled.value.jobs;
+        snapshot.attempts_curve ??= bundled.value.attempts_curve;
+      }
       source = "Nightly data feed";
     } else if (bundled.status === "fulfilled") {
       snapshot = bundled.value;

@@ -6,7 +6,7 @@
   <meta name="description" content="Geometry Dash training progress, practice results, and per-mode performance.">
   <title>Babyzoink · Training Dashboard</title>
   <link rel="stylesheet" href="styles.css?v=overview-performance">
-  <script src="app.js?v=overview-performance" type="module"></script>
+  <script src="app.js?v=job-queue" type="module"></script>
 </head>
 <body>
   <header class="bar">
@@ -40,10 +40,18 @@
       </section>
       <section class="panel trend attempts-trend" aria-labelledby="attempts-trend-title">
         <div class="panel-head"><h2 id="attempts-trend-title">Attempts to first clear across generations</h2></div>
-        <div class="empty-plot">
+        <div id="attempts-trend-empty" class="empty-plot">
           <span>Attempts to first clear</span>
           <p>No comparable first-clear measurements across generations yet.</p>
           <span>Generation</span>
+        </div>
+        <div id="attempts-trend-data" hidden>
+          <p class="note" id="attempts-trend-summary"></p>
+          <div class="chart"><canvas id="attempts-trend-chart" role="img" aria-label="Mean search evaluations by generation"></canvas></div>
+          <div class="table-scroll"><table>
+            <thead><tr><th>Generation</th><th>Levels cleared</th><th>Mean evaluations</th><th>Mean normal attempts</th></tr></thead>
+            <tbody id="attempts-trend-rows"></tbody>
+          </table></div>
         </div>
       </section>
       <div class="stats">
@@ -86,6 +94,14 @@
         <div class="table-scroll"><table>
           <thead><tr><th>Level</th><th>Normal attempts</th><th>Practice attempts</th><th>Normal clears</th><th>Best progress</th><th>First cleared</th></tr></thead>
           <tbody id="attempt-rows"></tbody>
+        </table></div>
+      </section>
+      <section id="jobs" class="panel results" aria-labelledby="jobs-title">
+        <div class="panel-head"><h2 id="jobs-title">Job queue</h2></div>
+        <p class="note" id="jobs-summary"></p>
+        <div class="table-scroll"><table>
+          <thead><tr><th scope="col">#</th><th scope="col">Job</th><th scope="col">Owner</th><th scope="col">Status</th><th scope="col">Progress</th></tr></thead>
+          <tbody id="jobs-rows"></tbody>
         </table></div>
       </section>
     </section>

@@ -84,21 +84,25 @@ class Solver:
             self.committed, self.seg_x, self.bad = d["committed"], d["seg_x"], set(d["bad"])
             self.evals, self.ticks = d["evals"], d["ticks"]
             self.verification_attempts = d.get("verification_attempts", self.verification_attempts)
-            self.stack = [candidates(self.seg, 0)] + [candidates(self.seg, s[-1]) for s in self.committed]
+            self.stack = [self.choices(0)] + [self.choices(s[-1]) for s in self.committed]
             self.log(f"  resuming at segment {len(self.committed)} (x {self.seg_x[-1] if self.seg_x else 0:.0f}); "
                      f"the replay check re-verifies the saved prefix")
 
     # -- bridge helpers -------------------------------------------------------------------------
     def reset_zero(self):
-        self.ep = self.c.request("reset", start={"kind": "zero"})["episode"]
+        reply = self.c.request("reset", start={"kind": "zero"})
+        self.ep = reply["episode"]
+        return reply
 
     def restore(self):
         """Go to the newest restore point: a real checkpoint, or a clean 0% start for depth 0."""
         if self.cps[-1] == 0:
-            self.reset_zero()
+            reply = self.reset_zero()
             self.c.request("set_practice", enabled=True)
         else:
-            self.ep = self.c.request("reset", start={"kind": "checkpoint"})["episode"]
+            reply = self.c.request("reset", start={"kind": "checkpoint"})
+            self.ep = reply["episode"]
+        return reply
 
     def run(self, actions, xs=False):
         if not actions:
@@ -116,6 +120,9 @@ class Solver:
                 return
 
     # -- search ---------------------------------------------------------------------------------
+    def choices(self, previous):
+        return candidates(self.seg, previous)
+
     def followups(self):
         """Simple continuations that test whether the state after a segment is still viable. The
         lookahead must outlast a jump's airtime, or "not yet" looks fine when it is already too late."""
@@ -174,7 +181,7 @@ class Solver:
         older_failed = 0 < base < depth - self.KEEP_CHECKPOINTS
         self.rebuild(depth, allow_older_checkpoint=not older_failed)
         if len(self.committed) == depth:
-            self.stack[-1] = candidates(self.seg, self.committed[-1][-1] if depth else 0)
+            self.stack[-1] = self.choices(self.committed[-1][-1] if depth else 0)
         self.save_progress()
 
     def run_segment(self, seg, depth_after, *, checkpoint):
@@ -219,14 +226,14 @@ class Solver:
                          f"{sorted(b for b in self.bad if b > depth - 20)}")
                 del self.committed[depth:], self.seg_x[depth:]
                 del self.stack[depth + 1:]
-                self.stack[depth] = candidates(self.seg, self.committed[-1][-1] if self.committed else 0)
+                self.stack[depth] = self.choices(self.committed[-1][-1] if self.committed else 0)
                 return self.rebuild(depth, allow_older_checkpoint=allow_older_checkpoint)
         return target
 
     def solve(self):
         self.c.load_level(self.level)
         self.committed, self.seg_x = [], []   # committed segments and the x recorded at each one's end
-        self.stack = [candidates(self.seg, 0)]  # candidate iterators per depth (depth = len(committed))
+        self.stack = [self.choices(0)]         # candidate iterators per depth (depth = len(committed))
         self.anchors = self.drifts = 0
         self.bad = set()                      # depths whose checkpoint proved inexact anyway
         self.cps = [0]                        # restore points (depths); 0 = clean reset, not a checkpoint
@@ -269,6 +276,7 @@ class Solver:
             if chosen is None:
                 continue
             self.restore()
+            base = self.cps[-1]
             pr = self.run(self.prefix())      # warm-up + skipped segments up to the current depth
             if pr["terminal"] or (depth and abs(pr["player"]["x"] - self.seg_x[-1]) > 1e-3):
                 self.repair_boundary()
@@ -284,7 +292,7 @@ class Solver:
                 self.rebuild(len(self.committed))
                 continue
             self.seg_x.append(r["xs"][-1])
-            self.stack.append(candidates(self.seg, chosen[-1]))
+            self.stack.append(self.choices(chosen[-1]))
             since_anchor += 1
             if since_anchor >= self.ANCHOR_EVERY:
                 since_anchor = 0

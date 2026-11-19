@@ -203,8 +203,27 @@ def m6_curve():
         write("m6-curve", rows)
 
 
+def m6_guided():
+    path = ROOT / "build/m6-scale/guided/report.json"
+    if not path.exists():
+        return
+    report = json.loads(path.read_text(encoding="utf-8"))
+    rows = []
+    for run in report["runs"]:
+        generation = run["generation"]
+        label = "m6-guided-control" if generation < 0 else f"m6-guided-g{generation}"
+        for key, result in run["levels"].items():
+            verified = result["verified"]
+            normal = result["normal_attempts"]
+            rows.append(row(label, key, name=result["name"], t=mtime(path), normal_attempts=normal,
+                            practice_attempts=result["practice_attempts"], normal_clears=int(verified),
+                            best_progress=float(verified), first_clear_attempt=normal if verified else None))
+    if rows:
+        write("m6-guided", rows)
+
+
 if __name__ == "__main__":
-    for step in (m4, m5, m5b, m5c, m5c_expert, m5c_triple, m6_search, m6_curve):
+    for step in (m4, m5, m5b, m5c, m5c_expert, m5c_triple, m6_search, m6_curve, m6_guided):
         step()
     from gdbot.attempts import read, summarize
     s = summarize(read())

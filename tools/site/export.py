@@ -4,6 +4,7 @@ import argparse
 import csv
 import json
 import math
+import re
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
@@ -113,6 +114,48 @@ def attempt_levels(directory):
     return summarize_attempts(read(directory)) if directory.exists() else []
 
 
+def queue_jobs(path):
+    table = False
+    jobs = []
+    statuses = {"in progress": "in progress", "paused": "paused", "waiting": "paused", "blocked": "blocked",
+                "queued": "queued", "done": "done", "deployed": "done", "completed": "done"}
+    order = {"in progress": 0, "paused": 1, "blocked": 1, "queued": 2, "done": 3}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if line.startswith("## "):
+            if table:
+                break
+            table = line.strip() == "## Codex task queue"
+        if not table or not re.match(r"^\|\s*\d+\s*\|", line):
+            continue
+        cells = [field.strip() for field in re.split(r"(?<!\\)\|", line.strip().strip("|"))]
+        number, task, _, _, state = cells
+        owner = "Claude" if re.search(r"\(claude(?:\)|,|/)", line, re.I) else "Codex"
+        task = re.sub(r"^\(claude\)\s*", "", task, flags=re.I).replace(r"\|", "|")
+        status = next((value for prefix, value in statuses.items()
+                       if re.match(rf"{prefix}\b", state.casefold())), None)
+        if status is None:
+            raise ValueError(f"Unknown state for job #{number}: {state}")
+        jobs.append({"number": int(number), "task": task, "owner": owner, "status": status,
+                     "progress": state.replace(r"\|", "|")})
+    return sorted(jobs, key=lambda job: (order[job["status"]], job["number"]))
+
+
+def attempts_curve(path):
+    if not path.exists():
+        return []
+    report = json.loads(path.read_text(encoding="utf-8"))
+    cohort = set(report["protocol"]["cohort"])
+    runs = report["runs"]
+    if len(runs) != 1 + len(report["protocol"]["checkpoints"]) or any(set(run["levels"]) != cohort for run in runs):
+        return []
+    common = {key for key in cohort if all(run["levels"][key]["verified"] for run in runs)}
+    return [{"generation": run["generation"], "levels": len(cohort), "matched_clears": len(common),
+             "clears": sum(level["verified"] for level in run["levels"].values()),
+             "mean_evaluations": sum(run["levels"][key]["practice_attempts"] for key in common) / len(common) if common else None,
+             "mean_normal_attempts": sum(run["levels"][key]["normal_attempts"] for key in common) / len(common) if common else None}
+            for run in runs]
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=ROOT / "site/data/dashboard.json")
@@ -139,6 +182,8 @@ def main():
         "energy": energy(ROOT / "build/power", progress["price"]["cents_per_kwh"] / 100),
         "performance": summarize(rows, anchors), "level_names": names,
         "levels": attempt_levels(options.attempts),
+        "jobs": queue_jobs(ROOT / ".coordination/STATUS.md"),
+        "attempts_curve": attempts_curve(ROOT / "build/m6-scale/guided/report.json"),
         "telemetry": {"sections": len(rows), "anchored_sections": sum(row.level in anchors for row in rows)},
         "gddl": {"version": cache["api_version"], "checked_at": cache["version_checked_at"]},
     }
