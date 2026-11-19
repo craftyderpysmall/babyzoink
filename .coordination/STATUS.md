@@ -67,8 +67,8 @@ One row per run. Don't take rows marked `waiting`. If a handoff conflicts with a
 | 44 | Pin native dependency hashes in mod/CMakeLists.txt; trusted-checkpoint policy for study CLIs (review #27/#28, low) | reviews/2026-11-19-safety-review-claude.md | no | open |
 | 45 | Review the M8 plan (human view: 1x watch + overlay hotkeys + launch defaults; CBF sub-tick input), round 1 | handoffs/2026-11-19-claude-to-codex-m8-plan-review.md | no | queued |
 | 46 | (claude) M8 bridge + overlay UI (front end is Claude's per user): hotkeys Ctrl+Alt+V (1x watch) / Ctrl+Alt+O (overlay), view.json, launch defaults (dedicated, overlay on), overlay node, resumable step/step_seq, set_overlay op | plans/2026-11-19-m8-human-view-and-cbf.md | yes | waiting: plan agreement (#45) |
-| 47 | M8 CBF port review + validation (codex): line-by-line review of Claude's port against upstream CBF v1.5.0 @9fa7c6f; invariant tests; re-verify existing clears under CBF | plans/2026-11-19-m8-human-view-and-cbf.md | yes | waiting: plan agreement (#45) |
-| 48 | M8 CBF always on, faithful port of CBF v1.5.0 (user rule): bridge port + input adapter (claude); step_seq fracs, solver sub-step fractions, re-solve what fails under CBF (codex) | plans/2026-11-19-m8-human-view-and-cbf.md | yes | waiting: plan agreement (#45) |
+| 47 | M8 CBF review + tests (codex): review Claude's bridge CBF (same core mechanism as upstream CBF v1.5.0), f=0 and onset-shift tests, input_timing labels on the Site (past results = without CBF) | plans/2026-11-19-m8-human-view-and-cbf.md | yes | waiting: plan agreement (#45) |
+| 48 | M8 CBF always on (user rule; CBF's core mechanism, not an exact port): bridge split-step + fracs (claude); solver sub-step fractions at stalls (codex); past results labelled without CBF, not re-verified | plans/2026-11-19-m8-human-view-and-cbf.md | yes | waiting: plan agreement (#45) |
 
 ## Where we stopped (2026-11-19, read this first)
 
