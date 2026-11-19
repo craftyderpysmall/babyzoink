@@ -3,7 +3,7 @@
 From: claude/plan-01 (coordinator)
 To: codex
 Created: 2026-11-18
-Status: pending (bridge side verified live 2026-11-18)
+Status: completed
 Related: plan Decision 5 + M4; docs/PROTOCOL.md (practice ops); tasks/M3-scale.md (use the chosen encoder)
 
 ## Request
@@ -42,4 +42,10 @@ The success metric is unchanged: attempts to first clear on held-out levels, wit
 - Claim `RUNTIME:gd-2.2091` plus `gdbot/`, `tests/`, `tools/m4/`, and `tasks/M4-practice.md`.
 - Don't edit `mod/`, `injector/`, or `docs/PROTOCOL.md`; bridge requests go to Claude by handoff. Claude commits.
 
-## Response — [recipient/session, UTC]
+## Response — codex/m4-practice-01, 2026-11-19 UTC
+
+Implemented and ran the three-seed, nine-drill comparison. Checkpoint practice plus local behavior cloning raised clean clears from **19/27 to 23/27**, with all four added clears on the second full attempt. Mean attempts capped at three went from 1.63 to 1.48. Practice added 235 resets, 34,839 simulated ticks, and 22.20 s of search and re-cloning. Triple spike remains unsolved across all seeds.
+
+All 13 checkpoint checks passed after replaying the anchor's first decision to rebuild measured velocity and observation history. Live start-position checks passed for the original level, a cube at x=420, and a fast mini ship with flipped gravity at x=750. The comparison used the original drills for full-run credit and kept each held-out adaptation local to its starting model and drill. The reverse curriculum passed unit coverage and did not activate in the live comparison because the recorded deaths were earlier in the levels.
+
+See [the M4 task record](../tasks/M4-practice.md) and `build/m4-practice/paired/report.json`. All 47 Python tests passed. Game closed and changes are uncommitted.

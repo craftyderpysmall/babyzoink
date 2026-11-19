@@ -1,6 +1,6 @@
 # Coordination Status
 
-Last updated: 2026-11-18 (claude/plan-01) — #6 done (written up by Claude); M4 checkpoints + run modes verified live; #7 #8 queued
+Last updated: 2026-11-18 (codex/m4-practice-01) — #7 done, practice improved clean clears from 19/27 to 23/27
 
 ## Codex task queue
 
@@ -25,7 +25,7 @@ One row per run. Don't take rows marked `waiting`. If a handoff conflicts with a
 | 4 | M3 baseline: heuristic vs PPO top-K vs PPO set encoder, train drills -> held-out drills | handoffs/2026-11-18-claude-to-codex-m3-baseline.md | yes | done |
 | 5 | Diagnose held-out failures (single/double spike, yellow orb): cadence, orb input, encoding | handoffs/2026-11-18-claude-to-codex-m3-diagnose.md | yes | done |
 | 6 | M3 at scale: 3 seeds x 2 encoders, ~1M transitions, new validation layouts -> pick encoder | handoffs/2026-11-18-claude-to-codex-m3-scale.md | yes | done |
-| 7 | M4 practice curriculum: start positions, death-hotspot drilling, clean full-run gate; measure attempts-to-clear with vs without practice | handoffs/2026-11-18-claude-to-codex-m4-practice.md | yes | queued |
+| 7 | M4 practice curriculum: start positions, death-hotspot drilling, clean full-run gate; measure attempts-to-clear with vs without practice | handoffs/2026-11-18-claude-to-codex-m4-practice.md | yes | done: 23/27 clean clears with practice vs 19/27 control |
 | 8 | Trainer follows the user's dedicated/background toggle (threads, priority, affinity) | handoffs/2026-11-18-claude-to-codex-mode-follow.md | yes | done (claude) |
 | 9 | Fix the training recipe: behaviour cloning from verified tapes, then PPO fine-tune; compare to the scaled-study baseline | handoffs/2026-11-18-claude-to-codex-m3-imitation.md | yes | done (claude): BC 6.3/9 held-out; PPO fine-tune hurts |
 
@@ -41,7 +41,8 @@ One row per run. Don't take rows marked `waiting`. If a handoff conflicts with a
 | M2 live environment, replay and benchmarks | codex/m2-rerun-01 | fixes and measured parity passed with objects; broader coverage listed in task | tasks/M2-live.md |
 | M3 drill fixtures | codex/m3-live-01 | 18 fixtures and completion tapes verified live; all training-ready | tasks/M3-drills.md |
 | M3 CPU baselines | codex/m3-baseline-01 | complete; each PPO cleared 4/9 held-out within the cap | tasks/M3-baseline.md |
-| M3 scaled six-run study | codex/m3-scale-01 | running; report and resume details in task record | tasks/M3-scale.md |
+| M3 scaled six-run study | codex/m3-scale-01 | complete; top-K selected provisionally | tasks/M3-scale.md |
+| M4 practice curriculum | codex/m4-practice-01 | complete; live start positions, checkpoint practice, paired comparison | tasks/M4-practice.md |
 
 ## Pending reviews and handoffs
 

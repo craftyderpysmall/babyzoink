@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-18",
+  "updated": "2026-11-19",
   "milestones": [
     {
       "id": "M0",
@@ -22,14 +22,14 @@
     {
       "id": "M3",
       "name": "First learning on drills",
-      "status": "in_progress",
+      "status": "done",
       "detail": "Imitation from 9 demo runs clears 6.3/9 unseen drills (vs 2.7 for PPO); imitation is the default recipe now"
     },
     {
       "id": "M4",
       "name": "Practice: checkpoints and start positions",
-      "status": "in_progress",
-      "detail": "Checkpoints verified in-game (exact replay from a checkpoint); practice curriculum queued"
+      "status": "done",
+      "detail": "Practice from checkpoints plus re-cloning: 23/27 clean clears vs 19/27 without practice; triple spike still unsolved"
     },
     {
       "id": "M5",
@@ -105,6 +105,22 @@
       "first_run_progress_pct": 57.7,
       "clears_within_3": 4.3,
       "first_try_clears": 4.3,
+      "drills": 9
+    },
+    {
+      "study": "M4 practice (3 seeds)",
+      "agent": "Cloning, no practice",
+      "first_run_progress_pct": 73.1,
+      "clears_within_3": 6.3,
+      "first_try_clears": 6.0,
+      "drills": 9
+    },
+    {
+      "study": "M4 practice (3 seeds)",
+      "agent": "Cloning + checkpoint practice",
+      "first_run_progress_pct": 73.1,
+      "clears_within_3": 7.7,
+      "first_try_clears": 6.0,
       "drills": 9
     }
   ],

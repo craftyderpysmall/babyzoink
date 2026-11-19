@@ -92,3 +92,28 @@ class LevelString:
     def decode(cls, data: str):
         compressed = base64.b64decode(data, altchars=b"-_", validate=True)
         return cls.parse(gzip.decompress(compressed).decode("utf-8"))
+
+
+START_POSITION = 31
+START_MODES = ("cube", "ship", "ball", "ufo", "wave", "robot", "spider", "swing")
+
+
+def with_startpos(level: LevelString, x: float, mode: str, speed: int, gravity: bool, mini: bool) -> LevelString:
+    """Return an independent floor-start variant. Speed uses GD's 0=normal, 1=slow, 2–4=fast codes.
+
+    Wire format: https://github.com/nekitdev/gd.py/blob/main/gd/api/objects.py#L632-L714
+    Callers must verify that the skipped prefix has no required trigger state.
+    """
+    if x < 0 or mode not in START_MODES or type(speed) is not int or speed not in range(5):
+        raise ValueError("invalid start position, mode, or speed code")
+    if type(gravity) is not bool or type(mini) is not bool:
+        raise ValueError("gravity and mini must be booleans")
+    if any(obj["1"] == str(START_POSITION) for obj in level.objects):
+        raise ValueError("level already contains a start position")
+    result = LevelString(level.header.copy(), [obj.copy() for obj in level.objects])
+    result.objects.append({
+        "1": str(START_POSITION), "2": _number(x), "3": "15",
+        "kA2": str(START_MODES.index(mode)), "kA3": str(int(mini)), "kA4": str(speed),
+        "kA8": "0", "kA9": "1", "kA11": str(int(gravity)),
+    })
+    return result

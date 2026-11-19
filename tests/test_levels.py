@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from gdbot.levels.drills import NOTES, build_drill, iter_drills, write_drills
-from gdbot.levels.levelstring import CLASSIC_CUBE, LevelString
+from gdbot.levels.levelstring import CLASSIC_CUBE, LevelString, with_startpos
 from gdbot.replay import Tape
 
 FIXTURES = Path(__file__).resolve().parents[1] / "levels" / "drills"
@@ -18,6 +18,22 @@ def test_builder_round_trip_preserves_object_properties_and_header():
     assert level.header == CLASSIC_CUBE
     assert level.encode().startswith("H4sI")
     assert LevelString.parse(level.inner()) == LevelString.decode(level.encode()) == level
+
+
+def test_startpos_creates_an_independent_level_with_gameplay_settings():
+    level = LevelString()
+    level.add(8, 900, 15)
+    modified = LevelString.decode(with_startpos(level, 750, "ship", 2, True, True).encode())
+    original, start = modified.objects
+    assert original == level.objects[0]
+    assert start == {
+        "1": "31", "2": "750", "3": "15", "kA2": "1", "kA3": "1", "kA4": "2",
+        "kA8": "0", "kA9": "1", "kA11": "1",
+    }
+    assert modified.header == level.header
+    assert len(level.objects) == 1
+    with pytest.raises(ValueError, match="already contains"):
+        with_startpos(modified, 800, "cube", 0, False, False)
 
 
 @pytest.mark.parametrize("record", ("1,8,2,0", "1,8,2,0,3,15,1,9", "1,8,2,0,3"))
