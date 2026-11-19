@@ -6,8 +6,6 @@
 
 | Agent/session | Paths (exact files preferred) | Task | Claimed at (UTC) | Expected release | State |
 | --- | --- | --- | --- | --- | --- |
-| claude/m8-bridge-05 | RUNTIME:gd-2.2091/slot3 (M8 test build running; free to take after asking) | #46/#48 M8 bridge | 2026-11-19 | after #46 | active |
-| claude/m6-resume-02 | RUNTIME:gd-2.2091/slot2, build/m6-scale/solutions/, build/m6-scale/supervise-slot2.*, tools/m6/supervise.py, mod/build/pinned-pre-cbf/ | #19 resume (user request) | 2026-11-19 | when #19 pauses or finishes | active |
 
 **Game runtime:** only one client can drive GD at a time. Claim it as the pseudo-path `RUNTIME:gd-2.2091` (meaning the GD process and its pipe) before launching `gdbot-launch.exe`, and release it when the game is closed. Parallel instances: claim `RUNTIME:gd-2.2091/slot<N>` for `gdbot-launch.exe --instance N`; plain `RUNTIME:gd-2.2091` means slot 0. One client per slot.
 
