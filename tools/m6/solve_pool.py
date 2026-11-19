@@ -24,6 +24,27 @@ class MemoryCap(Exception):
     pass
 
 
+def guard_evaluations(solver, check, every_s=15.0, clock=perf_counter):
+    """Run `check(solver)` before a solver evaluation at most every `every_s` seconds.
+
+    Progress lines only appear when x advances, so a stalled search (thousands of evaluations at one point) never
+    reached the memory check. Between evaluations the committed prefix is consistent, so `check` may save progress
+    and raise.
+    """
+    evaluate = solver.evaluate
+    last = [clock()]
+
+    def guarded(cand):
+        now = clock()
+        if now - last[0] >= every_s:
+            last[0] = now
+            check(solver)
+        return evaluate(cand)
+
+    solver.evaluate = guarded
+    return solver
+
+
 def levels(pool, split):
     for row in json.loads((pool / f"{split}-train.json").read_text(encoding="utf-8")):
         if split == "online":
@@ -68,18 +89,24 @@ def run(pool, split, slot, shard, shards, budget, limit, look, present_every_ms,
                 print(f"{key} {name}:", flush=True)
                 current = {}
 
+                def check(solver):
+                    # GD grows during long practice-mode searches (docs/PROTOCOL.md, "Memory growth during long
+                    # searches"). Checked after each commit's progress line and, via guard_evaluations, at least
+                    # every 15 s of evaluations, so a stalled search is covered too.
+                    private, avail = game.mem_mb()["private"], avail_mb()
+                    if (max_private_mb and private > max_private_mb) or (min_avail_mb and avail < min_avail_mb):
+                        solver.save_progress()
+                        raise MemoryCap(f"GD private {private:.0f} MB, system available {avail} MB")
+
                 def log(message):
                     print(message, flush=True)
-                    # GD grows during long practice-mode searches (docs/PROTOCOL.md, "Memory growth during long
-                    # searches"). Progress lines come right after a commit, where the saved prefix is consistent.
                     if game and current and message.startswith("  x="):
-                        private, avail = game.mem_mb()["private"], avail_mb()
-                        if (max_private_mb and private > max_private_mb) or (min_avail_mb and avail < min_avail_mb):
-                            current["solver"].save_progress()
-                            raise MemoryCap(f"GD private {private:.0f} MB, system available {avail} MB")
+                        check(current["solver"])
 
                 solver = Solver(client, spec, budget=budget, look=look, progress=path.with_suffix(".progress.json"),
                                 log=log)
+                if game:
+                    guard_evaluations(solver, check)
                 current["solver"] = solver
                 solver.verification_attempts = prior.get("normal_attempts", 0)
                 started = perf_counter()

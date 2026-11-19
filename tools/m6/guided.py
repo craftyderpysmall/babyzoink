@@ -13,7 +13,7 @@ import torch  # noqa: E402
 from stable_baselines3 import PPO  # noqa: E402
 from dagger import file_hash  # noqa: E402
 from solver import K, Solver  # noqa: E402
-from solve_pool import avail_mb  # noqa: E402
+from solve_pool import avail_mb, guard_evaluations  # noqa: E402
 from transfer import online_pool, study_pools  # noqa: E402
 from gdbot.instances import discovery  # noqa: E402
 from gdbot.obs import ObservationEncoder  # noqa: E402
@@ -131,6 +131,8 @@ def run(client, args):
 
             options = {"budget": args.budget, "look": args.look, "progress": progress, "log": log}
             solver = Solver(client, spec, **options) if policy is None else GuidedSolver(client, spec, policy=policy, **options)
+            if args.min_free_mb:
+                guard_evaluations(solver, check_memory)  # stalled searches never print "  x=" lines
             start = perf_counter()
             print(f"generation {generation}, {key}", flush=True)
             solution = solver.solve()
