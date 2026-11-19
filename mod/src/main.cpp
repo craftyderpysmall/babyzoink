@@ -78,6 +78,7 @@ extern "C" __declspec(dllexport) DWORD WINAPI gdbot_init(LPVOID) {
         GLOG("GAME HOOKS INCOMPLETE: refusing to start the game.");
         return kHooksFailed;
     }
+    if (!install_cbf()) GLOG("CBF UNAVAILABLE: steps with fractions will be refused (hello reports cbf=false)");
     if (!start_control()) return kHooksFailed;
     MH_STATUS s = MH_EnableHook(MH_ALL_HOOKS);
     GLOG("MH_EnableHook(all): %s", MH_StatusToString(s));

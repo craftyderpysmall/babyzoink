@@ -341,7 +341,7 @@ json op_hello(const json& req) {
                          {"trace", true}, {"modes", {"normal", "dedicated", "background"}}, {"dual", false},
                          {"objects", true}, {"level_string", true}, {"quit_level", true}, {"debug_peek", true}, {"isolation", true},
                          {"set_render", g_draw_skip_supported}, {"agent_colors", true},
-                         {"watch_1x", true}, {"overlay", true}, {"session", true}};
+                         {"watch_1x", true}, {"overlay", true}, {"session", true}, {"cbf", g_cbf_ok}};
     r["mode"] = mode_str(g_mode);
     r["isolation"] = {{"saves_redirected", g_iso.saves_redirected && g_iso.file_guard},
                       {"http_blocked", g_iso.http_blocked}};
@@ -551,6 +551,8 @@ json op_reset(const json& req) {
     reinterpret_cast<Void0_t>(rva_ptr(PlayLayer__resetLevel))(g_layer);  // goes through our hook
     g_bot_reset = false;
     ++g_episode;
+    cbf_clear();
+    cbf_force_vanilla_click_off();
     if (kind == "zero") ++g_vstats.runs; else ++g_vstats.practice;
     g_prev_tick = -1;
     g_tick_x = read_field<float>(player1(), fields::kPosTickX);
@@ -560,6 +562,9 @@ json op_reset(const json& req) {
     r["episode"] = g_episode;
     r["tick"] = g_tick;
     r["start"] = start_info;
+    bool cbs = false, cos = false;
+    cbf_click_flags(&cbs, &cos);
+    r["input_timing"] = {{"cbf", g_cbf_ok}, {"click_between_steps", cbs}, {"click_on_steps", cos}};
     r["obs"] = obs_json();
     return r;
 }
@@ -573,6 +578,8 @@ struct Exec {
     bool seq = false;         // step_seq (else step)
     json req;
     std::vector<int> actions; // one per decision (step: exactly one)
+    std::vector<double> fracs; // M8 CBF: press/release at this fraction of the decision's first step (empty = all 0)
+    bool cbf_armed = false;
     int k = 1;                // ticks per decision
     bool want_xs = false;
     size_t idx = 0;           // current decision
@@ -593,7 +600,12 @@ bool exec_advance(Exec& e, long long max_ticks) {
     const long long start = g_tick;
     while (e.idx < e.actions.size() && !e.terminal && e.error.empty()) {
         if (!e.pressed) {
-            press(e.actions[e.idx] == 1);
+            bool down = e.actions[e.idx] == 1;
+            double f = e.fracs.empty() ? 0.0 : e.fracs[e.idx];
+            // CBF: a press/release that changes the held state lands at fraction f of the first step;
+            // f = 0 (or no change) presses at the step start exactly as before.
+            if (f > 0.0 && down != g_held && cbf_arm(down, f)) e.cbf_armed = true;
+            else press(down);
             e.pressed = true;
             e.calls = 0;
         }
@@ -610,6 +622,7 @@ bool exec_advance(Exec& e, long long max_ticks) {
             }
             if (g_tick == before) continue;
             if (g_tick - before > 1) GLOG("step: one update call advanced %lld ticks", g_tick - before);
+            if (e.cbf_armed) { cbf_settle(); e.cbf_armed = false; }
             e.in_dec += g_tick - before;
             g_vstats.ticks_run += g_tick - before;
             void* p = player1();
@@ -665,6 +678,7 @@ json exec_reply(Exec& e) {
 // Starts a request: runs it now (fast path) or defers it (watch at 1x). Returns the reply, or null if deferred.
 json exec_start(Exec&& e) {
     e.t0 = g_tick;
+    cbf_force_vanilla_click_off();
     g_exec = std::move(e);
     if (g_watch) {
         g_exec.active = true;
@@ -693,6 +707,32 @@ void exec_pace_frame() {
     }
 }
 
+// Optional CBF fractions: finite, in [0, 1). Returns an error message, or empty on success.
+std::string parse_fracs(const json& req, const char* key, size_t n, std::vector<double>* out) {
+    if (!req.contains(key)) return "";
+    const json& v = req[key];
+    std::vector<double> f;
+    if (v.is_number()) {
+        f.push_back(v.get<double>());
+    } else if (v.is_array()) {
+        for (const json& x : v) {
+            if (!x.is_number()) return std::string(key) + " must be numbers";
+            f.push_back(x.get<double>());
+        }
+    } else {
+        return std::string(key) + " must be a number or an array";
+    }
+    if (f.size() != n) return std::string(key) + " must have exactly one value per action";
+    bool any = false;
+    for (double x : f) {
+        if (!std::isfinite(x) || x < 0.0 || x >= 1.0) return std::string(key) + " values must be finite and in [0, 1)";
+        any |= x > 0.0;
+    }
+    if (any && !g_cbf_ok) return "CBF is unavailable in this bridge (see bridge.log)";
+    *out = std::move(f);
+    return "";
+}
+
 json op_step(const json& req) {
     if (!g_layer) return err(req, "NOT_IN_LEVEL", "no level loaded");
     if (req.value("episode", -1) != g_episode) return err(req, "EPISODE_MISMATCH", "stale episode");
@@ -702,6 +742,7 @@ json op_step(const json& req) {
     e.req = req;
     e.actions = {action};
     e.k = k;
+    if (std::string m = parse_fracs(req, "frac", 1, &e.fracs); !m.empty()) return err(req, "BAD_REQUEST", m);
     return exec_start(std::move(e));
 }
 
@@ -727,6 +768,7 @@ json op_step_seq(const json& req) {
         if (!a.is_number_integer() || (a.get<int>() != 0 && a.get<int>() != 1)) return err(req, "BAD_REQUEST", "actions must be 0/1");
         e.actions.push_back(a.get<int>());
     }
+    if (std::string m = parse_fracs(req, "fracs", e.actions.size(), &e.fracs); !m.empty()) return err(req, "BAD_REQUEST", m);
     return exec_start(std::move(e));
 }
 
@@ -978,6 +1020,7 @@ void release_control(const char* why) {
     press(false);
     g_controlled = false;
     g_exec.active = false;  // a paced request whose client left: drop it (no one to reply to)
+    cbf_clear();
     view_release();
     g_trace = false;
     g_present_every_ms = 0;  // the next client starts with every frame drawn

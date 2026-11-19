@@ -269,3 +269,41 @@ Additive; no protocol version bump. `hello` capabilities gain `watch_1x`, `overl
   - watch at 1x: 480 ticks took 2.01 s;
   - watch off: 480 ticks in 0.01 s;
   - snapshot shows the overlay.
+
+## Implemented: M8 CBF, presses at a fraction of a physics step (2026-11-19, claude/m8-bridge-05)
+
+User rule: CBF on every level. It uses the core mechanism of Click Between Frames (theyareonit/Click-Between-Frames v1.5.0 @9fa7c6f, MIT, credited), not an exact port. Vanilla Click Between Steps and Click On Steps are always off, and there's no physics bypass. Source: `mod/src/cbf.cpp`.
+
+- **Protocol (additive):**
+  - `hello.capabilities.cbf` is true when the hooks are installed.
+  - `step` takes an optional `frac` (number); `step_seq` takes an optional `fracs` with exactly one number per action.
+  - Each value must be finite and in [0, 1). The whole request is validated before any physics moves.
+  - A fraction applies to the first step of its decision, and only when that decision changes the held button (press or release).
+  - **0, or no fraction, presses at the step start exactly as before,** so every pre-CBF tape replays identically.
+  - `reset` replies with `input_timing = {cbf, click_between_steps, click_on_steps}`. The bridge rewrites both vanilla flags to false on every reset and step request.
+- **Mechanism, inside player 1's `PlayerObject::update(dt)` on the input step:**
+  1. If player 1 isn't buffering (on the ground, touching a ring, dashing, or dart/bird/ship/swing):
+     - `update(dt*f)`;
+     - if moving down relative to gravity, restore `m_isOnGround` to its start value;
+     - `checkCollisions(p, slope && !dart ? dt : 0, true)`;
+     - `updateRotation(dt*f)`;
+     - reset the collision log (four `CCDictionary::removeAllObjects` calls and four ints set to -1);
+     - `handleButton`;
+     - `update(dt*(1-f))`.
+  2. The vanilla end-of-step `updateRotation` applies the remaining rotation and restores `m_lastPosition` to the pre-step position.
+  3. A buffering player gets the input and then a full update, which is click-on-steps behaviour.
+  4. Player 2 advances a full step inside player 1's split, and its own call is skipped that tick, as in CBF. It's never split, because `m_isDualMode` isn't mapped yet; the bridge has no dual control anyway.
+- **2.2091 offsets.** These come from the geode-sdk/bindings 2.2091 member order, anchored on verified fields. The bindings' `PlayerObject::update` (0x4e6fc0) matches our verified table.
+  - Functions: `PlayerObject::updateRotation` 0x4ef390, `GJBaseGameLayer::checkCollisions` 0x31aae0.
+  - Layer: `m_player2` 0xdc0; `m_clickBetweenSteps` 0x38f1 and `m_clickOnSteps` 0x38f2 (after `m_anticheatSpike` 0x38e0, `m_timestamp` 0x38e8, `m_isBetweenSteps` 0x38f0). Read live: both 0 by default, beside a sensible timestamp double.
+  - Player: `m_isOnSlope` 0x9b8; `m_touchingRings` 0xa40, where counting forward from `m_playerSpeed` and back from `m_position` agree.
+  - Found live by behaviour: `m_lastPosition` 0x4d0 holds the previous tick's x; the collision logs are the four CCDictionary* at 0x5b0, the only heap run followed by four -1 ints at 0x5d0.
+- **Verified live** (`tools/m8/cbf_smoke.py --slot 3`, 7/7):
+  - the cbf capability is reported, and both vanilla flags are off;
+  - Stereo Madness's verified clear completes on tick 20332, with no fracs and with explicit zeros, the same as before CBF;
+  - bad fractions are refused before physics moves;
+  - jump onset: y after the press tick is 107.467, 106.859, 106.246 and 105.626 at f = 0, 0.25, 0.5 and 0.75, which is linear;
+  - f=0.5 sits within 0.012 of the midpoint of the f=0 ticks, against a per-tick rise of 2.37.
+
+  So `handleButton` called mid-update takes effect within the step. `tools/m8/view_smoke.py` is still 6/6 on this build.
+- **Not covered yet** (#47, Codex): slope, orb, wave, ship, moving-platform and dual-transition fixtures.

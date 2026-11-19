@@ -106,6 +106,17 @@ void view_frame(const char* mode_label, float progress); // game thread, once pe
 void view_set_client(const std::string& job, const std::vector<std::string>& lines);  // set_overlay op
 void view_release();                                     // client gone: drop client-provided lines
 
+// ---- M8 CBF (cbf.cpp): presses at a fraction of a physics step, CBF's core mechanism ----
+bool install_cbf();                          // hooks PlayerObject::update / updateRotation (not fatal)
+extern bool g_cbf_ok;
+bool cbf_arm(bool down, double frac);        // next player-1 update splits at frac and applies the input there
+void cbf_settle();                           // after the tick: apply an input no player update consumed
+void cbf_clear();                            // reset / disconnect
+void cbf_force_vanilla_click_off();          // user rule: vanilla Click Between Steps / Click On Steps off
+void cbf_click_flags(bool* between, bool* on);
+long long cbf_split_count();
+long long cbf_buffered_count();
+
 std::string sha256_file_hex(const std::wstring& path);
 bool install_isolation();   // fatal if false
 bool install_hooks();       // fatal if false (game hooks the controller depends on)
