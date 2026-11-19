@@ -35,7 +35,15 @@ One row per run. Don't take rows marked `waiting`. If a handoff conflicts with a
 | 14 | M5b official-level transfer: diagnose why it dies <6% on official 1-5, fix, then learn official levels by practice; held-out = downloaded online levels | handoffs/2026-11-19-claude-to-codex-m5b-official-transfer.md | yes (slot 1) | done (codex study, claude write-up): route encoder 19->22/27 drills; official 2-8%, online 0/10 |
 | 15 | (small, do between #14 runs) Patch slot 1's bot save for windowed display; relaunch on the new bridge | handoffs/2026-11-19-claude-to-codex-display-fix.md | no | done (claude): slot 1 save patched while closed |
 | 16 | M5c search-based teacher: deterministic segment search finds verified clears without humans; then expert iteration (BC on search clears) | tasks/M5c-search-teacher.md | yes (slot 0) | in progress (claude) |
-| 17 | Catch-up: log attempts in every runner; run M5c expert iteration on search clears (when Codex refills) | handoffs/2026-11-19-claude-to-codex-catchup.md | yes (slots 1+) | queued (waiting for Codex usage refill) |
+| 17 | Codex takes over: deploy ChatGPT Site, finish M5c solves (official 2/4/5), expert iteration, attempt logging, triple-spike follow-up | handoffs/2026-11-19-claude-to-codex-catchup.md | yes (slots 1+; slot 0 after Claude releases) | queued |
+
+## Where we stopped (2026-11-19, read this first)
+
+- **Headline:** the M5c search teacher clears official levels with no human input, each verified by a clean 0% run. Stereo Madness and Polargeist are solved (`build/m5c/main_1.json`, `main_3.json`). Back on Track, Dry Out and Base After Base: see `build/m5c/main_{2,4,5}.json` and `*.progress.json`. The solver resumes and skips solved levels.
+- **The trained policy still can't play real levels** (best 7.6% on official, 0/10 online). The next step is expert iteration on the search clears (`tools/m5c/expert.py`).
+- **All further work is handed to Codex in #17**, including deploying the ChatGPT Site. A new Claude session should read `handoffs/2026-11-19-claude-to-codex-catchup.md` for the full state, then check that row's progress before doing anything.
+- **Dashboards:** the Claude artifact (https://claude.ai/artifact/KRrQvsq6WkTcYJ4kmvp7ak) is refreshed by the 8:20 pm cloud routine trig_01YAtCETwr76snKBFJWJ9VyE. The ChatGPT Site is in `site/`, fed by `main/data/dashboard/site-dashboard.json`. The Windows task "babyzoink dashboard data" commits the data to `main` nightly at 8:03 pm. The repo has a single branch (`main`).
+- **Game:** GD 2.2091 bot copy in `game/2.2091` (gitignored). Launch with `mod/build/Release/gdbot-launch.exe [--instance N]`; one client per slot.
 
 ## Active work
 
