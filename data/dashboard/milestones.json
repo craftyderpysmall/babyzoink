@@ -33,8 +33,8 @@
   {
    "id": "M5",
    "name": "Curriculum: drills to official levels",
-   "status": "not_started",
-   "detail": "Mode-by-mode drills, then the official level ladder"
+   "status": "in_progress",
+   "detail": "All-mode drills verified; better collision features lift unseen drills to 22/27, but real levels stay at 2-13% (0/5 official, 0/10 online). Next: search-based teacher"
   },
   {
    "id": "M6",

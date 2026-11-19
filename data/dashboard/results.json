@@ -71,6 +71,54 @@
    "clears_within_3": 7.7,
    "first_try_clears": 6.0,
    "drills": 9
+  },
+  {
+   "study": "M5 generations (3 seeds, 27 unseen drills)",
+   "agent": "Generation 1",
+   "first_run_progress_pct": 71.5,
+   "clears_within_3": 21.0,
+   "first_try_clears": null,
+   "drills": 27
+  },
+  {
+   "study": "M5 generations (3 seeds, 27 unseen drills)",
+   "agent": "Generation 3",
+   "first_run_progress_pct": 73.4,
+   "clears_within_3": 19.0,
+   "first_try_clears": null,
+   "drills": 27
+  },
+  {
+   "study": "M5 official levels 1-5 (10 attempts each)",
+   "agent": "Generation 3, best seed",
+   "first_run_progress_pct": 3.1,
+   "clears_within_3": 0,
+   "first_try_clears": 0,
+   "drills": 5
+  },
+  {
+   "study": "M5b encoder comparison (seed 2357, 27 validation drills)",
+   "agent": "Original features",
+   "first_run_progress_pct": 78.0,
+   "clears_within_3": 19,
+   "first_try_clears": null,
+   "drills": 27
+  },
+  {
+   "study": "M5b encoder comparison (seed 2357, 27 validation drills)",
+   "agent": "Collision 'route' features",
+   "first_run_progress_pct": 87.0,
+   "clears_within_3": 22,
+   "first_try_clears": null,
+   "drills": 27
+  },
+  {
+   "study": "M5b online held-out (10 downloaded Easy-Hard levels)",
+   "agent": "Route features + official practice",
+   "first_run_progress_pct": 4.8,
+   "clears_within_3": 0,
+   "first_try_clears": 0,
+   "drills": 10
   }
  ],
  "meta": [

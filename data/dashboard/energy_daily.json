@@ -2,12 +2,12 @@
  "rows": [
   {
    "date": "2026-11-18",
-   "gd_cpu_hours": 2.73,
-   "training_cpu_hours": 8.895,
-   "kwh": 0.02034,
-   "cost_usd": 0.00605,
-   "cumulative_kwh": 0.02034,
-   "cumulative_cost_usd": 0.00605
+   "gd_cpu_hours": 3.149,
+   "training_cpu_hours": 9.893,
+   "kwh": 0.02282,
+   "cost_usd": 0.00679,
+   "cumulative_kwh": 0.02282,
+   "cumulative_cost_usd": 0.00679
   }
  ],
  "meta": [
@@ -25,7 +25,7 @@
   },
   {
    "label": "Generated",
-   "value": "2026-11-18 18:53 PST"
+   "value": "2026-11-18 20:03 PST"
   }
  ]
 }
