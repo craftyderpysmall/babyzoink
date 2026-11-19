@@ -19,7 +19,7 @@ import imitation
 from baseline import CPU_THREADS, MAX_ATTEMPTS, ROOT, frozen_policy, model_for, save_report, score
 from gdbot.env import GDEnv
 from gdbot.obs import ObservationEncoder
-from gdbot.protocol import PIPE_PREFIX, BridgeClient, NamedPipeTransport
+from gdbot.protocol import PIPE_PREFIX, BridgeClient, NamedPipeTransport, RemoteError
 from scale import metrics, scaled_fixtures
 
 ARMS = {"base": (None, 60), "base300": (None, 300), "near": (90.0, 60), "near300": (90.0, 300)}
@@ -48,6 +48,10 @@ def run(pid, output, seeds, arms):
     report = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {"evaluation": {}, "bc": {}}
     with BridgeClient(NamedPipeTransport(discovery["pipe"])) as client:
         client.require_isolated()
+        try:
+            client.request("quit_level")  # leave any level a previous client left loaded
+        except RemoteError:
+            pass
         client.request("set_mode", mode="dedicated")
         demos = {}
         for arm in arms:

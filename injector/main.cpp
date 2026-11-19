@@ -130,6 +130,14 @@ int wmain(int argc, wchar_t** argv) {
         }
     }
 
+    // Each slot loads its own copy of the bridge, so the build output (mod/build/Release) is never
+    // locked by a running game and the bridge can be rebuilt while other slots keep training.
+    CreateDirectoryW(inst_dir.c_str(), nullptr);
+    std::wstring slot_dll = inst_dir + L"\\gdbot_bridge.dll";
+    if (!CopyFileW(dll.c_str(), slot_dll.c_str(), FALSE))
+        return fail(pi, (L"could not copy the bridge DLL to " + slot_dll + L" (is this slot's game still running?)").c_str());
+    dll = slot_dll;
+
     // Find gdbot_init's RVA by mapping the DLL locally without running it.
     HMODULE local = LoadLibraryExW(dll.c_str(), nullptr, DONT_RESOLVE_DLL_REFERENCES);
     if (!local) return fail(pi, L"could not map bridge DLL locally");

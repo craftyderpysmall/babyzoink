@@ -765,6 +765,18 @@ LRESULT CALLBACK no_minimize_wndproc(HWND h, UINT msg, WPARAM wp, LPARAM lp) {
         GLOG("minimize request: sent behind other windows instead (a minimized GD stalls the bot)");
         return 0;
     }
+    // While a bot client controls the game, mouse/keyboard input to GD is ignored: a stray click in
+    // the (now windowed, visible) menu started a level under the bot. Window management still works.
+    bool input = (msg >= WM_KEYFIRST && msg <= WM_KEYLAST) || (msg >= WM_MOUSEFIRST && msg <= WM_MOUSELAST) ||
+                 msg == WM_INPUT || msg == WM_TOUCH || (msg >= WM_POINTERUPDATE && msg <= WM_POINTERWHEEL);
+    if (input && g_controlled) {
+        static ULONGLONG s_last = 0;
+        if (msg != WM_MOUSEMOVE && msg != WM_INPUT && GetTickCount64() - s_last > 5000) {
+            s_last = GetTickCount64();
+            GLOG("user input to GD ignored while the bot is in control (msg 0x%x)", msg);
+        }
+        return msg == WM_INPUT ? DefWindowProcW(h, msg, wp, lp) : 0;
+    }
     return CallWindowProcW(g_orig_wndproc, h, msg, wp, lp);
 }
 

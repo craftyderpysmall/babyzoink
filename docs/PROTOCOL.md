@@ -198,4 +198,6 @@ It is enabled per session via `hello.capabilities.binary_obs`. This is only buil
   - `mode.txt` stays shared, so one toggle drives every slot. Python helpers are in `gdbot/instances.py`.
   - Two slots running the same tape at once both match a solo trace exactly. Aggregate throughput was 6,211 ticks/s, against 3,086 for one instance.
   - Claim a slot as `RUNTIME:gd-2.2091/slot<N>`; plain `RUNTIME:gd-2.2091` means slot 0.
+- **Per-slot DLL copy:** the launcher copies the bridge DLL into the slot's directory (`gdbot/gdbot_bridge.dll` or `gdbot/inst<N>/gdbot_bridge.dll`) and loads that copy. The build output is never locked, so the bridge can be rebuilt while other slots run; a slot picks up the new build at its next launch.
+- **Input guard:** while a bot client is connected, mouse and keyboard input to GD is ignored, and this is logged. A stray click in the visible window once started a level under the bot. Window moves, resizes and minimizing still work.
 - **Diagnostics:** `ExitProcess`, self-`TerminateProcess` and the first three access violations are logged to `bridge.log` with a module+offset stack.
