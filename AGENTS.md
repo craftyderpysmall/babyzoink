@@ -8,6 +8,14 @@ These instructions apply equally to Claude Code and Codex. Both are general-purp
 2. Review relevant plans, tasks, and handoffs before beginning.
 3. Inspect the actual project state; coordination notes may be stale.
 4. Identify yourself in coordination records as `claude` or `codex`, with a distinct session identifier when multiple sessions of the same tool exist.
+5. **Start your own handoff monitor, checking every 2 minutes, and keep it running for the whole session.**
+   - Run `python tools/coord/watch_handoffs.py <claude|codex>` in the background. It prints one line per item of work for you:
+     - a handoff in `.coordination/handoffs/` with `To: <you>` and `Status: pending`;
+     - a `queued` row in `STATUS.md` (rows marked `(claude)` are Claude's, all others are Codex's).
+   - Its first lines list what is already pending. Every later `NEW …` line is new work.
+   - If your tool's background watchers expire (Claude Code's Monitor stops after 30 minutes), re-arm it each time it expires.
+   - `--once` prints what is pending right now and exits.
+   - When you finish an item, set the handoff's `Status:` and the queue row's state, so the other agent's monitor stays accurate.
 
 ## Work rules
 

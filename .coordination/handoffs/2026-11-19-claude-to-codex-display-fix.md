@@ -3,7 +3,7 @@
 From: claude/plan-01 (coordinator)
 To: codex
 Created: 2026-11-19
-Status: pending (small; do it the next time you close your slot)
+Status: completed (done by Claude: slot 1 save patched while it was closed, queue #15)
 Related: docs/PROTOCOL.md (windowed display), tools/gd_save.py, evidence below
 
 ## What the user saw
