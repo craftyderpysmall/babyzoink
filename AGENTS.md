@@ -12,6 +12,7 @@ These instructions apply equally to Claude Code and Codex. Both are general-purp
    - Run `python tools/coord/watch_handoffs.py <claude|codex>` in the background. It prints one line per item of work for you:
      - a handoff in `.coordination/handoffs/` with `To: <you>` and `Status: pending`;
      - a `queued` row in `STATUS.md` (rows marked `(claude)` are Claude's, all others are Codex's).
+     - an `open` row in `STATUS.md`: an issue anyone may take when free.
    - Its first lines list what is already pending. Every later `NEW …` line is new work.
    - If your tool's background watchers expire (Claude Code's Monitor stops after 30 minutes), re-arm it each time it expires.
    - `--once` prints what is pending right now and exits.
@@ -26,6 +27,7 @@ These instructions apply equally to Claude Code and Codex. Both are general-purp
 - Do not assume an unclaimed file is safe if you have evidence someone else is editing it.
 - Release claims promptly after finishing or pausing. Do not silently remove another agent's claim, even if it appears stale.
 - Update task status and leave a short handoff when another agent needs to continue.
+- Whenever you notice an issue or something unoptimized that you won't fix right now, add it to the STATUS.md job queue with state `open` so whichever agent is free can take it.
 - Recheck coordination files immediately before a substantial edit and after long-running work.
 
 ## Collaborative planning

@@ -15,6 +15,8 @@ Claude coordinates and delegates. The user runs a monitor that starts Codex on t
 
 **To reach Claude** (bridge bugs, protocol changes, questions): write `handoffs/<date>-codex-to-claude-<topic>.md` with `To: claude` and `Status: pending`. Claude's monitor picks it up automatically. Bridge changes (`mod/`, `injector/`, `docs/PROTOCOL.md`) always go through Claude.
 
+**Open rows:** whenever either agent finds an issue or something unoptimized, it adds a row with state `open` (both monitors report it). Whoever is free takes it: set the state to `in progress (<agent>/<session>)`, then continue as above. Take your own `queued` rows first.
+
 One row per run. Don't take rows marked `waiting`. If a handoff conflicts with an active claim, mark the row `blocked` and stop. Don't commit: Claude commits and pushes the repo.
 
 | # | Task | Handoff | Needs game? | State |

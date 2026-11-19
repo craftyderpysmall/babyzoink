@@ -4,6 +4,7 @@ Watches, for the given agent (claude | codex):
   - handoff files in .coordination/handoffs/ with `To: <agent>` and `Status: pending`
   - queue rows in .coordination/STATUS.md whose state is `queued`: rows marked "(claude)" belong to
     Claude, all other queued rows to Codex
+  - queue rows whose state is `open`: issues anyone may take; reported to both agents
 Each item is reported once per run (already-pending items are reported at start, prefixed "pending").
 
 Usage: python tools/coord/watch_handoffs.py <claude|codex> [--interval 120] [--once]
@@ -42,11 +43,14 @@ def queued_rows(agent):
         if not m:
             continue
         number, body, state = m.group(1), m.group(2), m.group(3).strip().lower()
+        task = body.split("|")[0].strip()
+        if state.startswith("open"):  # open rows are for whichever agent is free
+            out.add(f"open #{number}: {task[:120]}")
+            continue
         if not state.startswith("queued"):
             continue
         mine = "(claude)" in (body + state).lower()
         if (agent == "claude") == mine:
-            task = body.split("|")[0].strip()
             out.add(f"queue #{number}: {task[:120]}")
     return out
 

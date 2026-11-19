@@ -41,13 +41,7 @@
       "id": "M6",
       "name": "Held-out evaluation and polish",
       "status": "in_progress",
-      "detail": "Search-teacher data at scale: 59 of 63 training drills verified; 0 online levels cleared so far (Skill Gotten Gains saved mid-search). Paused by the user on 19 Nov; DAgger and the attempts curve are queued."
-    },
-    {
-      "id": "M7",
-      "name": "Stretch goals",
-      "status": "in_progress",
-      "detail": "Parallel game slots work (2x throughput). Draw-skip adds 7-9%. Low textures save about 100 MB per slot. A memory guard restarts slots automatically. Cloud GPU and platformer mode not started."
+      "detail": "Search-teacher data at scale: 59 of 63 training drills verified; 0 online levels cleared so far (8 used the full search budget; solver stalls are #31). DAgger (#20) and the guided-search curve (#21) are done. Runs on parallel game slots with draw-skip and an automatic memory guard."
     }
   ],
   "results": [

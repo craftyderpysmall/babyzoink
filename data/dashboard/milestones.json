@@ -33,20 +33,14 @@
   {
    "id": "M5",
    "name": "Curriculum: drills to official levels",
-   "status": "in_progress",
-   "detail": "All-mode drills verified; better collision features lift unseen drills to 22/27, but real levels stay at 2-13% (0/5 official, 0/10 online). Next: search-based teacher"
+   "status": "done",
+   "detail": "Curriculum of 54 drills built and verified. The search teacher (M5c) cleared Stereo Madness, Back on Track and Polargeist from 0% with no human input. The trained policy still can't play official levels (best 7.6%)."
   },
   {
    "id": "M6",
    "name": "Held-out evaluation and polish",
-   "status": "not_started",
-   "detail": "Frozen protocol on unseen levels; attempts-to-first-clear over time"
-  },
-  {
-   "id": "M7",
-   "name": "Stretch goals",
-   "status": "not_started",
-   "detail": "Parallel game instances, cloud GPU, platformer mode"
+   "status": "in_progress",
+   "detail": "Search-teacher data at scale: 59 of 63 training drills verified; 0 online levels cleared so far (8 used the full search budget; solver stalls are #31). DAgger (#20) and the guided-search curve (#21) are done. Runs on parallel game slots with draw-skip and an automatic memory guard."
   }
  ],
  "meta": [
