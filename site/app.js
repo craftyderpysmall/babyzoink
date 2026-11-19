@@ -51,6 +51,44 @@ function attempts() {
   }), "No attempts recorded for this group yet.", 6);
 }
 
+function latestModeRow(name) {
+  return (snapshot.performance?.zero_shot?.trend ?? []).reduce((latest, row) => {
+    return row.mode === name && (!latest || row.generation > latest.generation) ? row : latest;
+  }, null);
+}
+
+function overviewPerformance() {
+  const official = snapshot.levels?.filter((row) => row.level?.startsWith("official:"));
+  const cleared = official?.filter((row) => row.normal_clears > 0) ?? [];
+  const searchClears = cleared.filter((row) =>
+    ["m5c-search", "m5c-demo-replay"].includes(row.first_cleared_by?.run)).length;
+  const clears = official?.length ? `${cleared.length} of 5` : "—";
+  const attribution = searchClears ? ` · ${searchClears} first cleared by search teacher` : "";
+  byId("official-clears").textContent = `Official levels cleared ${clears}${attribution}`;
+  const best = (snapshot.progress.results ?? []).reduce((highest, row) => {
+    if (!Number.isFinite(row.first_run_progress_pct) || row.agent === "Timing heuristic") return highest;
+    return !highest || row.first_run_progress_pct > highest.first_run_progress_pct ? row : highest;
+  }, null);
+  byId("policy-best").textContent = best
+    ? `Trained-policy best ${format(best.first_run_progress_pct)}% first run · ${best.study}`
+    : "Trained-policy best —";
+  byId("overview-modes").replaceChildren(...modes.map((name) => {
+    const key = name.toLowerCase();
+    const record = latestModeRow(key);
+    const link = el("a", undefined, "mode");
+    link.href = `#performance/${key}`;
+    const rating = Number.isFinite(record?.rating)
+      ? describe(record)
+      : `Not rated yet · ${format(record?.seconds ?? 0)} s observed, ${format(record?.deaths ?? 0, 0)} deaths`;
+    const rate = Number.isFinite(record?.deaths_per_minute) ? format(record.deaths_per_minute) : "—";
+    const bestLevel = record?.best_level_cleared;
+    const level = bestLevel ? snapshot.level_names?.[bestLevel] ?? bestLevel : "—";
+    link.append(el("strong", name), el("small", rating),
+      el("small", `Deaths/min ${rate}`), el("small", `Best level cleared ${level}`));
+    return link;
+  }));
+}
+
 function overview() {
   const { progress, energy } = snapshot;
   const completed = progress.milestones.filter((item) => item.status === "done").length;
@@ -71,9 +109,11 @@ function overview() {
   });
   byId("milestones").replaceChildren(...items);
   renderRows("results", progress.results.map((row) => [
-    row.study, row.agent, `${format(row.first_run_progress_pct)}%`,
-    `${format(row.clears_within_3)} / ${row.drills}`, `${format(row.first_try_clears)} / ${row.drills}`,
+    row.study, row.agent, Number.isFinite(row.first_run_progress_pct) ? `${format(row.first_run_progress_pct)}%` : "—",
+    Number.isFinite(row.clears_within_3) ? `${format(row.clears_within_3)} / ${row.drills}` : "—",
+    Number.isFinite(row.first_try_clears) ? `${format(row.first_try_clears)} / ${row.drills}` : "—",
   ]), "No study results are available.", 5);
+  overviewPerformance();
   attempts();
   renderRows("energy-rows", energy.rows.map((row) => [
     row.date, `${format(row.kwh, 4)} kWh`, usd.format(row.cost_usd),
@@ -164,7 +204,7 @@ function title(name) {
 }
 
 function scopeRows() {
-  return snapshot.performance[byId("scope").value].trend;
+  return snapshot.performance?.[byId("scope").value]?.trend ?? [];
 }
 
 function refreshGenerations() {
@@ -184,9 +224,11 @@ function refreshGenerations() {
 function describe(record) {
   if (!record) return "No evidence";
   const observed = `${format(record.seconds)} s observed`;
-  if (record.rating === null) return observed;
+  if (!Number.isFinite(record.rating)) return observed;
   const scale = record.calibration === "gddl" ? "GDDL" : "Pre-demon";
-  return `${scale} ${format(record.rating, 2)} · ${format(record.interval[0], 2)} to ${format(record.interval[1], 2)}`;
+  const rating = `${scale} ${format(record.rating, 2)}`;
+  return record.interval
+    ? `${rating} · ${format(record.interval[0], 2)} to ${format(record.interval[1], 2)}` : rating;
 }
 
 function performance() {
@@ -210,19 +252,29 @@ function performance() {
     const point = historical.get(number);
     return { label: `Gen ${number}`, value: point?.rating ?? null, interval: point?.interval };
   }), { empty: "No calibrated ratings in this view." });
-  const points = [...historical.values()].filter((row) => row.rating !== null);
+  const points = [...historical.values()].filter((row) => Number.isFinite(row.rating));
   byId("trend-chart").setAttribute("aria-label", points.length
     ? points.map((row) => `Generation ${row.generation}, rating ${describe(row)}`).join(". ")
     : `No calibrated ${title(mode)} ratings in this view`);
   renderRows("level-rows", (current?.levels ?? []).map((row) => [
-    snapshot.level_names[row.level] ?? row.level, row.anchor ?? "Unrated",
+    snapshot.level_names?.[row.level] ?? row.level, row.anchor ?? "Unrated",
     `${format(row.seconds)} s · ${row.entries} entries`, row.deaths_per_minute ?? "—",
     row.mean_attempts_to_first_section_clear === null ? "—" : format(row.mean_attempts_to_first_section_clear),
   ]), "No entered sections recorded for this view.", 5);
 }
 
 function route() {
-  const active = location.hash === "#performance" ? "performance" : "overview";
+  const [page, requestedMode] = location.hash.slice(1).split("/");
+  const active = page === "performance" ? "performance" : "overview";
+  if (active === "performance" && modes.some((name) => name.toLowerCase() === requestedMode)) {
+    mode = requestedMode;
+    if (snapshot) {
+      byId("scope").value = "zero_shot";
+      refreshGenerations();
+      const record = latestModeRow(mode);
+      if (record) byId("generation").value = record.generation;
+    }
+  }
   for (const name of ["overview", "performance"]) {
     byId(name).hidden = active !== name;
     if (name === active) byId(`nav-${name}`).setAttribute("aria-current", "page");
@@ -249,7 +301,7 @@ async function fetchData(url, timeout = 10_000) {
   if (!response.ok) throw new Error(`Snapshot HTTP ${response.status}`);
   const data = await response.json();
   if (data.schema !== 1 || !Number.isFinite(Date.parse(data.updated_at)) ||
-      !data.progress || !data.energy || !data.performance || !data.gddl) {
+      !data.progress || !data.energy || !data.gddl) {
     throw new Error("Unsupported snapshot");
   }
   return data;

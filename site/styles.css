@@ -30,6 +30,18 @@ nav a[aria-current] { color: var(--mint); border-color: var(--mint); }
 h1 { margin: 0; font-size: clamp(2.4rem, 5vw, 4rem); line-height: 1.07; letter-spacing: -.055em; }
 .heading p, .note, .method p { color: var(--muted); line-height: 1.55; }
 .heading p { margin: 12px 0 0; }
+.performance-headline { display: flex; flex-wrap: wrap; gap: 8px 24px; margin: 0 0 24px; color: var(--mint); line-height: 1.5; }
+.performance-heading { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 16px; }
+.performance-heading h2 { margin: 0; font-size: 1.25rem; }
+.overview-performance .mode-cards { margin-top: 12px; }
+.overview-performance .mode { display: block; text-decoration: none; line-height: 1.4; }
+.overview-performance .mode strong { color: var(--mint); }
+.overview-performance .mode:hover strong { text-decoration: underline; }
+.attempts-trend { margin-block: 20px 24px; }
+.empty-plot { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; align-items: center; padding: 16px; color: var(--muted); font-size: .875rem; }
+.empty-plot span:first-child { writing-mode: vertical-rl; transform: rotate(180deg); }
+.empty-plot p { display: grid; place-items: center; text-align: center; margin: 0; padding: 12px; min-height: 110px; border-left: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.empty-plot span:last-child { grid-column: 2; text-align: center; }
 .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 24px; }
 .stats article, .panel, .mode { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
 .stats article { padding: 17px 20px; }

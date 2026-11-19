@@ -66,13 +66,15 @@ class Solver:
         self.c, self.level, self.seg, self.look, self.budget, self.log = client, level, seg, look, budget, log
         self.evals = 0
         self.ticks = 0
+        self.verification_attempts = 0
         self.progress = progress              # Path for resumable state (saved at every re-anchor)
 
     def save_progress(self):
         if self.progress:
             tmp = self.progress.with_suffix(".tmp")
             tmp.write_text(json.dumps({"committed": self.committed, "seg_x": self.seg_x,
-                                       "bad": sorted(self.bad), "evals": self.evals, "ticks": self.ticks}),
+                                       "bad": sorted(self.bad), "evals": self.evals, "ticks": self.ticks,
+                                       "verification_attempts": self.verification_attempts}),
                            encoding="utf-8")
             tmp.replace(self.progress)
 
@@ -81,6 +83,7 @@ class Solver:
             d = json.loads(self.progress.read_text(encoding="utf-8"))
             self.committed, self.seg_x, self.bad = d["committed"], d["seg_x"], set(d["bad"])
             self.evals, self.ticks = d["evals"], d["ticks"]
+            self.verification_attempts = d.get("verification_attempts", self.verification_attempts)
             self.stack = [candidates(self.seg, 0)] + [candidates(self.seg, s[-1]) for s in self.committed]
             self.log(f"  resuming at segment {len(self.committed)} (x {self.seg_x[-1] if self.seg_x else 0:.0f}); "
                      f"the replay check re-verifies the saved prefix")
@@ -136,13 +139,19 @@ class Solver:
         return warm + [a for s in self.committed[base:] for a in s]
 
     def evaluate(self, cand):
-        """Viability of a candidate at the current depth: (ok, complete, survived | finishing inputs)."""
+        """Candidate viability, or None if the restore did not reproduce the current boundary."""
         pre = self.prefix()
+        check_restore = self.cps[-1] > 0
         best = -1
         for follow in self.followups():
+            if self.evals >= self.budget:
+                break
             self.restore()
             self.evals += 1
-            r = self.run(pre + cand + follow)
+            r = self.run(pre + cand + follow, xs=check_restore)
+            if check_restore and (len(r["xs"]) < len(pre) or
+                                  abs(r["xs"][len(pre) - 1] - self.seg_x[-1]) > 1e-3):
+                return None
             survived = r["decisions"] - len(pre)
             if r["terminal"] == "complete":
                 return True, True, (cand + follow)[:survived + 1]
@@ -152,6 +161,21 @@ class Solver:
             if survived < len(cand):          # died inside the segment: no follow-up can help
                 break
         return False, False, best
+
+    def repair_boundary(self):
+        """Exclude the restore point that failed and retry candidates from a fresh replay."""
+        depth = len(self.committed)
+        base = self.cps[-1]
+        if base:
+            self.bad.add(base)
+        self.log(f"  restore did not reproduce depth {depth} from checkpoint depth {base}: re-anchoring")
+        # If the older fallback failed across a long replay, retry from zero before
+        # spending another full replay on each preceding checkpoint.
+        older_failed = 0 < base < depth - self.KEEP_CHECKPOINTS
+        self.rebuild(depth, allow_older_checkpoint=not older_failed)
+        if len(self.committed) == depth:
+            self.stack[-1] = candidates(self.seg, self.committed[-1][-1] if depth else 0)
+        self.save_progress()
 
     def run_segment(self, seg, depth_after, *, checkpoint):
         """Run one segment on the live path. With `checkpoint`, create the checkpoint for
@@ -166,18 +190,19 @@ class Solver:
         return self.run(seg, xs=True)
 
     # -- re-anchoring (backstop) ------------------------------------------------------------------
-    def rebuild(self, target):
-        """Replay committed[:target] from a clean 0% start (practice on), re-creating checkpoints for
-        the last KEEP_CHECKPOINTS depths and checking each segment's end x against the search. On a
-        mismatch, cut back to the last matching segment. Returns the matched depth."""
+    def rebuild(self, target, *, allow_older_checkpoint=True):
+        """Replay from 0% and rebuild recent checkpoints, falling back to an older release if needed."""
         self.anchors += 1
         self.drop_checkpoints()
         self.cps = [0]
         self.reset_zero()
         self.c.request("set_practice", enabled=True)
+        eligible = [depth for depth in range(1, target + 1) if self.can_checkpoint(depth)]
+        checkpoints = {depth for depth in eligible if depth >= target - self.KEEP_CHECKPOINTS}
+        if allow_older_checkpoint and not checkpoints and eligible:
+            checkpoints.add(eligible[-1])
         for depth in range(target):
-            want = depth + 1 >= target - self.KEEP_CHECKPOINTS and self.can_checkpoint(depth + 1)
-            r = self.run_segment(self.committed[depth], depth + 1, checkpoint=want)
+            r = self.run_segment(self.committed[depth], depth + 1, checkpoint=depth + 1 in checkpoints)
             end = r["xs"][-1] if r.get("xs") else None
             if r["terminal"] or end is None or abs(end - self.seg_x[depth]) > 1e-3:
                 self.drifts += 1
@@ -195,7 +220,7 @@ class Solver:
                 del self.committed[depth:], self.seg_x[depth:]
                 del self.stack[depth + 1:]
                 self.stack[depth] = candidates(self.seg, self.committed[-1][-1] if self.committed else 0)
-                return self.rebuild(depth)
+                return self.rebuild(depth, allow_older_checkpoint=allow_older_checkpoint)
         return target
 
     def solve(self):
@@ -212,7 +237,11 @@ class Solver:
             depth = len(self.committed)
             chosen = None
             for cand in self.stack[-1]:
-                ok, complete, survived = self.evaluate(cand)
+                trial = self.evaluate(cand)
+                if trial is None:
+                    self.repair_boundary()
+                    break
+                ok, complete, survived = trial
                 if complete:
                     actions = [a for s in self.committed for a in s] + survived  # survived = finishing inputs
                     self.log(f"  complete in search at segment {depth} ({self.evals} evals, {self.ticks} ticks)")
@@ -229,6 +258,7 @@ class Solver:
             else:
                 if depth == 0:
                     self.log("  no candidate survives the first segment")
+                    self.save_progress()
                     return None
                 # every candidate failed: backtrack one segment
                 if self.cps[-1] == depth:
@@ -239,12 +269,9 @@ class Solver:
             if chosen is None:
                 continue
             self.restore()
-            base = self.cps[-1]
             pr = self.run(self.prefix())      # warm-up + skipped segments up to the current depth
-            if pr["terminal"]:
-                # In practice mode a dead player is respawned, so never keep running after a death.
-                self.log(f"  replay to depth {depth} died ({pr['terminal']}, base {base}): re-anchoring")
-                self.rebuild(len(self.committed))
+            if pr["terminal"] or (depth and abs(pr["player"]["x"] - self.seg_x[-1]) > 1e-3):
+                self.repair_boundary()
                 continue
             self.committed.append(chosen)
             r = self.run_segment(chosen, depth + 1, checkpoint=self.can_checkpoint(depth + 1))
@@ -269,6 +296,7 @@ class Solver:
                 self.log(f"  x={x:7.0f} segments={len(self.committed)} evals={self.evals} ticks={self.ticks} "
                          f"anchors={self.anchors} drifts={self.drifts}")
         self.log(f"  budget exhausted at {len(self.committed)} segments (furthest x {furthest:.0f})")
+        self.save_progress()
         return None
 
     def finish(self, actions, t0):
@@ -276,11 +304,14 @@ class Solver:
         self.drop_checkpoints()
         self.cps = [0]
         self.reset_zero()
+        self.verification_attempts += 1
+        self.save_progress()
         r = self.run(actions)
         verified = r["terminal"] == "complete"
         self.log(f"  verification from 0%: {r['terminal']} after {r['decisions']} decisions "
                  f"(anchors {self.anchors}, drifts {self.drifts})")
         return {"actions": actions, "k": K, "verified": verified, "evals": self.evals, "search_ticks": self.ticks,
+                "verification_attempts": self.verification_attempts,
                 "anchors": self.anchors, "drifts": self.drifts,
                 "wall_s": round(time.perf_counter() - t0, 2), "decisions": len(actions)}
 

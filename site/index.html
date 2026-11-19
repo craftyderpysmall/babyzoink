@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Geometry Dash training progress, practice results, and per-mode performance.">
   <title>Babyzoink · Training Dashboard</title>
-  <link rel="stylesheet" href="styles.css">
-  <script src="app.js" type="module"></script>
+  <link rel="stylesheet" href="styles.css?v=overview-performance">
+  <script src="app.js?v=overview-performance" type="module"></script>
 </head>
 <body>
   <header class="bar">
@@ -27,6 +27,25 @@
         <h1 id="overview-title">Training overview</h1>
         <p>Geometry Dash learning, from the first replay to full-level clears.</p>
       </div>
+      <p class="performance-headline" id="performance-headline">
+        <span id="official-clears">Official levels cleared —</span>
+        <span id="policy-best">Trained-policy best —</span>
+      </p>
+      <section class="overview-performance" aria-labelledby="overview-performance-title">
+        <div class="performance-heading">
+          <h2 id="overview-performance-title">Mode performance</h2>
+          <span class="tag">Zero-shot first runs</span>
+        </div>
+        <div class="mode-cards" id="overview-modes"></div>
+      </section>
+      <section class="panel trend attempts-trend" aria-labelledby="attempts-trend-title">
+        <div class="panel-head"><h2 id="attempts-trend-title">Attempts to first clear across generations</h2></div>
+        <div class="empty-plot">
+          <span>Attempts to first clear</span>
+          <p>No comparable first-clear measurements across generations yet.</p>
+          <span>Generation</span>
+        </div>
+      </section>
       <div class="stats">
         <article><h2>Milestones complete</h2><strong id="done">—</strong><small id="next"></small></article>
         <article><h2>Estimated energy</h2><strong id="energy">—</strong><small id="tracking"></small></article>

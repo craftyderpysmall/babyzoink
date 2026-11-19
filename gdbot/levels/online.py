@@ -20,6 +20,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 CACHE = ROOT / "levels" / "online"
+FROZEN_M5B_ONLINE_IDS = (6508283, 4454123, 74730213, 11940, 146319148, 94887416,
+                         112109153, 83923662, 137883268, 83653641)
 ENDPOINT = "https://www.boomlings.com/database/downloadGJLevel22.php"
 SECRET = "Wmfd2893gb7"  # GD's public, client-embedded request secret (identical for every player)
 MIN_INTERVAL_S = 2.0  # be gentle with RobTop's servers

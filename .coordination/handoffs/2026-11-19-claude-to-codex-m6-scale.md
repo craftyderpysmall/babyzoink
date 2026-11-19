@@ -46,3 +46,7 @@ So the bottleneck is **coverage**: how many and how varied the solved levels are
 - **Data use:** held-out levels never supply demos or selection.
 
 ## Response — [recipient/session, UTC]
+
+### B — Training pool ready
+
+Codex selected and verified 59 rated classic online levels and 63 training drills. No frozen online ID or exact held-out payload overlaps the training pool. The manifests are under build/m6-scale/ and the protocol is in tasks/M6-scale.md. The sharded solve worker and nightly ledger support are in place. The drill pilot did not launch due to available RAM; resume it after the #18 diagnostics and another memory check.

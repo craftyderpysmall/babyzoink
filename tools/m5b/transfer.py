@@ -18,14 +18,12 @@ from study import (
     full_run, metrics, model_for, save_report, score, study_pools, trusted_archive,
 )
 from gdbot.instances import discovery
-from gdbot.levels.online import level_spec
+from gdbot.levels.online import FROZEN_M5B_ONLINE_IDS as ONLINE_IDS, level_spec
 from gdbot.obs import ObservationEncoder
 from gdbot.protocol import PIPE_PREFIX, BridgeClient, NamedPipeTransport
 
 SEED = 2357
 BASE = ROOT / "build/m5-curriculum"
-ONLINE_IDS = (6508283, 4454123, 74730213, 11940, 146319148, 94887416,
-              112109153, 83923662, 137883268, 83653641)
 
 
 @dataclass(frozen=True)
@@ -65,14 +63,14 @@ def online_pool():
     return pool
 
 
-def clone_checkpoint(model, archives, checkpoint):
+def clone_checkpoint(model, archives, checkpoint, *, seed=SEED):
     start, cpu = perf_counter(), process_time()
-    samples = clone(model, archives, SEED)
+    samples = clone(model, archives, seed)
     model.save(checkpoint)
     return {"samples": samples, "wall_s": perf_counter() - start, "cpu_s": process_time() - cpu}
 
 
-def first_runs(env, pool, checkpoint, run, *, generation, official):
+def first_runs(env, pool, checkpoint, run, *, generation, official, seed=SEED):
     model = PPO.load(checkpoint, device="cpu")
     choose = frozen_policy(model)
     env.max_ticks = 40_000 if official else 6_000
@@ -80,7 +78,7 @@ def first_runs(env, pool, checkpoint, run, *, generation, official):
     with env.recording(run):
         for index, fixture in enumerate(pool):
             env.select(fixture)
-            env.plan_trial(generation, SEED, 1, zero_shot=True)
+            env.plan_trial(generation, seed, 1, zero_shot=True)
             _, first = full_run(env, choose, 0, EVAL_SEED + 20 * index)
             scores[fixture.variant] = first
             env.leave()

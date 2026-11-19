@@ -3,7 +3,8 @@
 Idempotent: each study becomes one ledger file named after it, rewritten on every run.
 Sources: M4 paired practice, M5 curriculum (held-out, validation, train, official), M5b transfer
 (validation arms, official training + zero-shot, online held-out, drill regression), M5c search
-teacher solutions, and the expert-cloning and triple-spike comparisons. Missing reports are skipped.
+teacher solutions, the expert-cloning and triple-spike comparisons, and M6 training and evaluation.
+Missing reports are skipped.
 """
 import json
 import re
@@ -92,14 +93,25 @@ def m5b():
 
 
 def m5c():
-    rows = []
-    for p in sorted((ROOT / "build/m5c").glob("*.json")):
+    directory = ROOT / "build/m5c"
+    rows = {}
+    for p in sorted(directory.glob("*.json")):
         d = json.loads(p.read_text(encoding="utf-8"))
         if "level" not in d:
             continue
-        rows.append(solver_row(d["level"], d["result"], t=mtime(p)))
+        outcome = solver_row(d["level"], d["result"], t=mtime(p))
+        rows[outcome["level"]] = outcome
+    for p in sorted(directory.glob("main_*.progress.json")):
+        number = int(p.name.split("_", 1)[1].split(".", 1)[0])
+        level = f"official:{number}"
+        if rows.get(level, {}).get("normal_clears"):
+            continue
+        progress = json.loads(p.read_text(encoding="utf-8"))
+        rows[level] = row("m5c-search", level, name=OFFICIAL[number - 1], t=mtime(p),
+                          normal_attempts=progress.get("verification_attempts", 0),
+                          practice_attempts=progress["evals"])
     if rows:
-        write("m5c-search", rows)
+        write("m5c-search", rows.values())
 
 
 def solver_row(name, res, t=None):
@@ -114,9 +126,10 @@ def solver_row(name, res, t=None):
         label = json.loads(meta.read_text(encoding="utf-8"))["name"] if meta.exists() else None
     if not res:
         return row("m5c-search", level, name=label, t=t, normal_attempts=0, practice_attempts=0)
-    return row("m5c-search", level, name=label, t=t, normal_attempts=1, practice_attempts=res["evals"],
+    normal = res.get("verification_attempts", 1)
+    return row("m5c-search", level, name=label, t=t, normal_attempts=normal, practice_attempts=res["evals"],
                normal_clears=int(res["verified"]), best_progress=1.0 if res["verified"] else 0.0,
-               first_clear_attempt=1 if res["verified"] else None, practice_clear=True)
+               first_clear_attempt=normal if res["verified"] else None, practice_clear=bool(res["verified"]))
 
 
 def m5c_expert():
@@ -152,8 +165,46 @@ def m5c_triple():
     write("m5c-triple", rows)
 
 
+def m6_search():
+    rows = []
+    for p in sorted((ROOT / "build/m6-scale/solutions").glob("*.json")):
+        if p.name.endswith(".progress.json"):
+            continue
+        report = json.loads(p.read_text(encoding="utf-8"))
+        verified = report["verified"]
+        normal = report["normal_attempts"]
+        rows.append(row("m6-search", report["level"], name=report["name"], t=mtime(p),
+                        normal_attempts=normal, practice_attempts=report["practice_attempts"],
+                        normal_clears=int(verified), practice_clear=verified,
+                        best_progress=1.0 if verified else 0.0,
+                        first_clear_attempt=normal if verified else None))
+    if rows:
+        write("m6-search", rows)
+
+
+def m6_curve():
+    p = ROOT / "build/m6-scale/curve/report.json"
+    if not p.exists():
+        return
+    report, t = json.loads(p.read_text(encoding="utf-8")), mtime(p)
+    rows = []
+    for level, demo in report["demos"].items():
+        rows.append(row("m6-demo-replay", level, name=demo["name"], t=t, normal_attempts=1,
+                        normal_clears=1, best_progress=1.0, first_clear_attempt=1))
+    for run, result in report["runs"].items():
+        for official, name in enumerate(OFFICIAL, 1):
+            if name in result.get("official", {}):
+                eval_run = {"attempts": [result["official"][name]]}
+                rows.append(from_result(f"{run}-official", f"official:{official}", eval_run, name=name, t=t))
+        for key, attempt in result.get("online", {}).items():
+            level, _, name = key.partition("/")
+            rows.append(from_result(f"{run}-online", f"online:{level}", {"attempts": [attempt]}, name=name, t=t))
+    if rows:
+        write("m6-curve", rows)
+
+
 if __name__ == "__main__":
-    for step in (m4, m5, m5b, m5c, m5c_expert, m5c_triple):
+    for step in (m4, m5, m5b, m5c, m5c_expert, m5c_triple, m6_search, m6_curve):
         step()
     from gdbot.attempts import read, summarize
     s = summarize(read())
