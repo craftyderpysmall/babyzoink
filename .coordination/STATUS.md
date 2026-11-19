@@ -98,8 +98,7 @@ One row per run. Don't take rows marked `waiting`. If a handoff conflicts with a
 | codex + claude | Two independent safety reviews (#27, #28) | handoffs/2026-11-19-claude-to-both-safety-review.md | pending |
 | codex | Bridge rebuild: draw-skip, window colours, quit crash warning | handoffs/2026-11-19-claude-to-codex-bridge-perf.md | info |
 | claude | Transfer Dry Out solver files for #18 | handoffs/2026-11-19-codex-to-claude-dryout-claim.md | completed (reassigned to Codex, #22) |
-| claude | Profile memory during repeated M6 search | handoffs/2026-11-19-codex-to-claude-m6-slot-memory.md | pending |
-| claude | Handle the user's Microsoft Defender request | handoffs/2026-11-19-codex-to-claude-defender.md | pending |
+| claude | Profile memory during repeated M6 search | handoffs/2026-11-19-codex-to-claude-m6-slot-memory.md | completed (#29) |
 | claude | M6 continuity if Codex becomes unavailable | handoffs/2026-11-19-codex-to-claude-m6-continuity.md | info |
 
 ## Decisions awaiting user
