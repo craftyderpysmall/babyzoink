@@ -34,7 +34,7 @@ try {
     $out = & "$repo\build\gdbot-venv\Scripts\python.exe" tools\site\export.py --refresh-gddl --output build\dashboard\site-dashboard.json 2>&1
     if ($LASTEXITCODE -ne 0) { throw "site export failed: $out" }
     Log "site export: $out"
-    $files = "energy_daily.json", "milestones.json", "results.json", "price.json", "site-dashboard.json"
+    $files = "energy_daily.json", "milestones.json", "results.json", "price.json", "attempts.json", "site-dashboard.json"
     for ($try = 1; $try -le 4; $try++) {
         $r = Git-Ok @("fetch", "-q", "origin", "main"); if ($r.Code -ne 0) { throw "fetch: $($r.Out)" }
         $base = (& git rev-parse origin/main).Trim()

@@ -40,6 +40,28 @@ def read_samples():
     return sorted(rows)
 
 
+def attempts_file():
+    """Per-level normal vs practice attempts (gdbot/attempts.py ledger, rebuilt nightly by
+    tools/site/backfill_attempts.py). Flat rows for the artifact table."""
+    import sys
+    sys.path.insert(0, ROOT)
+    from gdbot.attempts import read, summarize
+    kinds = {"official": "Official", "online": "Online", "drill": "Drill"}
+    rows = []
+    for s in summarize(read(os.path.join(ROOT, "build", "attempts"))):
+        first = s["first_cleared_by"]
+        rows.append({
+            "level": s["level"], "kind": kinds.get(s["level"].split(":")[0], "Other"), "name": s["name"],
+            "normal_attempts": s["normal_attempts"], "practice_attempts": s["practice_attempts"],
+            "normal_clears": s["normal_clears"], "best_progress_pct": round(100 * s["best_progress"], 1),
+            "first_cleared_by": f"{first['run']} (normal attempt {first['attempt']})" if first else "",
+        })
+    meta = [{"label": "Normal attempt", "value": "a full run from 0% with practice off"},
+            {"label": "Practice attempt", "value": "a reset from a checkpoint: practice drilling, timing search, "
+                                                  "and each candidate the search teacher evaluates"}]
+    return {"rows": rows, "meta": meta}
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     prog = json.load(open(os.path.join(ROOT, "docs", "progress.json"), encoding="utf-8"))
@@ -72,6 +94,7 @@ def main():
         "milestones.json": {"rows": prog["milestones"], "meta": [{"label": "Updated", "value": prog["updated"]}]},
         "results.json": {"rows": prog["results"], "meta": [{"label": "Updated", "value": prog["updated"]}]},
         "price.json": {"rows": [{k: price[k] for k in ("region", "sector", "month", "cents_per_kwh", "source", "url")}], "meta": []},
+        "attempts.json": attempts_file(),
     }
     for name, body in files.items():
         with open(os.path.join(OUT, name), "w", encoding="utf-8") as f:

@@ -35,6 +35,7 @@ One row per run. Don't take rows marked `waiting`. If a handoff conflicts with a
 | 14 | M5b official-level transfer: diagnose why it dies <6% on official 1-5, fix, then learn official levels by practice; held-out = downloaded online levels | handoffs/2026-11-19-claude-to-codex-m5b-official-transfer.md | yes (slot 1) | done (codex study, claude write-up): route encoder 19->22/27 drills; official 2-8%, online 0/10 |
 | 15 | (small, do between #14 runs) Patch slot 1's bot save for windowed display; relaunch on the new bridge | handoffs/2026-11-19-claude-to-codex-display-fix.md | no | done (claude): slot 1 save patched while closed |
 | 16 | M5c search-based teacher: deterministic segment search finds verified clears without humans; then expert iteration (BC on search clears) | tasks/M5c-search-teacher.md | yes (slot 0) | in progress (claude) |
+| 17 | Catch-up: log attempts in every runner; run M5c expert iteration on search clears (when Codex refills) | handoffs/2026-11-19-claude-to-codex-catchup.md | yes (slots 1+) | queued (waiting for Codex usage refill) |
 
 ## Active work
 
