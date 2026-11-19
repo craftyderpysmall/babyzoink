@@ -16,7 +16,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
-from gdbot.instances import BOT, instance_dir, launch  # noqa: E402
+from gdbot.instances import BOT, instance_dir, launch, stop_slot  # noqa: E402
 from gdbot.protocol import BridgeClient, NamedPipeTransport  # noqa: E402
 from gdbot.replay import Tape, diff_traces, replay  # noqa: E402
 
@@ -104,8 +104,8 @@ def main(launcher, slots):
     time.sleep(1.5)
     real_after = {p: p.stat().st_mtime_ns for p in real_save.glob("*.dat")} if real_save.exists() else {}
     check("real save untouched", real_before == real_after, f"{len(real_after)} files")
-    for d in discs.values():
-        subprocess.run(["taskkill", "/PID", str(d["pid"]), "/F"], capture_output=True)
+    for s in discs:
+        stop_slot(s)  # verified: only this slot's bot GD, never a reused pid
     passed = sum(ok for _, ok in results)
     print(f"{passed}/{len(results)} passed", flush=True)
     return 0 if passed == len(results) else 1

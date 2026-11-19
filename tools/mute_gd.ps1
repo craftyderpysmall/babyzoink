@@ -34,7 +34,10 @@ public static class GdMute {
   }
 }
 "@
-$pids = [uint32[]]@(Get-Process GeometryDash -ErrorAction SilentlyContinue | ForEach-Object { $_.Id })
-if (-not $pids) { "no GeometryDash.exe running"; exit 1 }
+# Only the bot copy(s) in this repo's game folder: never the user's own Steam Geometry Dash.
+$botExe = (Join-Path (Resolve-Path "$PSScriptRoot\..").Path "game\2.2091\GeometryDash.exe").ToLower()
+$pids = [uint32[]]@(Get-CimInstance Win32_Process -Filter "Name='GeometryDash.exe'" |
+    Where-Object { "$($_.ExecutablePath)".ToLower() -eq $botExe } | ForEach-Object { $_.ProcessId })
+if (-not $pids) { "no bot GeometryDash.exe running"; exit 1 }
 $n = [GdMute]::Apply($pids, -not $Unmute)
 "{0} {1} GD audio session(s) (pids {2})" -f ($(if ($Unmute) { "unmuted" } else { "muted" })), $n, ($pids -join ",")

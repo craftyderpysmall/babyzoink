@@ -18,15 +18,15 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
-from gdbot.instances import discovery, launch  # noqa: E402
+from gdbot.instances import launch, owned_pid, stop_slot  # noqa: E402
 
 RESTART = 75
 MAX_RESTARTS_PER_JOB = 40
 
 
-def alive(pid):
-    out = subprocess.run(["tasklist", "/FI", f"PID eq {pid}", "/NH"], capture_output=True, text=True).stdout
-    return "GeometryDash" in out
+def alive(slot, pid):
+    """True only while `pid` is still this slot's bot GD (exe path and start time checked, not just the name)."""
+    return owned_pid(slot, pid) is not None
 
 
 def steam_running():
@@ -34,19 +34,17 @@ def steam_running():
                                          capture_output=True, text=True).stdout.lower()
 
 
-def kill(pid):
-    # Only ever the GD process this slot's discovery file names; never anything else.
-    subprocess.run(["taskkill", "/PID", str(pid), "/F"], capture_output=True)
+def close_slot(slot, log):
+    # Never a bare taskkill on a pid from a file: stop_slot verifies the process is this slot's bot GD first.
+    if not stop_slot(slot):
+        log(f"slot {slot}: bot GD did not exit after taskkill")
+        return False
+    return True
 
 
 def fresh_slot(slot, log):
-    try:
-        old = discovery(slot)["pid"]
-        if alive(old):
-            kill(old)
-            time.sleep(3)
-    except (OSError, KeyError, ValueError):
-        pass
+    if not close_slot(slot, log):
+        raise RuntimeError(f"slot {slot}: could not close the previous bot GD")
     for attempt in range(1, 6):
         if not steam_running():
             log("waiting for Steam (GD exits at startup without it)")
@@ -54,7 +52,7 @@ def fresh_slot(slot, log):
             continue
         found = launch(slot)
         time.sleep(8)
-        if alive(found["pid"]):
+        if alive(slot, found["pid"]):
             log(f"slot {slot} up, pid {found['pid']}")
             return found["pid"]
         log(f"slot {slot} exited at startup (attempt {attempt}); retrying")
@@ -111,10 +109,9 @@ def main():
                 log("too many restarts; stopping")
                 return 1
             time.sleep(5)
-    try:
-        kill(discovery(a.slot)["pid"])
-    except (OSError, KeyError, ValueError):
-        pass
+    if not close_slot(a.slot, log):
+        save(state="done; slot still running (close it by hand)")
+        return 1
     save(state="done")
     log("all jobs done; slot closed")
     return 0
