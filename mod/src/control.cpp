@@ -3,6 +3,7 @@
 // on the game thread inside control_frame() (called from CCScheduler::update).
 #include <windows.h>
 #include <atomic>
+#include <climits>
 #include <cmath>
 #include <cstdio>
 #include <algorithm>
@@ -28,6 +29,7 @@ std::string g_req, g_rep;
 std::atomic<bool> g_client_gone{false};
 bool g_close_after_reply = false;
 std::wstring g_pipe_name;
+void send_reply(const json& r);
 
 // ---- session state (game thread only) ----
 enum class Mode { Normal, Dedicated, Background };
@@ -49,6 +51,7 @@ bool g_load_pending = false;
 bool g_load_seen_layer = false;
 json g_load_reply;
 int g_load_wait_frames = 0;
+std::string g_next_title;  // main level name read at load_level, for the overlay
 
 // ---- game functions ----
 using GetMgr_t = void*(__fastcall*)();
@@ -337,7 +340,8 @@ json op_hello(const json& req) {
     r["capabilities"] = {{"step", true}, {"reset", true}, {"startpos", false}, {"checkpoint", true},
                          {"trace", true}, {"modes", {"normal", "dedicated", "background"}}, {"dual", false},
                          {"objects", true}, {"level_string", true}, {"quit_level", true}, {"debug_peek", true}, {"isolation", true},
-                         {"set_render", g_draw_skip_supported}, {"agent_colors", true}};
+                         {"set_render", g_draw_skip_supported}, {"agent_colors", true},
+                         {"watch_1x", true}, {"overlay", true}, {"session", true}};
     r["mode"] = mode_str(g_mode);
     r["isolation"] = {{"saves_redirected", g_iso.saves_redirected && g_iso.file_guard},
                       {"http_blocked", g_iso.http_blocked}};
@@ -391,6 +395,13 @@ void begin_load(const json& req, void* level, json info) {
     g_load_pending = true;
     g_load_wait_frames = 0;
     g_load_reply = ok(req);
+    std::string title = info.value("kind", "") == "main"
+                            ? (g_next_title.empty() ? "Main level " + std::to_string(info.value("id", 0)) : g_next_title)
+                            : info.value("name", std::string("level"));
+    if (title.rfind("online-", 0) == 0) title = "Online level " + title.substr(7);
+    if (const json* nm = req.contains("level") ? &req["level"] : nullptr; nm && nm->contains("title") && (*nm)["title"].is_string())
+        title = (*nm)["title"].get<std::string>();  // optional human title from the client
+    g_vstats = ViewStats{title, 0, 0, 0.0f, g_vstats.ticks_run};
     g_load_reply["level"] = std::move(info);
 }
 
@@ -408,6 +419,13 @@ json op_load_level(const json& req) {
         if (id < 1 || id > 30) return err(req, "BAD_REQUEST", "main level id out of range");
         void* level = glm ? getMainLevel(glm, id, false) : nullptr;
         if (!level) return err(req, "INTERNAL", "getMainLevel returned null");
+        // the level's own name for the overlay (GJGameLevel::m_levelName sits 0x40 before m_levelString)
+        if (g_level_string_off < 0) {
+            void* main1 = getMainLevel(glm, 1, false);
+            if (main1) g_level_string_off = find_level_string_offset(main1, "Stereo Madness");
+        }
+        g_next_title.clear();
+        if (g_level_string_off >= 0x40) read_msvc_string(level, size_t(g_level_string_off - 0x40), &g_next_title, 64);
         begin_load(req, level, {{"kind", "main"}, {"id", id}, {"name", nullptr}, {"length_x", nullptr}, {"revision", "main"}});
         return json();  // deferred
     }
@@ -533,6 +551,7 @@ json op_reset(const json& req) {
     reinterpret_cast<Void0_t>(rva_ptr(PlayLayer__resetLevel))(g_layer);  // goes through our hook
     g_bot_reset = false;
     ++g_episode;
+    if (kind == "zero") ++g_vstats.runs; else ++g_vstats.practice;
     g_prev_tick = -1;
     g_tick_x = read_field<float>(player1(), fields::kPosTickX);
     g_tick_vx = 0.0f;
@@ -545,57 +564,145 @@ json op_reset(const json& req) {
     return r;
 }
 
+// ---- step execution (step and step_seq share one resumable cursor; M8) ----
+// Fast path: the whole request runs inside one frame, exactly as before. Watch at 1x (g_watch): the cursor
+// keeps its place (decision index, ticks done in the decision, held state, trace/xs/events, terminal) and
+// advances at 240 ticks per wall-clock second across frames; the reply is deferred until it finishes.
+struct Exec {
+    bool active = false;      // a deferred (paced) request is pending
+    bool seq = false;         // step_seq (else step)
+    json req;
+    std::vector<int> actions; // one per decision (step: exactly one)
+    int k = 1;                // ticks per decision
+    bool want_xs = false;
+    size_t idx = 0;           // current decision
+    long long in_dec = 0;     // ticks done in the current decision
+    bool pressed = false;     // the current decision's press/release has been applied
+    int calls = 0;            // update calls in the current decision (stuck-physics guard)
+    long long t0 = 0;
+    int decisions = 0;
+    const char* terminal = nullptr;
+    std::string error;
+    json events = json::array(), trace = json::array(), xs = json::array();
+};
+Exec g_exec;
+double g_pace_last_ms = 0.0, g_pace_carry = 0.0;
+
+// Runs until the request is finished (returns true) or max_ticks physics ticks have run (returns false).
+bool exec_advance(Exec& e, long long max_ticks) {
+    const long long start = g_tick;
+    while (e.idx < e.actions.size() && !e.terminal && e.error.empty()) {
+        if (!e.pressed) {
+            press(e.actions[e.idx] == 1);
+            e.pressed = true;
+            e.calls = 0;
+        }
+        while (e.in_dec < e.k && !e.terminal) {
+            if (g_tick - start >= max_ticks) return false;
+            long long before = g_tick;
+            g_in_step = true;
+            o_bglUpdate(g_layer, kTickDt);
+            g_in_step = false;
+            if (++e.calls > 4 * e.k + 16) {
+                GLOG("step: update calls are not producing ticks (calls=%d advanced=%lld)", e.calls, g_tick - e.t0);
+                e.error = "update calls are not producing physics ticks";
+                return true;
+            }
+            if (g_tick == before) continue;
+            if (g_tick - before > 1) GLOG("step: one update call advanced %lld ticks", g_tick - before);
+            e.in_dec += g_tick - before;
+            g_vstats.ticks_run += g_tick - before;
+            void* p = player1();
+            float x = read_field<float>(p, fields::kPosTickX);
+            g_tick_vx = (x - g_tick_x) / float(g_tick - before);
+            g_tick_x = x;
+            if (read_field<uint8_t>(p, fields::kIsDead)) {
+                e.terminal = "death";
+                if (!e.seq) e.events.push_back({{"type", "death"}, {"tick", g_tick}});
+            } else if (g_end_reached) {  // tick-driven; GD's levelComplete itself arrives later on a wall-clock timer
+                e.terminal = "complete";
+                if (!e.seq) e.events.push_back({{"type", "complete"}, {"tick", g_tick}});
+            }
+            if (!e.seq && g_trace) {
+                json row_events = json::array();
+                if (e.terminal) row_events.push_back({{"type", e.terminal}, {"tick", g_tick}});
+                e.trace.push_back({{"tick", g_tick}, {"players", json::array({player_json(p)})},
+                                   {"button", {{"held", g_held}, {"queued", nullptr}}}, {"events", row_events}});
+            }
+        }
+        if (e.terminal) break;
+        ++e.decisions;
+        if (e.want_xs) e.xs.push_back(read_field<float>(player1(), fields::kPosTickX));
+        ++e.idx;
+        e.in_dec = 0;
+        e.pressed = false;
+    }
+    return true;
+}
+
+json exec_reply(Exec& e) {
+    if (!e.error.empty()) return err(e.req, "INTERNAL", e.error);
+    json r = ok(e.req);
+    r["episode"] = g_episode;
+    r["tick"] = g_tick;
+    r["ticks_advanced"] = g_tick - e.t0;
+    r["terminal"] = e.terminal ? json(e.terminal) : json();
+    if (e.seq) {
+        r["decisions"] = e.decisions;
+        r["player"] = player_json(player1());
+        if (e.want_xs) r["xs"] = e.xs;
+    } else {
+        r["obs"] = obs_json();
+        r["events"] = e.events;
+        if (g_trace) r["trace"] = e.trace;
+    }
+    r["mode"] = mode_str(g_mode);  // so the trainer can match its own CPU use (threads, priority)
+    float pr = e.terminal && std::string(e.terminal) == "complete" ? 1.0f : progress();
+    if (pr > g_vstats.best) g_vstats.best = pr;
+    return r;
+}
+
+// Starts a request: runs it now (fast path) or defers it (watch at 1x). Returns the reply, or null if deferred.
+json exec_start(Exec&& e) {
+    e.t0 = g_tick;
+    g_exec = std::move(e);
+    if (g_watch) {
+        g_exec.active = true;
+        g_pace_last_ms = log::now_ms();
+        g_pace_carry = 0.0;
+        return json();
+    }
+    exec_advance(g_exec, LLONG_MAX);
+    return exec_reply(g_exec);
+}
+
+// Called every frame while a paced request is pending. Watch turned off mid-request: finish at full speed.
+void exec_pace_frame() {
+    long long allowed = LLONG_MAX;
+    if (g_watch) {
+        double now = log::now_ms();
+        g_pace_carry += (now - g_pace_last_ms) * 0.240;  // 240 ticks per second
+        g_pace_last_ms = now;
+        if (g_pace_carry > 16.0) g_pace_carry = 16.0;   // catch-up after a stalled frame: at most 4 frames' worth
+        allowed = (long long)g_pace_carry;
+        g_pace_carry -= double(allowed);
+    }
+    if (exec_advance(g_exec, allowed)) {
+        g_exec.active = false;
+        send_reply(exec_reply(g_exec));
+    }
+}
+
 json op_step(const json& req) {
     if (!g_layer) return err(req, "NOT_IN_LEVEL", "no level loaded");
     if (req.value("episode", -1) != g_episode) return err(req, "EPISODE_MISMATCH", "stale episode");
     int action = req.value("action", -1), k = req.value("k", 0);
     if ((action != 0 && action != 1) || k < 1 || k > 240 * 60) return err(req, "BAD_REQUEST", "bad action or k");
-    const long long t0 = g_tick;
-    json events = json::array(), trace = json::array();
-    const char* terminal = nullptr;
-    press(action == 1);
-    int calls = 0;
-    while (g_tick - t0 < k && !terminal) {
-        long long before = g_tick;
-        g_in_step = true;
-        o_bglUpdate(g_layer, kTickDt);
-        g_in_step = false;
-        if (++calls > 4 * k + 16) {
-            GLOG("step: update calls are not producing ticks (calls=%d advanced=%lld)", calls, g_tick - t0);
-            return err(req, "INTERNAL", "update calls are not producing physics ticks");
-        }
-        if (g_tick == before) continue;
-        if (g_tick - before > 1) GLOG("step: one update call advanced %lld ticks", g_tick - before);
-        void* p = player1();
-        {
-            float x = read_field<float>(p, fields::kPosTickX);
-            g_tick_vx = (x - g_tick_x) / float(g_tick - before);
-            g_tick_x = x;
-        }
-        if (read_field<uint8_t>(p, fields::kIsDead)) {
-            terminal = "death";
-            events.push_back({{"type", "death"}, {"tick", g_tick}});
-        } else if (g_end_reached) {  // tick-driven; GD's levelComplete itself arrives later on a wall-clock timer
-            terminal = "complete";
-            events.push_back({{"type", "complete"}, {"tick", g_tick}});
-        }
-        if (g_trace) {
-            json row_events = json::array();
-            if (terminal) row_events.push_back({{"type", terminal}, {"tick", g_tick}});
-            trace.push_back({{"tick", g_tick}, {"players", json::array({player_json(p)})},
-                             {"button", {{"held", g_held}, {"queued", nullptr}}}, {"events", row_events}});
-        }
-    }
-    json r = ok(req);
-    r["episode"] = g_episode;
-    r["tick"] = g_tick;
-    r["ticks_advanced"] = g_tick - t0;
-    r["obs"] = obs_json();
-    r["events"] = events;
-    r["terminal"] = terminal ? json(terminal) : json();
-    r["mode"] = mode_str(g_mode);  // so the trainer can match its own CPU use (threads, priority)
-    if (g_trace) r["trace"] = trace;
-    return r;
+    Exec e;
+    e.req = req;
+    e.actions = {action};
+    e.k = k;
+    return exec_start(std::move(e));
 }
 
 // Search helper (M5c): apply a whole action sequence in one request, k ticks per action, stopping
@@ -608,45 +715,33 @@ json op_step_seq(const json& req) {
     if (req.value("episode", -1) != g_episode) return err(req, "EPISODE_MISMATCH", "stale episode");
     const json& actions = req.value("actions", json::array());
     int k = req.value("k", 4);
-    bool want_xs = req.value("xs", false);
     if (!actions.is_array() || actions.empty() || actions.size() > 20000 || k < 1 || k > 240)
         return err(req, "BAD_REQUEST", "actions must be a non-empty array (<= 20000) and 1 <= k <= 240");
-    const long long t0 = g_tick;
-    const char* terminal = nullptr;
-    int decisions = 0;
-    json xs = json::array();
-    for (const json& a : actions) {
+    Exec e;
+    e.seq = true;
+    e.req = req;
+    e.k = k;
+    e.want_xs = req.value("xs", false);
+    e.actions.reserve(actions.size());
+    for (const json& a : actions) {  // validate the whole request before any physics moves
         if (!a.is_number_integer() || (a.get<int>() != 0 && a.get<int>() != 1)) return err(req, "BAD_REQUEST", "actions must be 0/1");
-        press(a.get<int>() == 1);
-        const long long d0 = g_tick;
-        int calls = 0;
-        while (g_tick - d0 < k && !terminal) {
-            long long before = g_tick;
-            g_in_step = true;
-            o_bglUpdate(g_layer, kTickDt);
-            g_in_step = false;
-            if (++calls > 4 * k + 16) return err(req, "INTERNAL", "update calls are not producing physics ticks");
-            if (g_tick == before) continue;
-            void* p = player1();
-            float x = read_field<float>(p, fields::kPosTickX);
-            g_tick_vx = (x - g_tick_x) / float(g_tick - before);
-            g_tick_x = x;
-            if (read_field<uint8_t>(p, fields::kIsDead)) terminal = "death";
-            else if (g_end_reached) terminal = "complete";
-        }
-        if (terminal) break;
-        ++decisions;
-        if (want_xs) xs.push_back(read_field<float>(player1(), fields::kPosTickX));
+        e.actions.push_back(a.get<int>());
     }
+    return exec_start(std::move(e));
+}
+
+json op_set_overlay(const json& req) {
+    std::vector<std::string> lines;
+    const json& l = req.value("lines", json::array());
+    if (!l.is_array() || l.size() > 3) return err(req, "BAD_REQUEST", "lines must be an array of at most 3 strings");
+    for (const json& s : l) {
+        if (!s.is_string()) return err(req, "BAD_REQUEST", "lines must be strings");
+        lines.push_back(s.get<std::string>());
+    }
+    view_set_client(req.value("job", std::string()), lines);
     json r = ok(req);
-    r["episode"] = g_episode;
-    r["tick"] = g_tick;
-    r["ticks_advanced"] = g_tick - t0;
-    r["decisions"] = decisions;
-    r["terminal"] = terminal ? json(terminal) : json();
-    r["player"] = player_json(player1());
-    if (want_xs) r["xs"] = xs;
-    r["mode"] = mode_str(g_mode);
+    r["overlay"] = g_overlay_on;
+    r["watch"] = g_watch;
     return r;
 }
 
@@ -744,15 +839,35 @@ void poll_user_mode() {
 }
 
 DWORD WINAPI hotkey_thread(LPVOID) {
-    if (!RegisterHotKey(nullptr, 1, MOD_CONTROL | MOD_ALT | MOD_NOREPEAT, 'B')) {
-        GLOG("hotkey Ctrl+Alt+B unavailable (error %lu); use tools/mode.ps1", GetLastError());
-        return 1;
+    // Global hotkeys belong to one process at a time. Each slot keeps retrying the keys it doesn't hold, so
+    // when the owning slot exits another one takes over (M8). State changes go through shared files
+    // (mode.txt, view.json), so it doesn't matter which slot owns which key.
+    struct Key { int id; UINT vk; const char* what; } keys[] = {
+        {1, 'B', "toggle dedicated/background"}, {2, 'V', "watch at 1x"}, {3, 'O', "overlay on/off"}};
+    bool logged_fail[3] = {};
+    for (;;) {
+        for (int i = 0; i < 3; ++i) {
+            int bit = 1 << i;
+            if (g_hotkeys_owned & bit) continue;
+            if (RegisterHotKey(nullptr, keys[i].id, MOD_CONTROL | MOD_ALT | MOD_NOREPEAT, keys[i].vk)) {
+                g_hotkeys_owned |= bit;
+                GLOG("hotkey Ctrl+Alt+%c registered (%s)", char(keys[i].vk), keys[i].what);
+            } else if (!logged_fail[i]) {
+                logged_fail[i] = true;
+                GLOG("hotkey Ctrl+Alt+%c held elsewhere (error %lu); retrying every 3 s (fallback: tools/mode.ps1, view.json)",
+                     char(keys[i].vk), GetLastError());
+            }
+        }
+        DWORD wait = g_hotkeys_owned == 7 ? INFINITE : 3000;
+        MsgWaitForMultipleObjects(0, nullptr, FALSE, wait, QS_ALLINPUT);
+        MSG msg;
+        while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
+            if (msg.message != WM_HOTKEY) continue;
+            if (msg.wParam == 1) g_hotkey_hit = true;
+            else if (msg.wParam == 2) g_hk_watch = true;
+            else if (msg.wParam == 3) g_hk_overlay = true;
+        }
     }
-    GLOG("hotkey Ctrl+Alt+B registered (toggle dedicated/background)");
-    MSG msg;
-    while (GetMessageW(&msg, nullptr, 0, 0) > 0)
-        if (msg.message == WM_HOTKEY) g_hotkey_hit = true;
-    return 0;
 }
 
 // Draw-skip: {"op":"set_render","present_every_ms":N}. N > 0 draws and presents the scene at most once per
@@ -846,6 +961,7 @@ json handle(const std::string& text) {
         if (op == "debug_peek") return op_debug_peek(req);
         if (op == "snapshot") return op_snapshot(req);
         if (op == "step_seq") return op_step_seq(req);
+        if (op == "set_overlay") return op_set_overlay(req);
         if (op == "set_practice") return op_set_practice(req);
         if (op == "checkpoint_create") return op_checkpoint_create(req);
         if (op == "checkpoint_pop") return op_checkpoint_pop(req);
@@ -861,6 +977,8 @@ void release_control(const char* why) {
     if (!g_controlled) return;
     press(false);
     g_controlled = false;
+    g_exec.active = false;  // a paced request whose client left: drop it (no one to reply to)
+    view_release();
     g_trace = false;
     g_present_every_ms = 0;  // the next client starts with every frame drawn
     g_client_mode = Mode::Normal;
@@ -1014,6 +1132,7 @@ DWORD WINAPI pipe_thread(LPVOID) {
 }  // namespace
 
 bool start_control() {
+    view_session_init();  // GDBOT_SESSION fresh (default) | keep: launch defaults before mode.txt is first read
     HMODULE cc = GetModuleHandleW(L"libcocos2d.dll");
     if (cc) {
         f_sharedDirector = (SharedDirector_t)GetProcAddress(cc, "?sharedDirector@CCDirector@cocos2d@@SAPEAV12@XZ");
@@ -1046,6 +1165,11 @@ void control_frame(float) {
     force_windowed();
     install_no_minimize();
     if (g_client_gone.exchange(false)) release_control("client disconnected");
+    view_frame(mode_str(g_mode), g_layer ? progress() : 0.0f);
+    if (g_exec.active) {      // a step/step_seq paced at 1x: nothing else is served until it replies
+        exec_pace_frame();
+        return;
+    }
     if (g_quit_pending) {
         // The fade back to the menu is timed in seconds, not frames. At uncapped frame rates (window
         // hidden or minimized) 45 frames passed before it ended, and the next load_level then
@@ -1093,7 +1217,7 @@ void control_frame(float) {
         DWORD wait = left > 0 ? DWORD(left) : 0;
         if (WaitForSingleObject(g_req_ev, wait) != WAIT_OBJECT_0) break;
         json r = handle(g_req);
-        if (r.is_null()) return;  // deferred (load_level)
+        if (r.is_null()) return;  // deferred (load_level, quit_level, a step paced at 1x)
         send_reply(r);
         if (g_mode == Mode::Normal) break;  // normal: one request per frame
     }

@@ -37,6 +37,7 @@ add_library(gdbot_bridge SHARED
   src/isolation.cpp
   src/hooks.cpp
   src/control.cpp
+  src/view.cpp
   src/sha256.cpp
 )
 target_link_libraries(gdbot_bridge PRIVATE minhook nlohmann_json::nlohmann_json)

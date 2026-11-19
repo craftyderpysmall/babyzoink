@@ -75,6 +75,19 @@ def run(pool, split, slot, shard, shards, budget, limit, look, present_every_ms,
             pass
         client.request("set_mode", mode="dedicated")
         draw_skip = present_every_ms > 0 and hello.get("capabilities", {}).get("set_render")
+        overlay = bool(hello.get("capabilities", {}).get("overlay"))  # M8 bridges show search status on screen
+
+        def show(solver, note=""):
+            if not overlay:
+                return
+            x = solver.seg_x[-1] if getattr(solver, "seg_x", None) else 0.0
+            tab = chr(9)  # "Key<TAB>value": the key goes in the overlay's key column
+            lines = [f"Search{tab}segment {len(getattr(solver, 'committed', []))}    x {x:,.0f}    {note}".rstrip(),
+                     f"Budget{tab}{solver.evals:,} / {solver.budget:,} attempts"]
+            try:
+                client.request("set_overlay", job=f"M6 {split}", lines=lines)
+            except RemoteError:
+                pass
         try:
             for index, (key, name, digest, spec) in enumerate(levels(pool, split)):
                 if index % shards != shard:
@@ -100,8 +113,12 @@ def run(pool, split, slot, shard, shards, budget, limit, look, present_every_ms,
 
                 def log(message):
                     print(message, flush=True)
-                    if game and current and message.startswith("  x="):
-                        check(current["solver"])
+                    if current and message.startswith("  x="):
+                        show(current["solver"])
+                        if game:
+                            check(current["solver"])
+                    elif current and "stall escape" in message:
+                        show(current["solver"], "stall escape")
 
                 solver = Solver(client, spec, budget=budget, look=look, progress=path.with_suffix(".progress.json"),
                                 log=log)

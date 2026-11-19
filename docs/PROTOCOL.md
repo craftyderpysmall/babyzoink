@@ -225,3 +225,47 @@ GD's private bytes per 300 iterations of each solver pattern, each with a `step_
 | `checkpoint_create` + `checkpoint_pop` | about +6 MB |
 
 GD's own practice auto-checkpoints, about 35 per run, are blocked by the bridge. Storing and then removing them instead didn't measurably change growth, and that change was reverted. A 0% reset that *keeps* practice on was worse, at +100 to +250 MB per 400, and was also reverted. The growth is inside GD's practice-mode reset and toggle paths, and it scales with the level's object count, which explains slot 2's 2.4 GB on Skill Gotten Gains. No bridge-side fix exists yet; the practical mitigation is restarting the slot (see STATUS #29).
+
+## Implemented: M8 human view (2026-11-19, claude/m8-bridge-05; plan .coordination/plans/2026-11-19-m8-human-view-and-cbf.md)
+
+Additive; no protocol version bump. `hello` capabilities gain `watch_1x`, `overlay` and `session` (all true).
+
+- **Shared view state:** `gdbot/view.json` = `{"overlay": bool, "watch_slot": int|null}`, shared by every slot like `mode.txt`. Each bridge polls it every 250 ms (file time first).
+  - `watch_slot == this slot` turns on **watch at 1x** for that slot.
+  - `overlay` shows or hides the overlay on every slot.
+  - Fallback without hotkeys: `tools/view.ps1 watch <slot> | unwatch | overlay on|off`.
+- **Hotkeys** (global, system-wide):
+  - `Ctrl+Alt+B` dedicated/background (unchanged);
+  - `Ctrl+Alt+V` watch at 1x: toggles the slot whose window is in front, or else the lowest running slot;
+  - `Ctrl+Alt+O` overlay on/off.
+
+  Each key is registered by whichever slot gets it first. Every slot retries the keys it doesn't hold every 3 s, so another slot takes over when the owner exits. All state goes through the shared files, so ownership doesn't matter. The overlay says when the keys are held by another slot.
+- **Launch session:** `gdbot-launch.exe --session fresh|keep` passes `GDBOT_SESSION` to the bridge.
+  - `fresh` (the default; a start the user asked for) writes `mode.txt=dedicated` and `view.json={"overlay":true,"watch_slot":null}` at init: fastest speed, not background, overlay shown.
+  - `keep` (supervisor recycles) leaves both files as they are.
+  - `mode.txt=dedicated` is a user choice, so a client's `set_mode` gets `overridden_by_user` until the user picks `auto` (`tools/mode.ps1 auto`).
+- **Watch at 1x:** `step` and `step_seq` share one resumable execution cursor. It keeps the decision index, ticks done in the current decision, held state, trace rows, `xs`, events and terminal.
+  - **Fast path:** the whole request runs inside one frame, as before.
+  - **Watched:** the reply is deferred and the cursor advances 240 ticks per wall-clock second. Pacing uses a monotonic clock, and catch-up after a stalled frame is capped at 16 ticks. Draw-skip is off for the watched slot, so every frame is drawn.
+  - **Toggles:** turning watch off mid-request finishes the rest at full speed. A client disconnect drops a pending paced request.
+  - Requests stay strictly alternating, so nothing else can arrive while one is pending.
+  - Request validation (all actions 0/1, k range) happens before any physics moves.
+- **`set_overlay`:** `{"op":"set_overlay","job":str,"lines":[str, ...]}` sets the client's part of the overlay. At most 3 lines; ASCII, at most 72 characters each. `"Key\tvalue"` puts Key in the key column. The reply is `{overlay, watch}`.
+  - Cleared on disconnect.
+  - `tools/m6/solve_pool.py` sends `Search` and `Budget` lines when the bridge has the `overlay` capability.
+- **Overlay:** a cocos node tree added to the running scene: a translucent `CCLayerColor` panel, top-left, with key/value `CCLabelBMFont` labels in GD's `chatFont`. It updates at most 4 times a second, and only when the scene is drawn: every frame in watch mode, once per `present_every_ms` under draw-skip. Rows:
+  - title (slot, job);
+  - level name;
+  - mode and speed (×real time, ticks/s), coloured by mode;
+  - attempts (full runs from 0% / checkpoint restores since the level loaded);
+  - progress and best;
+  - up to 3 client lines;
+  - GD private memory and free system RAM;
+  - hotkey hints.
+- **MSVC multiple-inheritance trap (fixed during bring-up):** `CCLabelBMFont::setString(const char*)` and `setColor`/`getColor` override virtuals of secondary bases (CCLabelProtocol at +0x168, CCRGBAProtocol at +0x170). Their exports expect `this` at that subobject. Calling `setString(const char*)` with the label pointer crashed GD. The bridge uses `setString(const char*, bool)`, which is on the primary vtable. For colour it passes `label + 0x170`, after checking at runtime that `getColor` returns white from inside the label; if that check fails, the text is plain white.
+- **Verified live** (`tools/m8/view_smoke.py --slot 3`, 6/6):
+  - Stereo Madness's verified clear completes on the fast path (114-125k ticks/s);
+  - `step` k=4 ends on the same tick as `step_seq`;
+  - watch at 1x: 480 ticks took 2.01 s;
+  - watch off: 480 ticks in 0.01 s;
+  - snapshot shows the overlay.

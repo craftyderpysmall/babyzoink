@@ -1,6 +1,8 @@
 #pragma once
 #include <windows.h>
+#include <atomic>
 #include <string>
+#include <vector>
 #include "offsets_gen.hpp"
 
 namespace gdbot {
@@ -85,6 +87,24 @@ using SchedUpdate_t = void(__fastcall*)(void*, float);
 inline HandleButton_t o_handleButton = nullptr;
 inline BglUpdate_t o_bglUpdate = nullptr;
 inline Void0_t o_resetLevel = nullptr;
+
+// ---- M8 human view (view.cpp; plan .coordination/plans/2026-11-19-m8-human-view-and-cbf.md) ----
+// Shared across slots through gdbot/view.json {"overlay": bool, "watch_slot": int|null}; every slot polls it.
+inline bool g_watch = false;        // this slot plays at 1x (view.json watch_slot == this slot)
+inline bool g_overlay_on = true;    // overlay shown (default on; Ctrl+Alt+O)
+inline std::atomic<bool> g_hk_watch{false}, g_hk_overlay{false};  // hotkey presses, consumed by view_frame
+inline std::atomic<int> g_hotkeys_owned{0};  // bits: 1 = Ctrl+Alt+B, 2 = V, 4 = O registered by this slot
+struct ViewStats {
+    std::string level = "-";          // current level name
+    long long runs = 0, practice = 0; // full runs from 0% / checkpoint restores since the level loaded
+    float best = 0.0f;                // best progress (0..1) this level
+    long long ticks_run = 0;          // physics ticks the bot has advanced (monotonic; for ticks/s)
+};
+inline ViewStats g_vstats;
+void view_session_init();                                // at init: GDBOT_SESSION=fresh (default) | keep
+void view_frame(const char* mode_label, float progress); // game thread, once per control_frame
+void view_set_client(const std::string& job, const std::vector<std::string>& lines);  // set_overlay op
+void view_release();                                     // client gone: drop client-provided lines
 
 std::string sha256_file_hex(const std::wstring& path);
 bool install_isolation();   // fatal if false

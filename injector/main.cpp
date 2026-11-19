@@ -91,10 +91,14 @@ int wmain(int argc, wchar_t** argv) {
     std::wstring dll = self_dir + L"\\gdbot_bridge.dll";
     std::wstring game;
     int instance = 0;  // parallel copies: slot N gets its own pipe, discovery, log and save under gdbot\inst<N>
+    // M8 launch boundary: "fresh" (default) = a start the user asked for -> dedicated, overlay on;
+    // "keep" = a supervisor recycle -> the user's current mode/view preferences are kept.
+    std::wstring session = L"fresh";
     for (int i = 1; i + 1 < argc; ++i) {
         if (!wcscmp(argv[i], L"--game")) game = argv[++i];
         else if (!wcscmp(argv[i], L"--dll")) dll = argv[++i];
         else if (!wcscmp(argv[i], L"--instance")) instance = _wtoi(argv[++i]);
+        else if (!wcscmp(argv[i], L"--session")) session = argv[++i];
     }
     if (game.empty()) {
         // build dir is <repo>\mod\build\<config>; walk up until <repo>\game\2.2091 exists
@@ -117,6 +121,11 @@ int wmain(int argc, wchar_t** argv) {
                          L"(use --instance N for a parallel copy).\n");
     // The child inherits this; the bridge reads it to pick its per-instance directory.
     SetEnvironmentVariableW(L"GDBOT_INSTANCE", instance ? std::to_wstring(instance).c_str() : nullptr);
+    if (session != L"fresh" && session != L"keep") {
+        fwprintf(stderr, L"gdbot-launch: --session must be fresh or keep\n");
+        return 1;
+    }
+    SetEnvironmentVariableW(L"GDBOT_SESSION", session.c_str());
     std::wstring inst_dir = game + L"\\gdbot" + (instance ? L"\\inst" + std::to_wstring(instance) : L"");
     if (instance) {
         // A brand-new profile crashes on its first level load, so a new slot starts from a copy of

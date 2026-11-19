@@ -20,7 +20,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "tools/m6"))
-from gdbot.instances import discovery  # noqa: E402
+from gdbot.instances import BOT, discovery  # noqa: E402
 from gdbot.protocol import BridgeClient, NamedPipeTransport, RemoteError  # noqa: E402
 from stall_probe import POOL, spec_for  # noqa: E402
 
@@ -32,20 +32,51 @@ def to_ticks(actions, k):
     return [a for a in actions for _ in range(k)]
 
 
-def play_1x(client, ep, ticks, label):
-    """Advance one rendered frame (4 ticks) per request in normal mode. Returns (terminal, x)."""
-    client.request("set_mode", mode="normal")
+def set_watch(slot):
+    """M8 bridges pace step_seq at 1x themselves while view.json names this slot (Ctrl+Alt+V does the same)."""
+    path = BOT / "view.json"
+    try:
+        view = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        view = {"overlay": True}
+    view["watch_slot"] = slot
+    tmp = path.with_suffix(".tmp.watch")
+    tmp.write_text(json.dumps(view), encoding="utf-8")
+    tmp.replace(path)
+    time.sleep(0.6)  # bridges poll view.json every 250 ms
+
+
+def play_1x(client, ep, ticks, label, slot=None):
+    """Play the ticks at real time. Returns (terminal, x).
+
+    M8 bridges (capability watch_1x): one step_seq, paced by the bridge while the slot is watched.
+    Older bridges: normal mode serves one request per rendered frame, so 4 ticks per request is 1x."""
     start = time.perf_counter()
     r = {"terminal": None, "player": {"x": 0.0}}
-    for i in range(0, len(ticks), FRAME_TICKS):
-        r = client.request("step_seq", episode=ep, actions=ticks[i:i + FRAME_TICKS], k=1)
-        if r["terminal"]:
-            break
-    wall = time.perf_counter() - start
-    played = min(len(ticks), i + FRAME_TICKS) if ticks else 0
+    played, wall_end = 0, 0.0
+    if slot is not None and ticks:
+        set_watch(slot)
+        start = time.perf_counter()
+        try:
+            r = client.request("step_seq", episode=ep, actions=ticks, k=1)
+            wall_end = time.perf_counter()
+        finally:
+            set_watch(None)
+        played = r["ticks_advanced"]
+    else:
+        client.request("set_mode", mode="normal")
+        for i in range(0, len(ticks), FRAME_TICKS):
+            r = client.request("step_seq", episode=ep, actions=ticks[i:i + FRAME_TICKS], k=1)
+            played = min(len(ticks), i + FRAME_TICKS)
+            if r["terminal"]:
+                break
+    wall = (wall_end if slot is not None and ticks else time.perf_counter()) - start
     print(f"  {label}: {r['terminal'] or 'alive'} at x={r['player']['x']:.1f} "
           f"({played / 240:.1f} s of game in {wall:.1f} s wall)", flush=True)
     return r["terminal"], r["player"]["x"]
+
+
+WATCH_SLOT = None  # set in main() when the bridge has the watch_1x capability
 
 
 def show(client, prefix_ticks, start_tick, view_ticks, label, hold_s=1.5):
@@ -56,7 +87,7 @@ def show(client, prefix_ticks, start_tick, view_ticks, label, hold_s=1.5):
         if r["terminal"]:
             print(f"  {label}: died while fast-forwarding at x={r['player']['x']:.1f}", flush=True)
             return
-    play_1x(client, ep, prefix_ticks[start_tick:] + view_ticks, label)
+    play_1x(client, ep, prefix_ticks[start_tick:] + view_ticks, label, WATCH_SLOT)
     time.sleep(hold_s)
 
 
@@ -77,7 +108,9 @@ def main():
     full = to_ticks([x for s in committed for x in s], K)
     lead, after = int(a.lead_s * 240), int(a.after_s * 240)
     with BridgeClient(NamedPipeTransport(discovery(a.slot)["pipe"])) as client:
-        client.require_isolated()
+        hello = client.require_isolated()
+        global WATCH_SLOT
+        WATCH_SLOT = a.slot if hello.get("capabilities", {}).get("watch_1x") else None
         try:
             client.request("quit_level")
         except RemoteError:
