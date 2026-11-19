@@ -22,6 +22,65 @@ from gdbot.instances import launch, owned_pid, stop_slot  # noqa: E402
 
 RESTART = 75
 MAX_RESTARTS_PER_JOB = 40
+HUNG = -9  # the watchdog stopped a worker that had made no progress
+QUIET_S = 600  # a hang: no new worker output for this long ...
+IDLE_CPU_S = 1.0  # ... and GD used less than this much CPU over the last QUIET_S / 2
+
+
+def gd_cpu_s(pid):
+    """Total CPU seconds of `pid`, or None if it can't be read."""
+    sys.path.insert(0, str(ROOT / "tools/m7"))
+    from perf_bench import Proc  # noqa: E402
+    try:
+        return Proc(pid).cpu_s()
+    except OSError:
+        return None
+
+
+class Watchdog:
+    """Decides when a worker is hung: its log stopped growing AND the slot's GD stopped using CPU.
+
+    A stalled-but-working search can be quiet for a long time (no progress lines), but GD stays busy running
+    step_seq, so log silence alone is not a hang. A frozen GD (GL stall, dialog, deadlock) shows both.
+    """
+
+    def __init__(self, quiet_s=QUIET_S, idle_cpu_s=IDLE_CPU_S):
+        self.quiet_s, self.idle_cpu_s = quiet_s, idle_cpu_s
+        self.last_size, self.last_change = None, None
+        self.cpu = []  # (time, cpu seconds)
+
+    def hung(self, now, log_size, cpu_s):
+        if self.last_size is None or log_size != self.last_size:
+            self.last_size, self.last_change = log_size, now
+        if cpu_s is not None:
+            self.cpu.append((now, cpu_s))
+            self.cpu = [(t, c) for t, c in self.cpu if now - t <= self.quiet_s]
+        if now - self.last_change < self.quiet_s or not self.cpu:
+            return False
+        window = [(t, c) for t, c in self.cpu if now - t <= self.quiet_s / 2]
+        if len(window) < 2 or window[-1][0] - window[0][0] < self.quiet_s / 4:
+            return False
+        return window[-1][1] - window[0][1] < self.idle_cpu_s
+
+
+def run_worker(cmd, log_path, pid, *, poll_s=30.0, watchdog=None, clock=time.monotonic, sleep=time.sleep):
+    """Run the worker; stop it (it is our own child) if the watchdog says it is hung. Returns its exit code."""
+    watchdog = watchdog or Watchdog()
+    with open(log_path, "a", encoding="utf-8") as out:
+        proc = subprocess.Popen(cmd, stdout=out, stderr=subprocess.STDOUT, cwd=ROOT)
+        while True:
+            try:
+                return proc.wait(timeout=poll_s)
+            except subprocess.TimeoutExpired:
+                pass
+            try:
+                size = Path(log_path).stat().st_size
+            except OSError:
+                size = 0
+            if watchdog.hung(clock(), size, gd_cpu_s(pid)):
+                proc.kill()
+                proc.wait()
+                return HUNG
 
 
 def alive(slot, pid):
@@ -95,8 +154,9 @@ def main():
                    "--present-every-ms", str(a.present_every_ms),
                    "--max-private-mb", str(a.max_private_mb), "--min-avail-mb", str(a.min_avail_mb)]
             log(f"job '{job}': start (restart {restarts})")
-            with open(log_path, "a", encoding="utf-8") as out:
-                code = subprocess.run(cmd, stdout=out, stderr=subprocess.STDOUT, cwd=ROOT).returncode
+            code = run_worker(cmd, log_path, pid)
+            if code == HUNG:
+                log(f"job '{job}': watchdog: no output for {QUIET_S // 60} min and GD idle; restarting the slot")
             if code == 0:
                 log(f"job '{job}': finished")
                 break
