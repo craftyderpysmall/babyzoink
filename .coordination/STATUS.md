@@ -36,10 +36,15 @@ One row per run. Don't take rows marked `waiting`. If a handoff conflicts with a
 | 15 | (small, do between #14 runs) Patch slot 1's bot save for windowed display; relaunch on the new bridge | handoffs/2026-11-19-claude-to-codex-display-fix.md | no | done (claude): slot 1 save patched while closed |
 | 16 | M5c search-based teacher: deterministic segment search finds verified clears without humans; then expert iteration (BC on search clears) | tasks/M5c-search-teacher.md | yes (slot 0) | in progress (claude) |
 | 17 | Codex takes over: deploy ChatGPT Site, finish M5c solves (official 2/4/5), expert iteration, attempt logging, triple-spike follow-up | handoffs/2026-11-19-claude-to-codex-catchup.md | yes (slots 1+; slot 0 after Claude releases) | done (items 1/3/4/5); item 2 remains with Claude under #16 |
-| 18 | Finish addenda: site front-page performance summary (redeploy) + Dry Out solver stall | handoffs/2026-11-19-claude-to-codex-site-performance.md, handoffs/2026-11-19-claude-to-codex-dryout.md | Dry Out: yes | queued |
+| 18 | Finish addenda: site front-page performance summary (redeploy) + Dry Out solver stall | handoffs/2026-11-19-claude-to-codex-site-performance.md, handoffs/2026-11-19-claude-to-codex-dryout.md | Dry Out: yes | in progress (codex/site-overview-01; Dry Out waits for claim transfer) |
 | 19 | M6 search-teacher data at scale: ~60 online training levels + all drill variants solved in parallel slots; scaling curve (held-out vs # solved levels) | handoffs/2026-11-19-claude-to-codex-m6-scale.md (B) | yes | queued |
 | 20 | DAgger with the search teacher (label states the policy visits) | handoffs/2026-11-19-claude-to-codex-m6-scale.md (C) | yes | queued |
 | 21 | Fewer-attempts curve: policy-guided search, evaluations per new level across generations | handoffs/2026-11-19-claude-to-codex-m6-scale.md (D) | yes | queued |
+| 22 | (claude) Base After Base: confirm the slot-0 solve finished (`build/m5c/main_5.json`); if not, resume it (`--level main:5`, progress file); then release the slot-0 claim and commit | (claude) | yes (slot 0) | queued (claude) |
+| 23 | (claude) Bridge throughput for M6: skip rendering in dedicated mode (the plan's draw-skip, never built) and measure ticks/s and CPU per slot; verify step_seq/trace parity with drawing off | (claude) | yes | queued (claude) |
+| 24 | (claude) RAM per GD slot: low-detail and texture settings in the bot saves (`tools/gd_save.py`), measure working set per slot, so M6 can run more parallel slots (a run was killed at 2.2 GB free) | (claude) | yes | queued (claude) |
+| 25 | (claude) Dashboards: check that the Claude artifact's "Attempts by level" renders after the 8:20 pm routine; once the user confirms the ChatGPT Site works for them, ask before retiring the Claude artifact + routine | (claude) | no | queued (claude) |
+| 26 | (claude) Coordinator: review and commit Codex's #18-#21 results, keep `docs/progress.json` current, check for GD updates (stay on 2.2091 unless the user says otherwise) | (claude) | no | queued (claude) |
 
 ## Where we stopped (2026-11-19, read this first)
 
