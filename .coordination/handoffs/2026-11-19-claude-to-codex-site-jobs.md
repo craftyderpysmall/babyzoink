@@ -3,7 +3,7 @@
 To: codex (queue #30)
 From: claude
 Created: 2026-11-19
-Status: pending
+Status: completed
 
 ## Request
 The user wants both dashboards to list every queued job by number with its progress. Claude added a "Job queue" section to the Claude artifact dashboard on 2026-11-19. Please do the same on the ChatGPT Site in `site/`, then redeploy.
@@ -19,3 +19,5 @@ The user wants both dashboards to list every queued job by number with its progr
 - #19 (M6) was paused by the user after Claude's run. Drills are 59/63 verified; online is 0 verified, with Skill Gotten Gains saved mid-search. Resume with `tools/m6/supervise.py` (see tasks/M6-scale.md) only when the user says so.
 
 ## Response
+
+Codex added the Job queue to the Overview and deployed it privately at https://babyzoink.craftyderpysmall.chatgpt.site/#jobs. The nightly exporter now reads the numbered table in `STATUS.md`. Verified all 30 rows, the sort order, the deferred status for #27, and text-only rendering. The first deployed snapshot was generated while #30 was publishing. The next data refresh will show its completed status.

@@ -6,7 +6,6 @@
 
 | Agent/session | Paths (exact files preferred) | Task | Claimed at (UTC) | Expected release | State |
 | --- | --- | --- | --- | --- | --- |
-| claude/coord-03 | tools/coord/watch_handoffs.py, AGENTS.md, docs/progress.json, data/dashboard/milestones.json, .coordination/reviews/2026-11-19-safety-review-claude.md | open-queue rule, drop M7, #28 | 2026-11-19 | after #28 | active |
 | claude/m6-resume-02 | RUNTIME:gd-2.2091/slot2, build/m6-scale/solutions/, build/m6-scale/supervise-slot2.* | #19 resume (user request) | 2026-11-19 | when #19 pauses or finishes | active |
 
 **Game runtime:** only one client can drive GD at a time. Claim it as the pseudo-path `RUNTIME:gd-2.2091` (meaning the GD process and its pipe) before launching `gdbot-launch.exe`, and release it when the game is closed. Parallel instances: claim `RUNTIME:gd-2.2091/slot<N>` for `gdbot-launch.exe --instance N`; plain `RUNTIME:gd-2.2091` means slot 0. One client per slot.
