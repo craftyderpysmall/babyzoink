@@ -1,0 +1,82 @@
+{
+ "rows": [
+  {
+   "study": "M3 first baseline",
+   "agent": "Timing heuristic",
+   "first_run_progress_pct": 19.7,
+   "clears_within_3": 0,
+   "first_try_clears": 0,
+   "drills": 9
+  },
+  {
+   "study": "M3 first baseline",
+   "agent": "PPO top-K encoder",
+   "first_run_progress_pct": 38.2,
+   "clears_within_3": 4,
+   "first_try_clears": 0,
+   "drills": 9
+  },
+  {
+   "study": "M3 first baseline",
+   "agent": "PPO set encoder",
+   "first_run_progress_pct": 51.9,
+   "clears_within_3": 4,
+   "first_try_clears": 4,
+   "drills": 9
+  },
+  {
+   "study": "M3 scaled (3 seeds, ~1M steps)",
+   "agent": "PPO top-K encoder",
+   "first_run_progress_pct": 44.3,
+   "clears_within_3": 2.7,
+   "first_try_clears": 2.3,
+   "drills": 9
+  },
+  {
+   "study": "M3 scaled (3 seeds, ~1M steps)",
+   "agent": "PPO set encoder",
+   "first_run_progress_pct": 27.7,
+   "clears_within_3": 3.0,
+   "first_try_clears": 1.0,
+   "drills": 9
+  },
+  {
+   "study": "M3 imitation (3 seeds)",
+   "agent": "Behaviour cloning (top-K)",
+   "first_run_progress_pct": 73.1,
+   "clears_within_3": 6.3,
+   "first_try_clears": 6.0,
+   "drills": 9
+  },
+  {
+   "study": "M3 imitation (3 seeds)",
+   "agent": "Cloning then PPO",
+   "first_run_progress_pct": 57.7,
+   "clears_within_3": 4.3,
+   "first_try_clears": 4.3,
+   "drills": 9
+  },
+  {
+   "study": "M4 practice (3 seeds)",
+   "agent": "Cloning, no practice",
+   "first_run_progress_pct": 73.1,
+   "clears_within_3": 6.3,
+   "first_try_clears": 6.0,
+   "drills": 9
+  },
+  {
+   "study": "M4 practice (3 seeds)",
+   "agent": "Cloning + checkpoint practice",
+   "first_run_progress_pct": 73.1,
+   "clears_within_3": 7.7,
+   "first_try_clears": 6.0,
+   "drills": 9
+  }
+ ],
+ "meta": [
+  {
+   "label": "Updated",
+   "value": "2026-11-19"
+  }
+ ]
+}

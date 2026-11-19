@@ -1,0 +1,31 @@
+{
+ "rows": [
+  {
+   "date": "2026-11-18",
+   "gd_cpu_hours": 2.73,
+   "training_cpu_hours": 8.895,
+   "kwh": 0.02034,
+   "cost_usd": 0.00605,
+   "cumulative_kwh": 0.02034,
+   "cumulative_cost_usd": 0.00605
+  }
+ ],
+ "meta": [
+  {
+   "label": "Method",
+   "value": "CPU-seconds of the bot's GD copy and Python training x 1.75 J (28 W package power / 16 threads, AMD Ryzen AI 7 350). Estimate; screen, GPU and the rest of the laptop are not counted."
+  },
+  {
+   "label": "Price",
+   "value": "29.75 cents/kWh, California residential, 2026-08 (U.S. EIA Electric Power Monthly, Table 5.6.A)"
+  },
+  {
+   "label": "Tracking since",
+   "value": "2026-11-18 11:49 UTC-08:00 (first day includes CPU already used by runs in progress then; earlier runs were not measured)"
+  },
+  {
+   "label": "Generated",
+   "value": "2026-11-18 18:53 PST"
+  }
+ ]
+}
