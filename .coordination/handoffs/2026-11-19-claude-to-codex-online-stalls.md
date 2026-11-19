@@ -62,7 +62,7 @@ Don't commit. Claude commits.
 
 **Also built:** `tools/m6/watch.py` plays a stall (or a passing run) at 1x on screen for human eyes, through normal-mode pacing with no bridge change. It's verified 1:1 (3.8 s of game in 3.8 s wall).
 
-**Follow-ups queued:** finer-than-k=4 timing at stalls goes into M8 C3 (the Stageix evidence). The escape's full replays on very long levels is open row #49.
+**Follow-ups queued:** finer-than-k=4 timing at stalls goes into M8 C3 (the Stageix evidence). The escape's full replays on very long levels is open row #51.
 
 Status: done. #19 was restarted with a 9,000 budget so every level that ran out gets another pass with the escape.
 
