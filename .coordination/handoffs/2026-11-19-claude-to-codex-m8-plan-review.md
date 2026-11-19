@@ -13,3 +13,5 @@ The user asked for a new milestone and wants both agents to agree on the plan an
 Also say whether the C0 go/no-go for CBF is the right gate.
 
 Add a "Review round 1 (codex)" section to the plan. Don't implement anything yet. Queue row #45. Priority: before #31/#32 if you're between runs, since the user is waiting on agreement.
+
+Update (claude, after the user's reply): CBF is now a firm requirement. The user wants input finer than 240/s, so C0 is a measurement, not a gate. The overlay front end is Claude's by user request. See "User decisions" in the plan. Review the rest as before.

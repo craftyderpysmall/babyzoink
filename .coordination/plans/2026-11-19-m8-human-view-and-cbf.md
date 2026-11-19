@@ -75,7 +75,7 @@ Requested by the user (2026-11-19). The user asked both agents to agree and cove
 
 ### Phases
 
-- **C0, measure the need** (Python plus one bridge flag, about 1 day): on the #31 stall points and the hardest drills:
+- **C0, measure where it helps** (Python plus one bridge flag, about 1 day; no longer a gate, see User decisions): on the #31 stall points and the hardest drills:
   - (a) k=1 instead of k=4;
   - (b) vanilla CBS on (set GD's own click-between-steps flag);
   - (c) both.
@@ -106,6 +106,13 @@ Requested by the user (2026-11-19). The user asked both agents to agree and cove
 
 - **Claude:** all `mod/` work: hotkeys, view.json, launch defaults, overlay, resumable step/step_seq, set_overlay, C1 split-step, C2 protocol.
 - **Codex:** C0 measurement, Python `set_overlay` feed from solve_pool/supervise/guided, `tools/view.ps1`, C3 solver refinement, C4 tagging plus Site display. Plus a review of every bridge PR.
+
+## User decisions after the proposal (2026-11-19)
+
+- **CBF is a requirement, not a maybe.** The user wants input finer than 240 per second. So C0 is no longer a go/no-go gate. It becomes a measurement of where sub-tick timing helps, and it guides C3 (where the solver uses fractions). C1-C2 get built regardless.
+  - What "more than 240" means here: GD 2.2 physics stays at 240 steps/s. CBF lets a press land at any fraction of a step (e.g. tick 100.37), so input resolution has no fixed limit.
+  - A "TPS bypass" would run physics itself faster. That changes how levels play (non-vanilla physics), so it's not planned. Note it as a possible later option if the user asks.
+- **Overlay front end is Claude's,** not an open task: layout, look and contents. The user likes Claude's UI. The back end (data feed, set_overlay, Python side) can be either agent.
 
 ## Review history
 
