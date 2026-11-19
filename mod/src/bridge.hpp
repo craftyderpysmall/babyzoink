@@ -7,7 +7,9 @@ namespace gdbot {
 
 struct Paths {
     std::wstring game_dir;       // folder containing GeometryDash.exe (no trailing slash)
-    std::wstring bot_dir;        // game_dir\gdbot
+    std::wstring bot_dir;        // game_dir\gdbot (shared: mode.txt lives here so one toggle drives every instance)
+    std::wstring inst_dir;       // per-instance: bot_dir for slot 0, bot_dir\inst<N> for slot N (bridge.json, bridge.log, save\)
+    int slot = 0;                // GDBOT_INSTANCE set by gdbot-launch --instance N (absent = 0)
     std::wstring save_dir;       // game_dir\gdbot\save\  (trailing slash)
     std::wstring real_save_dir;  // %LOCALAPPDATA%\GeometryDash (no trailing slash) — never touched
 };

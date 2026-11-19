@@ -221,7 +221,7 @@ void rebuild_object_cache() {
     static bool s_probed = false;
     if (!s_probed) {
         s_probed = true;
-        FILE* f = _wfopen((g_paths.bot_dir + L"\\objprobe.bin").c_str(), L"wb");
+        FILE* f = _wfopen((g_paths.inst_dir + L"\\objprobe.bin").c_str(), L"wb");
         if (f) {
             static unsigned char buf[16 + 0x600];
             unsigned m = n < 400 ? n : 400;
@@ -744,6 +744,26 @@ bool write_frame(HANDLE h, const std::string& s) {
     return WriteFile(h, &len, 4, &w, nullptr) && w == 4 && WriteFile(h, s.data(), len, &w, nullptr) && w == len;
 }
 
+// A minimized GD stops its frame loop, so control_frame never answers. While a request is waiting,
+// un-minimize the window without focus and drop it to the bottom of the z-order: it stays out of
+// the user's way but keeps running. (Async calls: this thread must not block on the UI thread.)
+BOOL CALLBACK find_game_window(HWND h, LPARAM out) {
+    DWORD pid = 0;
+    GetWindowThreadProcessId(h, &pid);
+    if (pid != GetCurrentProcessId() || GetWindow(h, GW_OWNER) || !IsWindowVisible(h)) return TRUE;
+    *reinterpret_cast<HWND*>(out) = h;
+    return FALSE;
+}
+
+void keep_window_running() {
+    static HWND s_wnd = nullptr;
+    if (!s_wnd || !IsWindow(s_wnd)) { s_wnd = nullptr; EnumWindows(find_game_window, LPARAM(&s_wnd)); }
+    if (!s_wnd || !IsIconic(s_wnd)) return;
+    ShowWindowAsync(s_wnd, SW_SHOWNOACTIVATE);
+    SetWindowPos(s_wnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
+    GLOG("window was minimized: restored behind other windows so the bot keeps running");
+}
+
 DWORD WINAPI pipe_thread(LPVOID) {
     for (;;) {
         HANDLE h = CreateNamedPipeW(g_pipe_name.c_str(), PIPE_ACCESS_DUPLEX,
@@ -760,7 +780,7 @@ DWORD WINAPI pipe_thread(LPVOID) {
             if (!read_exact(h, body.data(), len)) break;
             g_req = std::move(body);
             SetEvent(g_req_ev);
-            WaitForSingleObject(g_rep_ev, INFINITE);
+            while (WaitForSingleObject(g_rep_ev, 250) == WAIT_TIMEOUT) keep_window_running();
             bool close = g_close_after_reply;
             g_close_after_reply = false;
             if (!write_frame(h, g_rep) || close) break;
@@ -792,11 +812,11 @@ bool start_control() {
     CloseHandle(t);
     if (HANDLE hk = CreateThread(nullptr, 0, hotkey_thread, nullptr, 0, nullptr)) CloseHandle(hk);
     g_mode_file_time = FILETIME{};  // apply an existing mode.txt (a persisted user choice) on the first poll
-    FILE* f = _wfopen((g_paths.bot_dir + L"\\bridge.json").c_str(), L"w");
+    FILE* f = _wfopen((g_paths.inst_dir + L"\\bridge.json").c_str(), L"w");
     if (f) {
         char name[256];
         WideCharToMultiByte(CP_UTF8, 0, g_pipe_name.c_str(), -1, name, sizeof(name), nullptr, nullptr);
-        json d = {{"pipe", name}, {"pid", GetCurrentProcessId()}, {"proto", kProto}};
+        json d = {{"pipe", name}, {"pid", GetCurrentProcessId()}, {"proto", kProto}, {"instance", g_paths.slot}};
         fputs(d.dump().c_str(), f);
         fclose(f);
     }

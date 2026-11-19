@@ -184,3 +184,10 @@ It is enabled per session via `hello.capabilities.binary_obs`. This is only buil
 
 ## Mock bridge requirement (for Python tests)
 `gdbot` ships a mock bridge that speaks this protocol over the same framing. It can run in-process or on a real named pipe. Its toy physics only needs to exercise plumbing (deaths, completion, k-stepping, episode IDs, traces). It is not a GD physics clone and must not try to be one.
+
+## Implemented: minimized window, parallel instances (2026-11-19)
+- **Minimized GD keeps working.** A minimized GD stops its frame loop, and the bridge answers requests inside that loop. So while a request waits, the bridge restores the window without focus, behind all other windows. `CCDirector::pause` and the iconify callback are suppressed on the bot copy. Verified: a full tape replay with the window minimized completes with an identical result.
+- **Parallel instances (experimental).**
+  - `gdbot-launch.exe --instance N` (1–63) sets `GDBOT_INSTANCE`. Slot N keeps `bridge.json`, `bridge.log` and `save/` in `gdbot/inst<N>/`; a new slot's save is seeded from slot 0's bot save.
+  - `bridge.json` gains `"instance"`. `mode.txt` stays shared, so one toggle drives every slot. Python helpers are in `gdbot/instances.py`.
+  - Slot 0 is unchanged. Slots 1+ still fail on level load (open, queue #12). Don't use them for training yet.

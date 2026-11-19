@@ -30,13 +30,20 @@ bool init_paths() {
     auto& p = gdbot::g_paths;
     p.game_dir = e.substr(0, e.find_last_of(L"\\/"));
     p.bot_dir = p.game_dir + L"\\gdbot";
-    p.save_dir = p.bot_dir + L"\\save\\";
+    wchar_t slot[16] = {0};
+    if (GetEnvironmentVariableW(L"GDBOT_INSTANCE", slot, DWORD(std::size(slot))) && slot[0]) {
+        p.slot = _wtoi(slot);
+        if (p.slot < 0 || p.slot > 63) return false;
+    }
+    p.inst_dir = p.slot ? p.bot_dir + L"\\inst" + std::to_wstring(p.slot) : p.bot_dir;
+    p.save_dir = p.inst_dir + L"\\save\\";
     PWSTR la = nullptr;
     if (SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &la) != S_OK) return false;
     p.real_save_dir = std::wstring(la) + L"\\GeometryDash";
     CoTaskMemFree(la);
     CreateDirectoryW(p.bot_dir.c_str(), nullptr);
-    CreateDirectoryW((p.bot_dir + L"\\save").c_str(), nullptr);
+    CreateDirectoryW(p.inst_dir.c_str(), nullptr);
+    CreateDirectoryW((p.inst_dir + L"\\save").c_str(), nullptr);
     return true;
 }
 
@@ -45,8 +52,8 @@ bool init_paths() {
 extern "C" __declspec(dllexport) DWORD WINAPI gdbot_init(LPVOID) {
     using namespace gdbot;
     if (!init_paths()) return kPathsFailed;
-    if (!log::open(g_paths.bot_dir + L"\\bridge.log")) return kLogFailed;
-    GLOG("==== gdbot bridge init (pid %lu) ====", GetCurrentProcessId());
+    if (!log::open(g_paths.inst_dir + L"\\bridge.log")) return kLogFailed;
+    GLOG("==== gdbot bridge init (pid %lu, instance %d) ====", GetCurrentProcessId(), g_paths.slot);
     GLOG("game_dir=%ls", g_paths.game_dir.c_str());
     GLOG("save_dir=%ls real_save_dir=%ls (guarded)", g_paths.save_dir.c_str(), g_paths.real_save_dir.c_str());
 

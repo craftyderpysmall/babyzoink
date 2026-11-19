@@ -2,7 +2,8 @@
 // runs gdbot_init, and resumes the game only if init returned 0 (build matched and
 // isolation installed). Otherwise the game process is terminated before any game code runs.
 //
-// Usage: gdbot-launch.exe [--game <dir containing GeometryDash.exe>] [--dll <bridge dll>]
+// Usage: gdbot-launch.exe [--game <dir containing GeometryDash.exe>] [--dll <bridge dll>] [--instance N]
+// --instance N (1..63) starts a parallel copy whose discovery, log and save live in gdbot\inst<N>\.
 // Defaults: --game <repo>\game\2.2091 (found relative to this exe), --dll next to this exe.
 #include <windows.h>
 #include <tlhelp32.h>
@@ -89,9 +90,11 @@ int wmain(int argc, wchar_t** argv) {
     std::wstring self_dir = dir_of(self);
     std::wstring dll = self_dir + L"\\gdbot_bridge.dll";
     std::wstring game;
+    int instance = 0;  // parallel copies: slot N gets its own pipe, discovery, log and save under gdbot\inst<N>
     for (int i = 1; i + 1 < argc; ++i) {
         if (!wcscmp(argv[i], L"--game")) game = argv[++i];
         else if (!wcscmp(argv[i], L"--dll")) dll = argv[++i];
+        else if (!wcscmp(argv[i], L"--instance")) instance = _wtoi(argv[++i]);
     }
     if (game.empty()) {
         // build dir is <repo>\mod\build\<config>; walk up until <repo>\game\2.2091 exists
@@ -108,8 +111,24 @@ int wmain(int argc, wchar_t** argv) {
     if (!file_exists(exe)) return fail(pi, (L"GeometryDash.exe not found in " + game).c_str());
     if (!file_exists(dll)) return fail(pi, (L"bridge DLL not found: " + dll).c_str());
     if (!process_running(L"steam.exe")) fwprintf(stderr, L"gdbot-launch: warning: Steam does not appear to be running.\n");
-    if (process_running(L"GeometryDash.exe"))
-        fwprintf(stderr, L"gdbot-launch: warning: another GeometryDash.exe is already running.\n");
+    if (instance < 0 || instance > 63) return fail(pi, L"--instance must be 0..63");
+    if (process_running(L"GeometryDash.exe") && instance == 0)
+        fwprintf(stderr, L"gdbot-launch: warning: another GeometryDash.exe is already running "
+                         L"(use --instance N for a parallel copy).\n");
+    // The child inherits this; the bridge reads it to pick its per-instance directory.
+    SetEnvironmentVariableW(L"GDBOT_INSTANCE", instance ? std::to_wstring(instance).c_str() : nullptr);
+    std::wstring inst_dir = game + L"\\gdbot" + (instance ? L"\\inst" + std::to_wstring(instance) : L"");
+    if (instance) {
+        // A brand-new profile crashes on its first level load, so a new slot starts from a copy of
+        // slot 0's bot save (never the user's real save). Existing slot saves are left alone.
+        CreateDirectoryW(inst_dir.c_str(), nullptr);
+        CreateDirectoryW((inst_dir + L"\\save").c_str(), nullptr);
+        for (const wchar_t* f : {L"CCGameManager.dat", L"CCLocalLevels.dat"}) {
+            std::wstring src = game + L"\\gdbot\\save\\" + f, dst = inst_dir + L"\\save\\" + f;
+            if (file_exists(src) && !file_exists(dst) && !CopyFileW(src.c_str(), dst.c_str(), TRUE))
+                return fail(pi, (L"could not seed instance save: " + dst).c_str());
+        }
+    }
 
     // Find gdbot_init's RVA by mapping the DLL locally without running it.
     HMODULE local = LoadLibraryExW(dll.c_str(), nullptr, DONT_RESOLVE_DLL_REFERENCES);
@@ -144,7 +163,8 @@ int wmain(int argc, wchar_t** argv) {
     if (code != 0) return fail(pi, init_reason(code));
 
     ResumeThread(pi.hThread);
-    wprintf(L"gdbot-launch: bridge ready, game resumed. Log: %ls\\gdbot\\bridge.log\n", game.c_str());
+    wprintf(L"gdbot-launch: bridge ready, game resumed (instance %d). Discovery: %ls\\bridge.json  Log: %ls\\bridge.log\n",
+            instance, inst_dir.c_str(), inst_dir.c_str());
     CloseHandle(pi.hThread);
     CloseHandle(pi.hProcess);
     return 0;

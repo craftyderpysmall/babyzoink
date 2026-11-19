@@ -19,6 +19,8 @@ PLAYER_FLAGS = ("gravity_flipped", "mini", "on_ground", "on_ceiling", "holding",
 PLAYER_WIDTH = 8 + len(MODES) + len(PLAYER_FLAGS)
 PLAYER_VECTOR_WIDTH = 2 * PLAYER_WIDTH + 2
 OBJECT_WIDTH = 13 + len(CATEGORIES) + len(ORB_KINDS) + len(MODES)
+NEAR_WIDTH = 3  # dx/near_x, gap/near_x, contact ticks/NEAR_TICKS (opt-in, see near_x)
+NEAR_TICKS = 60
 
 
 def _one_hot(value, options: tuple) -> list[int]:
@@ -34,7 +36,10 @@ class ObservationEncoder:
     def __init__(
         self, *, layout: str = "topk", max_objects: int = 32,
         horizon_s: float = 0.75, ahead_x: float = 900.0, behind_x: float = 90.0,
+        near_x: float | None = None,
     ):
+        # near_x (opt-in): extra fine-scale timing features per object. dx/ahead_x moves only ~0.006
+        # per k=4 decision, too coarse for narrow windows like triple spike.
         if layout not in ("topk", "set"):
             raise ValueError("layout must be topk or set")
         if max_objects < 1 or any(not math.isfinite(value) or value <= 0 for value in (horizon_s, ahead_x, behind_x)):
@@ -44,13 +49,15 @@ class ObservationEncoder:
         self.horizon_s = horizon_s
         self.ahead_x = ahead_x
         self.behind_x = behind_x
+        self.near_x = near_x
+        self.object_width = OBJECT_WIDTH + (NEAR_WIDTH if near_x else 0)
         if layout == "topk":
-            shape = (PLAYER_VECTOR_WIDTH + max_objects * (OBJECT_WIDTH + 1),)
+            shape = (PLAYER_VECTOR_WIDTH + max_objects * (self.object_width + 1),)
             self.space = spaces.Box(-np.inf, np.inf, shape, np.float32)
         else:
             self.space = spaces.Dict({
                 "player": spaces.Box(-np.inf, np.inf, (PLAYER_VECTOR_WIDTH,), np.float32),
-                "objects": spaces.Box(-np.inf, np.inf, (max_objects, OBJECT_WIDTH), np.float32),
+                "objects": spaces.Box(-np.inf, np.inf, (max_objects, self.object_width), np.float32),
                 "mask": spaces.Box(0, 1, (max_objects,), np.float32),
             })
         self.reset()
@@ -100,6 +107,9 @@ class ObservationEncoder:
                 *_one_hot(obj["cat"], CATEGORIES), *_one_hot(params.get("kind"), ORB_KINDS),
                 *_one_hot(destination, MODES),
             ]
+            if self.near_x:
+                row += [min(4.0, max(-2.0, dx / self.near_x)), min(4.0, gap / self.near_x),
+                        min(4.0, contact * PHYSICS_HZ / NEAR_TICKS)]
             candidates.append(((contact, abs(dx), abs(dy), uid), row))
 
         self.previous_tick = tick
@@ -119,7 +129,7 @@ class ObservationEncoder:
             ]
         player[-2:] = self.truncated, bool(self.unsupported)
 
-        objects = np.zeros((self.max_objects, OBJECT_WIDTH), dtype=np.float32)
+        objects = np.zeros((self.max_objects, self.object_width), dtype=np.float32)
         mask = np.zeros(self.max_objects, dtype=np.float32)
         for i, (_, row) in enumerate(sorted(candidates, key=lambda item: item[0])[:self.max_objects]):
             objects[i] = row
