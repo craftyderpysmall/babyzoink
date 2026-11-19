@@ -2,6 +2,7 @@
 // strictly alternating request/reply. The pipe thread only moves bytes; every request is executed
 // on the game thread inside control_frame() (called from CCScheduler::update).
 #include <windows.h>
+#include <sddl.h>
 #include <atomic>
 #include <climits>
 #include <cmath>
@@ -74,10 +75,26 @@ float call_float(void* fn, void* self) {
 
 void send_reply(const json& r);
 
-json err(const json& req, const char* code, const std::string& msg) {
-    return {{"id", req.value("id", 0)}, {"ok", false}, {"error", {{"code", code}, {"msg", msg}}}};
+// Never throws (#36): a malformed id (string, float, missing, non-object request) replies with id 0.
+long long req_id(const json& req) {
+    if (!req.is_object()) return 0;
+    auto it = req.find("id");
+    return it != req.end() && it->is_number_integer() ? it->get<long long>() : 0;
 }
-json ok(const json& req) { return {{"id", req.value("id", 0)}, {"ok", true}}; }
+json err(const json& req, const char* code, const std::string& msg) {
+    return {{"id", req_id(req)}, {"ok", false}, {"error", {{"code", code}, {"msg", msg}}}};
+}
+json ok(const json& req) { return {{"id", req_id(req)}, {"ok", true}}; }
+
+// debug_peek reads raw game memory; dev use only (#36). Enabled when the launcher's environment has GDBOT_DEBUG=1.
+bool debug_enabled() {
+    static int s = -1;
+    if (s < 0) {
+        wchar_t v[8] = {0};
+        s = GetEnvironmentVariableW(L"GDBOT_DEBUG", v, 8) && v[0] == L'1';
+    }
+    return s == 1;
+}
 
 const char* mode_name(void* p) {
     using namespace fields;
@@ -339,7 +356,7 @@ json op_hello(const json& req) {
     r["build"] = {{"exe_sha256", g_build->exe_sha256}, {"game_version", g_build->game_version}};
     r["capabilities"] = {{"step", true}, {"reset", true}, {"startpos", false}, {"checkpoint", true},
                          {"trace", true}, {"modes", {"normal", "dedicated", "background"}}, {"dual", false},
-                         {"objects", true}, {"level_string", true}, {"quit_level", true}, {"debug_peek", true}, {"isolation", true},
+                         {"objects", true}, {"level_string", true}, {"quit_level", true}, {"debug_peek", debug_enabled()}, {"isolation", true},
                          {"set_render", g_draw_skip_supported}, {"agent_colors", true},
                          {"watch_1x", true}, {"overlay", true}, {"session", true}, {"cbf", g_cbf_ok}};
     r["mode"] = mode_str(g_mode);
@@ -789,6 +806,7 @@ json op_set_overlay(const json& req) {
 
 // Dev-only: raw memory read for field mapping. target: "player1" | "layer"; len <= 4096.
 json op_debug_peek(const json& req) {
+    if (!debug_enabled()) return err(req, "UNSUPPORTED", "debug_peek is off; launch with GDBOT_DEBUG=1 for field mapping");
     std::string target = req.value("target", "player1");
     long long off = req.value("off", -1), len = req.value("len", 0);
     if (off < 0 || len <= 0 || len > 4096 || off > 0x10000) return err(req, "BAD_REQUEST", "off/len out of range");
@@ -1143,11 +1161,38 @@ void keep_window_running() {
     GLOG("window was minimized: restored behind other windows so the bot keeps running");
 }
 
+// Pipe access (#36): only this user and SYSTEM may connect (remote clients were already rejected).
+SECURITY_ATTRIBUTES* pipe_security() {
+    static SECURITY_ATTRIBUTES sa{};
+    static bool s_done = false;
+    if (s_done) return sa.lpSecurityDescriptor ? &sa : nullptr;
+    s_done = true;
+    HANDLE tok = nullptr;
+    if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &tok)) return nullptr;
+    alignas(8) BYTE buf[256];
+    DWORD n = 0;
+    LPWSTR sid = nullptr;
+    if (GetTokenInformation(tok, TokenUser, buf, sizeof buf, &n) &&
+        ConvertSidToStringSidW(reinterpret_cast<TOKEN_USER*>(buf)->User.Sid, &sid)) {
+        std::wstring sddl = L"D:P(A;;GA;;;SY)(A;;GA;;;" + std::wstring(sid) + L")";
+        PSECURITY_DESCRIPTOR sd = nullptr;
+        if (ConvertStringSecurityDescriptorToSecurityDescriptorW(sddl.c_str(), SDDL_REVISION_1, &sd, nullptr)) {
+            sa.nLength = sizeof sa;
+            sa.lpSecurityDescriptor = sd;  // kept for the process lifetime
+            sa.bInheritHandle = FALSE;
+        }
+        LocalFree(sid);
+    }
+    CloseHandle(tok);
+    GLOG("pipe: access %s", sa.lpSecurityDescriptor ? "limited to this user and SYSTEM" : "DEFAULT (security descriptor failed)");
+    return sa.lpSecurityDescriptor ? &sa : nullptr;
+}
+
 DWORD WINAPI pipe_thread(LPVOID) {
     for (;;) {
         HANDLE h = CreateNamedPipeW(g_pipe_name.c_str(), PIPE_ACCESS_DUPLEX,
                                     PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT | PIPE_REJECT_REMOTE_CLIENTS,
-                                    1, 1 << 20, 1 << 20, 0, nullptr);
+                                    1, 1 << 20, 1 << 20, 0, pipe_security());
         if (h == INVALID_HANDLE_VALUE) { GLOG("CreateNamedPipe failed: %lu", GetLastError()); return 1; }
         if (!ConnectNamedPipe(h, nullptr) && GetLastError() != ERROR_PIPE_CONNECTED) { CloseHandle(h); continue; }
         GLOG("pipe: client connected");

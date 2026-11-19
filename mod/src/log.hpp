@@ -16,6 +16,13 @@ inline bool open(const std::wstring& path) {
     InitializeCriticalSection(&g_cs);
     QueryPerformanceFrequency(&g_qpf);
     QueryPerformanceCounter(&g_t0);
+    // Retention (#42): above 5 MB the log becomes <name>.prev.log (one previous file kept) and a new one starts.
+    WIN32_FILE_ATTRIBUTE_DATA a{};
+    if (GetFileAttributesExW(path.c_str(), GetFileExInfoStandard, &a) &&
+        (((unsigned long long)a.nFileSizeHigh << 32) | a.nFileSizeLow) > 5ull * 1024 * 1024) {
+        std::wstring prev = path.substr(0, path.size() - 4) + L".prev.log";
+        MoveFileExW(path.c_str(), prev.c_str(), MOVEFILE_REPLACE_EXISTING);
+    }
     g_file = _wfopen(path.c_str(), L"a");
     return g_file != nullptr;
 }

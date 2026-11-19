@@ -6,6 +6,8 @@
 // --instance N (1..63) starts a parallel copy whose discovery, log and save live in gdbot\inst<N>\.
 // Defaults: --game <repo>\game\2.2091 (found relative to this exe), --dll next to this exe.
 #include <windows.h>
+#include <netfw.h>
+#include <oleauto.h>
 #include <tlhelp32.h>
 #include <cstdio>
 #include <string>
@@ -23,6 +25,50 @@ std::wstring full_path(const std::wstring& p) {
 bool file_exists(const std::wstring& p) {
     DWORD a = GetFileAttributesW(p.c_str());
     return a != INVALID_FILE_ATTRIBUTES && !(a & FILE_ATTRIBUTE_DIRECTORY);
+}
+
+// #35 network isolation fails closed: the bridge blocks HTTP and curl_easy_perform in-process, but curl_multi
+// traffic relies on Windows Firewall. Require an enabled, outbound, block rule for exactly this exe.
+bool firewall_blocks(const std::wstring& exe) {
+    if (FAILED(CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED))) return false;
+    bool found = false;
+    INetFwPolicy2* policy = nullptr;
+    if (SUCCEEDED(CoCreateInstance(__uuidof(NetFwPolicy2), nullptr, CLSCTX_INPROC_SERVER, __uuidof(INetFwPolicy2),
+                                   reinterpret_cast<void**>(&policy)))) {
+        INetFwRules* rules = nullptr;
+        IUnknown* unk = nullptr;
+        IEnumVARIANT* it = nullptr;
+        if (SUCCEEDED(policy->get_Rules(&rules)) && SUCCEEDED(rules->get__NewEnum(&unk)) &&
+            SUCCEEDED(unk->QueryInterface(__uuidof(IEnumVARIANT), reinterpret_cast<void**>(&it)))) {
+            VARIANT v;
+            VariantInit(&v);
+            ULONG got = 0;
+            while (!found && it->Next(1, &v, &got) == S_OK) {
+                INetFwRule* rule = nullptr;
+                if (v.vt == VT_DISPATCH && SUCCEEDED(v.pdispVal->QueryInterface(__uuidof(INetFwRule), reinterpret_cast<void**>(&rule)))) {
+                    VARIANT_BOOL enabled = VARIANT_FALSE;
+                    NET_FW_RULE_DIRECTION dir = NET_FW_RULE_DIR_IN;
+                    NET_FW_ACTION action = NET_FW_ACTION_ALLOW;
+                    BSTR app = nullptr;
+                    rule->get_Enabled(&enabled);
+                    rule->get_Direction(&dir);
+                    rule->get_Action(&action);
+                    rule->get_ApplicationName(&app);
+                    found = enabled == VARIANT_TRUE && dir == NET_FW_RULE_DIR_OUT && action == NET_FW_ACTION_BLOCK && app &&
+                            _wcsicmp(app, exe.c_str()) == 0;
+                    if (app) SysFreeString(app);
+                    rule->Release();
+                }
+                VariantClear(&v);
+            }
+            it->Release();
+        }
+        if (unk) unk->Release();
+        if (rules) rules->Release();
+        policy->Release();
+    }
+    CoUninitialize();
+    return found;
 }
 
 bool process_running(const wchar_t* name) {
@@ -94,11 +140,13 @@ int wmain(int argc, wchar_t** argv) {
     // M8 launch boundary: "fresh" (default) = a start the user asked for -> dedicated, overlay on;
     // "keep" = a supervisor recycle -> the user's current mode/view preferences are kept.
     std::wstring session = L"fresh";
+    bool allow_no_firewall = false;  // "--allow-no-firewall yes": development only, prints a loud warning
     for (int i = 1; i + 1 < argc; ++i) {
         if (!wcscmp(argv[i], L"--game")) game = argv[++i];
         else if (!wcscmp(argv[i], L"--dll")) dll = argv[++i];
         else if (!wcscmp(argv[i], L"--instance")) instance = _wtoi(argv[++i]);
         else if (!wcscmp(argv[i], L"--session")) session = argv[++i];
+        else if (!wcscmp(argv[i], L"--allow-no-firewall")) allow_no_firewall = !wcscmp(argv[++i], L"yes");
     }
     if (game.empty()) {
         // build dir is <repo>\mod\build\<config>; walk up until <repo>\game\2.2091 exists
@@ -115,6 +163,12 @@ int wmain(int argc, wchar_t** argv) {
     if (!file_exists(exe)) return fail(pi, (L"GeometryDash.exe not found in " + game).c_str());
     if (!file_exists(dll)) return fail(pi, (L"bridge DLL not found: " + dll).c_str());
     if (!process_running(L"steam.exe")) fwprintf(stderr, L"gdbot-launch: warning: Steam does not appear to be running.\n");
+    if (!firewall_blocks(exe)) {
+        if (!allow_no_firewall)
+            return fail(pi, (L"no enabled outbound Windows Firewall block rule for " + exe +
+                             L" (network isolation would be incomplete). Re-create the GDBot firewall rule for this path.").c_str());
+        fwprintf(stderr, L"gdbot-launch: WARNING: starting without a firewall block rule (--allow-no-firewall yes)\n");
+    }
     if (instance < 0 || instance > 63) return fail(pi, L"--instance must be 0..63");
     if (process_running(L"GeometryDash.exe") && instance == 0)
         fwprintf(stderr, L"gdbot-launch: warning: another GeometryDash.exe is already running "

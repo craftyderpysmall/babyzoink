@@ -307,3 +307,15 @@ User rule: CBF on every level. It uses the core mechanism of Click Between Frame
 
   So `handleButton` called mid-update takes effect within the step. `tools/m8/view_smoke.py` is still 6/6 on this build.
 - **Not covered yet** (#47, Codex): slope, orb, wave, ship, moving-platform and dual-transition fixtures.
+
+## Implemented: safety-review hardening (2026-11-19, claude; review rows #35, #36, #41, #42, #44)
+
+- **Launcher (#35):** `gdbot-launch` refuses to start unless Windows Firewall has an enabled, outbound, block rule whose program is exactly this `GeometryDash.exe`. If the repo moves, re-create the rule for the new path. `--allow-no-firewall yes` overrides it, for development only, with a warning.
+- **Pipe (#36):**
+  - the access list allows only the current user and SYSTEM;
+  - request ids are read without throwing: a non-integer or missing id replies with id 0;
+  - `debug_peek` is off unless the launcher's environment has `GDBOT_DEBUG=1`, and hello reports it.
+- **Init (#41):** the bot, instance and save directories must exist as real directories (no reparse points) outside `%LOCALAPPDATA%\GeometryDash`. Otherwise `gdbot_init` fails and the game never resumes.
+- **Logs (#42):** at init, a `bridge.log` over 5 MB becomes `bridge.prev.log`. One previous file is kept.
+- **Build (#44):** the MinHook v1.3.4 and nlohmann_json v3.11.3 downloads are pinned by SHA-256.
+

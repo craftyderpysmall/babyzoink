@@ -41,9 +41,16 @@ bool init_paths() {
     if (SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, nullptr, &la) != S_OK) return false;
     p.real_save_dir = std::wstring(la) + L"\\GeometryDash";
     CoTaskMemFree(la);
-    CreateDirectoryW(p.bot_dir.c_str(), nullptr);
-    CreateDirectoryW(p.inst_dir.c_str(), nullptr);
-    CreateDirectoryW((p.inst_dir + L"\\save").c_str(), nullptr);
+    // #41: the redirected save dir must exist, be a real directory (not a link elsewhere), and not sit under
+    // the real save. Fail closed: gdbot_init refuses to start the game otherwise.
+    for (const std::wstring& d : {p.bot_dir, p.inst_dir, p.inst_dir + L"\\save"}) {
+        if (!CreateDirectoryW(d.c_str(), nullptr) && GetLastError() != ERROR_ALREADY_EXISTS) return false;
+        DWORD attr = GetFileAttributesW(d.c_str());
+        if (attr == INVALID_FILE_ATTRIBUTES || !(attr & FILE_ATTRIBUTE_DIRECTORY) || (attr & FILE_ATTRIBUTE_REPARSE_POINT))
+            return false;
+    }
+    std::wstring root = p.real_save_dir + L"\\";
+    if (_wcsnicmp(p.save_dir.c_str(), root.c_str(), root.size()) == 0) return false;
     return true;
 }
 

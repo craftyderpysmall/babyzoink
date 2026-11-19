@@ -17,11 +17,13 @@ include(FetchContent)
 # Pinned to tag v1.3.4; sources compiled directly rather than via MinHook's own CMake.
 FetchContent_Declare(minhook_src
   URL https://github.com/TsudaKageyu/minhook/archive/refs/tags/v1.3.4.tar.gz
+  URL_HASH SHA256=1aebeae4ca898330c507860acc2fca2eb335fe446a3a2b8444c3bf8b2660a14e  # #44: pinned
   SOURCE_SUBDIR do-not-add-minhook-cmake  # download only; don't run MinHook's CMakeLists
 )
 FetchContent_MakeAvailable(minhook_src)
 FetchContent_Declare(nlohmann_json
   URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz
+  URL_HASH SHA256=d6c65aca6b1ed68e7a182f4757257b107ae403032760ed6ef121c9d55e81757d  # #44: pinned (= upstream release hash)
 )
 FetchContent_MakeAvailable(nlohmann_json)
 add_library(minhook STATIC
@@ -41,7 +43,7 @@ add_library(gdbot_bridge SHARED
   src/cbf.cpp
   src/sha256.cpp
 )
-target_link_libraries(gdbot_bridge PRIVATE minhook nlohmann_json::nlohmann_json)
+target_link_libraries(gdbot_bridge PRIVATE minhook nlohmann_json::nlohmann_json advapi32)
 target_compile_definitions(gdbot_bridge PRIVATE WIN32_LEAN_AND_MEAN NOMINMAX UNICODE _UNICODE _CRT_SECURE_NO_WARNINGS)
 target_compile_options(gdbot_bridge PRIVATE /W4 /permissive- /utf-8)
 
