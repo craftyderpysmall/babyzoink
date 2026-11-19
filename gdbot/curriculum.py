@@ -3,6 +3,7 @@
 from collections import Counter
 from dataclasses import dataclass, field
 from itertools import pairwise
+from pathlib import Path
 from time import perf_counter
 
 import numpy as np
@@ -13,6 +14,37 @@ class Decision:
     x: float
     observation: object
     action: int
+
+
+def save_demonstration(path: Path, observations, actions):
+    """Publish a complete archive atomically so interrupted generations can retry."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(".tmp")
+    with temporary.open("wb") as file:
+        np.savez(file, observations=np.asarray(observations, dtype=np.float32),
+                 actions=np.asarray(actions, dtype=np.uint8))
+    temporary.replace(path)
+
+
+def demo_counts(paths):
+    counts = np.zeros(2, dtype=np.int64)
+    for path in paths:
+        with np.load(path) as archive:
+            actions = archive["actions"]
+            counts += np.bincount(actions, minlength=2)
+    return counts
+
+
+def demo_batches(paths, rng, batch_size):
+    """Shuffle archives and examples with at most one loaded archive at a time."""
+    for index in rng.permutation(len(paths)):
+        with np.load(paths[index]) as archive:
+            observations, actions = archive["observations"], archive["actions"]
+        order = rng.permutation(len(actions))
+        for start in range(0, len(order), batch_size):
+            batch = order[start:start + batch_size]
+            yield observations[batch], actions[batch]
+        del observations, actions
 
 
 @dataclass
@@ -130,7 +162,7 @@ def verified_checkpoint(env, prefix, suffix, cost):
     return None
 
 
-def practice_section(env, trace, window, choose, *, limit):
+def practice_section(env, trace, window, choose, *, limit, start_trial=None):
     """Search one section. Prove the restore against the failed trace or replay its prefix."""
     cost = PracticeCost()
     started = perf_counter()
@@ -145,6 +177,8 @@ def practice_section(env, trace, window, choose, *, limit):
         suffix = suffix[1:]
     source = tuple(decision.action for decision in suffix)
     for candidate_actions in timing_candidates(source, limit):
+        if start_trial is not None:
+            start_trial()
         observation = cost.reset(env, checkpoint) if checkpoint else replay_prefix(env, prefix, cost)
         if observation is None:
             raise RuntimeError("clean prefix did not reach the recorded practice anchor")

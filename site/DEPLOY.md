@@ -24,13 +24,13 @@ Open [the local preview](http://127.0.0.1:8769). The exporter reads `docs/progre
 
 Static files update with a Site version deployment. The Sites workflow uses its own source repository. A push to Babyzoink's data branch alone does not redeploy the Site.
 
-## Nightly data updates at 8 p.m. Pacific
+## Nightly data updates at 8:03 p.m. Pacific
 
-The recommended static workflow uses the existing public `dashboard-data` branch as a data feed. The raw host returned HTTP 200 and `Access-Control-Allow-Origin: *` for the existing energy file during verification.
+The existing nightly job publishes the generated dashboard snapshot on the public `main` branch. The raw URL has returned HTTP 200 and `Access-Control-Allow-Origin: *`.
 
-1. Run the exporter at 8 p.m. Pacific using `--output <dashboard-data checkout>/site-dashboard.json`. Push that one generated file through the existing authorized nightly job. The snapshot includes aggregate results and evidence. It excludes raw attempt telemetry and source logs.
-2. Once the new file returns HTTP 200 with cross-origin access, set `remoteData` in `config.js` to `https://raw.githubusercontent.com/craftyderpysmall/babyzoink/dashboard-data/site-dashboard.json`. Deploy that configuration with the Site once. Thereafter the browser loads the current snapshot when opened. It uses the bundled snapshot and reports the fallback if the feed is unavailable.
-3. If a public feed is unsuitable, retain the bundled snapshot and publish a new Site version when the snapshot changes. The current handoff does not authorize configuring the host, pushing the data, or changing the existing Windows task.
+1. The 8:03 p.m. job runs the exporter with `--refresh-gddl --output data/dashboard/site-dashboard.json` and publishes that generated file on `main`. The snapshot includes aggregate results and evidence. It excludes raw attempt telemetry and source logs.
+2. The frontend is configured to read the [public dashboard snapshot](https://raw.githubusercontent.com/craftyderpysmall/babyzoink/main/data/dashboard/site-dashboard.json). Deploy the site once, then let the browser choose the newest valid snapshot on open. It uses the bundled snapshot when that is newer or when the feed is unavailable.
+3. If the data later needs private hosting, disable the remote URL and publish a new Site version with the updated bundled snapshot.
 
 ## Difficulty snapshots and telemetry
 

@@ -1,2 +1,1 @@
-// Set this to the verified public HTTPS snapshot URL at cutover.
-export const remoteData = "";
+export const remoteData = "https://raw.githubusercontent.com/craftyderpysmall/babyzoink/main/data/dashboard/site-dashboard.json";

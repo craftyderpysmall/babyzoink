@@ -45,10 +45,12 @@ def test_practice_and_unverified_evidence_remain_separate():
     }
     first = Section.from_row(data)
     checkpoint = Section.from_row({**data, "start": "checkpoint", "attempt": 2, "zero_shot": False, "cleared": True})
-    reports = summarize([first, checkpoint], {first.level: Anchor(0, "Drill")})
+    fallback = Section.from_row({**data, "attempt": 3, "zero_shot": False, "practice": True})
+    reports = summarize([first, checkpoint, fallback], {first.level: Anchor(0, "Drill")})
     assert reports["zero_shot"]["trend"][0]["rating"] is None
     assert reports["full"]["trend"][0]["seconds"] == 25
     assert reports["all"]["trend"][0]["checkpoint_entries"] == 1
+    assert reports["all"]["trend"][0]["seconds"] == 75
     assert reports["full"]["trend"][0]["levels"][0]["mean_attempts_to_first_section_clear"] is None
     assert reports["all"]["trend"][0]["levels"][0]["mean_attempts_to_first_section_clear"] == 2
     with pytest.raises(ValueError, match="first attempt"):

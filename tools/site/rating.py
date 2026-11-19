@@ -29,6 +29,7 @@ class Section:
     cleared: bool = False
     run: str = ""
     seed: int | None = None
+    practice: bool = False
 
     @classmethod
     def from_row(cls, row):
@@ -36,7 +37,7 @@ class Section:
             row["mode"].lower(), row["generation"], row["level"], row["section"],
             row["speed"], row["mini"], row["dual"], row["start"], row["attempt"],
             row["ticks_in_section"], row["died"], row.get("zero_shot", False), row.get("cleared", False),
-            row.get("run", ""), row.get("seed"),
+            row.get("run", ""), row.get("seed"), row.get("practice", False),
         )
         if section.mode not in MODES or section.start not in ("zero", "checkpoint", "startpos"):
             raise ValueError("unknown mode or reset kind")
@@ -45,12 +46,12 @@ class Section:
             if type(value) is not int or value < minimum:
                 raise ValueError("invalid section counter")
         if not all(type(value) is bool for value in (
-            section.mini, section.dual, section.died, section.zero_shot, section.cleared,
+            section.mini, section.dual, section.died, section.zero_shot, section.cleared, section.practice,
         )):
             raise ValueError("section flags must be booleans")
         if section.cleared and section.died:
             raise ValueError("a death cannot also clear a section")
-        if section.zero_shot and (section.start != "zero" or section.attempt != 1):
+        if section.zero_shot and (section.start != "zero" or section.attempt != 1 or section.practice):
             raise ValueError("zero-shot evidence requires the first attempt from zero")
         return section
 
@@ -166,7 +167,7 @@ def summarize(rows, anchors):
     result = {}
     scopes = {
         "zero_shot": [row for row in rows if row.zero_shot],
-        "full": [row for row in rows if row.start == "zero"],
+        "full": [row for row in rows if row.start == "zero" and not row.practice],
         "all": rows,
     }
     for scope, relevant in scopes.items():
@@ -199,7 +200,7 @@ def summarize(rows, anchors):
                 first_exits = {}
                 for row in level_rows:
                     if row.cleared:
-                        key = row.run, row.seed, row.difficulty_key
+                        key = row.run, row.seed, row.practice, row.difficulty_key
                         previous = first_exits.get(key)
                         first_exits[key] = row.attempt if previous is None else min(previous, row.attempt)
                 levels.append({"level": level, "anchor": anchor.label if anchor else None,

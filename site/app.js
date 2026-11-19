@@ -230,7 +230,10 @@ async function fetchData(url, timeout = 10_000) {
   const response = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(timeout) });
   if (!response.ok) throw new Error(`Snapshot HTTP ${response.status}`);
   const data = await response.json();
-  if (data.schema !== 1 || !data.progress || !data.energy || !data.performance) throw new Error("Unsupported snapshot");
+  if (data.schema !== 1 || !Number.isFinite(Date.parse(data.updated_at)) ||
+      !data.progress || !data.energy || !data.performance || !data.gddl) {
+    throw new Error("Unsupported snapshot");
+  }
   return data;
 }
 
@@ -249,11 +252,19 @@ async function init() {
   addEventListener("resize", draw);
   route();
   if (remoteData) {
-    try {
-      snapshot = await fetchData(remoteData, 4500);
+    const [remote, bundled] = await Promise.allSettled([
+      fetchData(remoteData, 4500),
+      fetchData("./data/dashboard.json"),
+    ]);
+    if (remote.status === "fulfilled" && (bundled.status !== "fulfilled" ||
+      Date.parse(remote.value.updated_at) >= Date.parse(bundled.value.updated_at))) {
+      snapshot = remote.value;
       source = "Nightly data feed";
-    } catch {
-      source = "Bundled fallback · live data feed unavailable";
+    } else if (bundled.status === "fulfilled") {
+      snapshot = bundled.value;
+      source = remote.status === "fulfilled"
+        ? "Bundled snapshot · newer than nightly data"
+        : "Bundled fallback · live data feed unavailable";
     }
   }
   snapshot ??= await fetchData("./data/dashboard.json");

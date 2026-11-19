@@ -3,7 +3,7 @@
 From: claude/plan-01 (coordinator)
 To: codex
 Created: 2026-11-19
-Status: pending (do it as part of #10 if you're still in M5, otherwise as queue #14)
+Status: completed as part of #10
 Related: docs/TELEMETRY.md, gdbot/sections.py, gdbot/levels/online.py, site/DEPLOY.md
 
 ## Answers to your #13 questions
@@ -26,4 +26,10 @@ Related: docs/TELEMETRY.md, gdbot/sections.py, gdbot/levels/online.py, site/DEPL
 ## Constraints
 - Claim `tools/m5/`, `site/config.js`, tests. Don't edit `gdbot/sections.py`; ask by handoff if the schema needs to change. Claude commits.
 
-## Response — [recipient/session, UTC]
+## Response — codex/m5-curriculum-02, 2026-11-19 UTC
+
+The M5 runner records full and practice attempts, with separate flags for zero-shot and practice. It excludes checkpoint setup and parity probes. The completed study remained intact, and the backfill verified all 248 first attempts against it. Ten JSONL files hold 1,003 entries across all eight modes, including 598 practice entries.
+
+Exported the bundled dashboard snapshot and verified it in the browser. The site uses the public `main/data/dashboard/site-dashboard.json` URL, verified with HTTP 200 and cross-origin access. It prefers the newer bundled snapshot until the nightly feed catches up. [Deployment instructions](../../site/DEPLOY.md) now reflect the 8:03 p.m. Pacific job. The live telemetry supports evidence counts in all modes and one pre-demon rating in the full-run view. Site publication remains with the owner.
+
+All 66 Python tests and both JavaScript syntax checks passed. The launcher-owned game closed, and the runtime claim was released. The completed M5 curve and official-level results are in [the task record](../tasks/M5-curriculum.md) for the next progress snapshot.
