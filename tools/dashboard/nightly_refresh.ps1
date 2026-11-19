@@ -1,5 +1,5 @@
 # Run by Windows Task Scheduler ("babyzoink dashboard data", daily 20:03 local).
-# 1) makes sure the power sampler is running, 2) runs the collector, 3) force-pushes the four data
+# 1) makes sure the power sampler is running, 2) runs both collectors, 3) force-pushes the data
 # files as a single commit to the `dashboard-data` branch using git plumbing (the working tree and
 # the current branch are never touched, so it is safe while Codex or Claude are editing).
 # A cloud routine (~20:20) then reads that branch and updates the dashboard artifact.
@@ -19,7 +19,12 @@ try {
     }
     $out = & python -I tools\dashboard\collect.py 2>&1
     Log "collect: $out"
-    $files = "energy_daily.json", "milestones.json", "results.json", "price.json"
+    # New ChatGPT Sites dashboard: one combined snapshot (incl. per-mode ratings from build\telemetry).
+    # The site reads it from the public dashboard-data branch at view time (site/DEPLOY.md).
+    $out = & "$repo\build\gdbot-venv\Scripts\python.exe" tools\site\export.py --refresh-gddl --output build\dashboard\site-dashboard.json 2>&1
+    if ($LASTEXITCODE -ne 0) { throw "site export failed: $out" }
+    Log "site export: $out"
+    $files = "energy_daily.json", "milestones.json", "results.json", "price.json", "site-dashboard.json"
     $lines = foreach ($f in $files) {
         $sha = (& git hash-object -w "build\dashboard\$f").Trim()
         "100644 blob $sha`t$f"
