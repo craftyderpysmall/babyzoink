@@ -67,6 +67,14 @@ inline bool g_in_init = false;           // inside PlayLayer::init
 inline int g_frames_in_level = 0;        // frames since PlayLayer::init returned
 inline bool g_started = false;
 inline void* g_anticheat_obj = nullptr;
+// Draw-skip (set_render): in dedicated/background mode with a client in control, the scene is drawn and
+// presented at most once per g_present_every_ms; other frames skip the scene visit and swapBuffers.
+// 0 = draw every frame (default; identical to earlier builds). Rendering never feeds the simulation.
+inline int g_present_every_ms = 0;
+inline bool g_skip_draw = false;
+inline bool g_mode_allows_skip = false;    // dedicated or background (normal mode always draws)
+inline bool g_draw_skip_supported = false; // all four cocos2d exports hooked         // decided once per frame in CCScheduler::update, before the draw
+inline long long g_frames_total = 0, g_frames_presented = 0;
 inline long long g_anticheat_off = -1;  // GJBaseGameLayer::m_anticheatSpike, learned at runtime  // GD's hidden anticheat spike: the object destroyPlayer gets in the first ticks after a reset           // PlayLayer::startGame has run for the current layer
 
 // ---- original (trampoline) function pointers, set by install_hooks ----

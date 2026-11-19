@@ -1,0 +1,143 @@
+{
+ "slot": 0,
+ "level": "main:1",
+ "decisions": 4933,
+ "k": 4,
+ "configs": [
+  {
+   "present_every_ms": 0,
+   "mode": "dedicated",
+   "runs": 98,
+   "ticks": 1933736,
+   "wall_s": 20.04,
+   "ticks_per_s": 96490,
+   "cpu_pct_one_core": 91.6,
+   "cpu_ms_per_1k_ticks": 9.49,
+   "mem_mb": {
+    "working_set": 279.0703125,
+    "peak_working_set": 319.26953125,
+    "private": 424.30859375
+   },
+   "parity": {
+    "tick": 19732,
+    "ticks_advanced": 19732,
+    "decisions": 4933,
+    "terminal": null,
+    "player": {
+     "buffered": true,
+     "dashing": false,
+     "dead": false,
+     "gravity_flipped": false,
+     "holding": true,
+     "mini": false,
+     "mode": "ship",
+     "on_ceiling": false,
+     "on_ground": true,
+     "rot": -0.05458848550915718,
+     "speed": 0.8999999761581421,
+     "vx": 1.298828125,
+     "vy": 0.0,
+     "x": 25644.712890625,
+     "y": 495.0
+    }
+   },
+   "frames": 195,
+   "presented": 195,
+   "fps": 9.7
+  },
+  {
+   "present_every_ms": 250,
+   "mode": "dedicated",
+   "runs": 106,
+   "ticks": 2091592,
+   "wall_s": 20.17,
+   "ticks_per_s": 103708,
+   "cpu_pct_one_core": 101.1,
+   "cpu_ms_per_1k_ticks": 9.75,
+   "mem_mb": {
+    "working_set": 292.61328125,
+    "peak_working_set": 319.26953125,
+    "private": 437.8125
+   },
+   "parity": {
+    "tick": 19732,
+    "ticks_advanced": 19732,
+    "decisions": 4933,
+    "terminal": null,
+    "player": {
+     "buffered": true,
+     "dashing": false,
+     "dead": false,
+     "gravity_flipped": false,
+     "holding": true,
+     "mini": false,
+     "mode": "ship",
+     "on_ceiling": false,
+     "on_ground": true,
+     "rot": -0.05458848550915718,
+     "speed": 0.8999999761581421,
+     "vx": 1.298828125,
+     "vy": 0.0,
+     "x": 25644.712890625,
+     "y": 495.0
+    }
+   },
+   "frames": 212,
+   "presented": 53,
+   "fps": 10.5
+  },
+  {
+   "present_every_ms": 1000,
+   "mode": "dedicated",
+   "runs": 107,
+   "ticks": 2111324,
+   "wall_s": 20.1,
+   "ticks_per_s": 105054,
+   "cpu_pct_one_core": 102.3,
+   "cpu_ms_per_1k_ticks": 9.74,
+   "mem_mb": {
+    "working_set": 296.8671875,
+    "peak_working_set": 319.26953125,
+    "private": 442.00390625
+   },
+   "parity": {
+    "tick": 19732,
+    "ticks_advanced": 19732,
+    "decisions": 4933,
+    "terminal": null,
+    "player": {
+     "buffered": true,
+     "dashing": false,
+     "dead": false,
+     "gravity_flipped": false,
+     "holding": true,
+     "mini": false,
+     "mode": "ship",
+     "on_ceiling": false,
+     "on_ground": true,
+     "rot": -0.05458848550915718,
+     "speed": 0.8999999761581421,
+     "vx": 1.298828125,
+     "vy": 0.0,
+     "x": 25644.712890625,
+     "y": 495.0
+    }
+   },
+   "frames": 213,
+   "presented": 17,
+   "fps": 10.6
+  }
+ ],
+ "set_render_supported": true,
+ "mem_menu_mb": {
+  "working_set": 306.3046875,
+  "peak_working_set": 306.65234375,
+  "private": 453.140625
+ },
+ "mem_level_loaded_mb": {
+  "working_set": 281.55078125,
+  "peak_working_set": 319.26953125,
+  "private": 426.98828125
+ },
+ "parity_identical": true
+}

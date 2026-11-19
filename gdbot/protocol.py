@@ -181,7 +181,11 @@ class BridgeClient:
         return self._loaded_level.copy()
 
     def hello(self) -> dict:
-        reply = self.request("hello", proto=VERSION, client="gdbot/0.1")
+        from .agent import current_agent
+
+        agent = current_agent()
+        extra = {"agent": agent} if agent else {}
+        reply = self.request("hello", proto=VERSION, client="gdbot/0.1", **extra)
         if type(reply.get("proto")) is not int or reply["proto"] != VERSION:
             self._discard()
             raise ProtocolError("unsupported bridge protocol")

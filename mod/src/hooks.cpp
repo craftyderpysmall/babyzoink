@@ -145,10 +145,34 @@ void __fastcall h_pauseGame(void* self, bool unfocused) {
 }
 
 SchedUpdate_t o_schedUpdate;
+Void0_t o_nodeVisit = nullptr, o_swapBuffers = nullptr;
+using GetPtr_t = void*(__fastcall*)(void*);
+using Static_t = void*(*)();
+Static_t p_sharedDirector = nullptr;
+GetPtr_t p_getRunningScene = nullptr;
+void* g_skip_scene = nullptr;  // the scene whose visit is skipped this frame
+
 void __fastcall h_schedUpdate(void* self, float dt) {
     o_schedUpdate(self, dt);
     if (g_layer) ++g_frames_in_level;
     control_frame(dt);
+    // CCDirector::drawScene runs the scheduler, then visits the running scene, then swaps buffers.
+    ++g_frames_total;
+    static ULONGLONG s_last_present = 0;
+    ULONGLONG now = GetTickCount64();
+    g_skip_draw = g_present_every_ms > 0 && g_controlled && g_mode_allows_skip &&
+                  now - s_last_present < ULONGLONG(g_present_every_ms);
+    g_skip_scene = g_skip_draw ? p_getRunningScene(p_sharedDirector()) : nullptr;
+    if (!g_skip_scene) g_skip_draw = false;  // no scene to identify (e.g. mid-transition): draw normally
+    if (!g_skip_draw) { s_last_present = now; ++g_frames_presented; }
+}
+void __fastcall h_nodeVisit(void* self) {
+    if (g_skip_draw && self == g_skip_scene) return;
+    o_nodeVisit(self);
+}
+void __fastcall h_swapBuffers(void* self) {
+    if (g_skip_draw) return;
+    o_swapBuffers(self);
 }
 
 bool hook(Fn fn, void* detour, void** orig) {
@@ -181,6 +205,17 @@ bool install_hooks() {
     MH_STATUS s = sched ? MH_CreateHook(sched, (void*)h_schedUpdate, (void**)&o_schedUpdate) : MH_ERROR_FUNCTION_NOT_FOUND;
     GLOG("hook CCScheduler::update (export): %s", MH_StatusToString(s));
     ok &= (s == MH_OK);
+
+    // Draw-skip hooks are optional: if any is missing, set_render reports unsupported and frames draw.
+    p_sharedDirector = cc ? (Static_t)GetProcAddress(cc, "?sharedDirector@CCDirector@cocos2d@@SAPEAV12@XZ") : nullptr;
+    p_getRunningScene = cc ? (GetPtr_t)GetProcAddress(cc, "?getRunningScene@CCDirector@cocos2d@@QEAAPEAVCCScene@2@XZ") : nullptr;
+    void* visit = cc ? (void*)GetProcAddress(cc, "?visit@CCNode@cocos2d@@UEAAXXZ") : nullptr;
+    void* swap = cc ? (void*)GetProcAddress(cc, "?swapBuffers@CCEGLView@cocos2d@@UEAAXXZ") : nullptr;
+    MH_STATUS sv = visit ? MH_CreateHook(visit, (void*)h_nodeVisit, (void**)&o_nodeVisit) : MH_ERROR_FUNCTION_NOT_FOUND;
+    MH_STATUS sw = swap ? MH_CreateHook(swap, (void*)h_swapBuffers, (void**)&o_swapBuffers) : MH_ERROR_FUNCTION_NOT_FOUND;
+    g_draw_skip_supported = p_sharedDirector && p_getRunningScene && sv == MH_OK && sw == MH_OK;
+    GLOG("draw-skip hooks: CCNode::visit %s, CCEGLView::swapBuffers %s, director %d -> %s", MH_StatusToString(sv),
+         MH_StatusToString(sw), p_sharedDirector && p_getRunningScene, g_draw_skip_supported ? "supported" : "unsupported");
     return ok;
 }
 

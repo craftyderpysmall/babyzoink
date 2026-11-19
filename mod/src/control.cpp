@@ -294,17 +294,50 @@ void press(bool down) {
     }
 }
 
+BOOL CALLBACK find_game_window(HWND h, LPARAM out);
+
+// Window owner marking: the client's hello may name its agent ("claude" | "codex"). The window's caption
+// and border take that agent's colour (Claude orange / ChatGPT green) and the title names agent + slot,
+// so the user can tell the slots apart. Colours stay until another agent says hello. Windows 11 DWM only;
+// older systems just get the title.
+void mark_window_owner(const std::string& agent) {
+    HWND w = nullptr;
+    EnumWindows(find_game_window, LPARAM(&w));
+    if (!w) { GLOG("window owner %s: no game window yet", agent.c_str()); return; }
+    COLORREF caption, text = RGB(255, 255, 255);
+    if (agent == "claude") caption = RGB(0xD9, 0x77, 0x57);       // Claude orange #D97757
+    else if (agent == "codex") caption = RGB(0x10, 0xA3, 0x7F);   // ChatGPT green #10A37F
+    else return;
+    using DwmSet_t = HRESULT(WINAPI*)(HWND, DWORD, LPCVOID, DWORD);
+    static HMODULE dwm = LoadLibraryW(L"dwmapi.dll");
+    auto set = dwm ? (DwmSet_t)GetProcAddress(dwm, "DwmSetWindowAttribute") : nullptr;
+    HRESULT hb = E_FAIL, hc = E_FAIL;
+    if (set) {
+        hb = set(w, 34 /*DWMWA_BORDER_COLOR*/, &caption, sizeof caption);
+        hc = set(w, 35 /*DWMWA_CAPTION_COLOR*/, &caption, sizeof caption);
+        set(w, 36 /*DWMWA_TEXT_COLOR*/, &text, sizeof text);
+    }
+    std::wstring title = L"Geometry Dash - " + std::wstring(agent.begin(), agent.end()) + L" - slot " +
+                         std::to_wstring(g_paths.slot);
+    SetWindowTextW(w, title.c_str());
+    GLOG("window owner -> %s (caption 0x%lx, border 0x%lx)", agent.c_str(), (unsigned long)hc, (unsigned long)hb);
+}
+
 // ---- operations ----
 json op_hello(const json& req) {
     if (req.value("proto", -1) != kProto) return err(req, "BAD_REQUEST", "unsupported protocol version");
     g_controlled = true;
     GLOG("client hello (%s); bot now controls the game", req.value("client", std::string("?")).c_str());
+    std::string agent = req.value("agent", std::string());
+    static std::string s_owner;
+    if (!agent.empty() && agent != s_owner) { s_owner = agent; mark_window_owner(agent); }
     json r = ok(req);
     r["proto"] = kProto;
     r["build"] = {{"exe_sha256", g_build->exe_sha256}, {"game_version", g_build->game_version}};
     r["capabilities"] = {{"step", true}, {"reset", true}, {"startpos", false}, {"checkpoint", true},
                          {"trace", true}, {"modes", {"normal", "dedicated", "background"}}, {"dual", false},
-                         {"objects", true}, {"level_string", true}, {"quit_level", true}, {"debug_peek", true}, {"isolation", true}};
+                         {"objects", true}, {"level_string", true}, {"quit_level", true}, {"debug_peek", true}, {"isolation", true},
+                         {"set_render", g_draw_skip_supported}, {"agent_colors", true}};
     r["mode"] = mode_str(g_mode);
     r["isolation"] = {{"saves_redirected", g_iso.saves_redirected && g_iso.file_guard},
                       {"http_blocked", g_iso.http_blocked}};
@@ -654,6 +687,7 @@ const char* mode_str(Mode m) { return m == Mode::Dedicated ? "dedicated" : m == 
 
 void apply_mode(Mode m, const char* why) {
     g_mode = m;
+    g_mode_allows_skip = m != Mode::Normal;
     HANDLE proc = GetCurrentProcess();
     DWORD_PTR pmask = 0, smask = 0;
     GetProcessAffinityMask(proc, &pmask, &smask);
@@ -719,6 +753,24 @@ DWORD WINAPI hotkey_thread(LPVOID) {
     while (GetMessageW(&msg, nullptr, 0, 0) > 0)
         if (msg.message == WM_HOTKEY) g_hotkey_hit = true;
     return 0;
+}
+
+// Draw-skip: {"op":"set_render","present_every_ms":N}. N > 0 draws and presents the scene at most once per
+// N ms while the mode is dedicated or background; 0 draws every frame. Normal mode always draws.
+// Reply: present_every_ms, frames, presented (counters since launch).
+json op_set_render(const json& req) {
+    if (!g_draw_skip_supported) return err(req, "UNSUPPORTED", "draw-skip hooks not installed (see bridge.log)");
+    if (req.contains("present_every_ms")) {
+        int n = req.value("present_every_ms", 0);
+        if (n < 0 || n > 60000) return err(req, "BAD_REQUEST", "present_every_ms must be 0..60000");
+        if (n != g_present_every_ms) GLOG("set_render: present every %d ms (0 = every frame)", n);
+        g_present_every_ms = n;
+    }
+    json r = ok(req);
+    r["present_every_ms"] = g_present_every_ms;
+    r["frames"] = g_frames_total;
+    r["presented"] = g_frames_presented;
+    return r;
 }
 
 json op_set_mode(const json& req) {
@@ -790,6 +842,7 @@ json handle(const std::string& text) {
         if (op == "quit_level") return op_quit_level(req);
         if (op == "step") return op_step(req);
         if (op == "set_mode") return op_set_mode(req);
+        if (op == "set_render") return op_set_render(req);
         if (op == "debug_peek") return op_debug_peek(req);
         if (op == "snapshot") return op_snapshot(req);
         if (op == "step_seq") return op_step_seq(req);
@@ -809,6 +862,7 @@ void release_control(const char* why) {
     press(false);
     g_controlled = false;
     g_trace = false;
+    g_present_every_ms = 0;  // the next client starts with every frame drawn
     g_client_mode = Mode::Normal;
     if (!g_user_override) apply_mode(Mode::Normal, "client disconnected");
     GLOG("control released (%s); game runs normally again", why);
