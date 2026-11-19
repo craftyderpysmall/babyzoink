@@ -53,6 +53,22 @@
           <tbody id="results"></tbody>
         </table></div>
       </section>
+      <section class="panel results" aria-labelledby="attempts-title">
+        <div class="panel-head">
+          <h2 id="attempts-title">Attempts by level</h2>
+          <label class="tag">Show <select id="attempt-kind">
+            <option value="official">Official</option>
+            <option value="online">Online</option>
+            <option value="drill">Drills</option>
+            <option value="all">All</option>
+          </select></label>
+        </div>
+        <p class="note">Normal attempts are full runs from 0%. Practice attempts are resets from a checkpoint: practice drilling, timing search, and each candidate the search teacher tries.</p>
+        <div class="table-scroll"><table>
+          <thead><tr><th>Level</th><th>Normal attempts</th><th>Practice attempts</th><th>Normal clears</th><th>Best progress</th><th>First cleared</th></tr></thead>
+          <tbody id="attempt-rows"></tbody>
+        </table></div>
+      </section>
     </section>
 
     <section id="performance" aria-labelledby="performance-title" hidden>

@@ -29,6 +29,8 @@ try {
     }
     $out = & python -I tools\dashboard\collect.py 2>&1
     Log "collect: $out"
+    $out = & "$repo\build\gdbot-venv\Scripts\python.exe" tools\site\backfill_attempts.py 2>&1   # per-level normal/practice attempts
+    Log "attempts ledger: $out"
     $out = & "$repo\build\gdbot-venv\Scripts\python.exe" tools\site\export.py --refresh-gddl --output build\dashboard\site-dashboard.json 2>&1
     if ($LASTEXITCODE -ne 0) { throw "site export failed: $out" }
     Log "site export: $out"

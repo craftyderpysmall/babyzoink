@@ -34,6 +34,23 @@ function renderRows(id, rows, empty, columns) {
   }
 }
 
+const runLabels = {
+  "m5c-search": "search teacher", "m4-practice": "M4 practice", "m4-control": "M4 control",
+};
+
+function attempts() {
+  const kind = byId("attempt-kind").value;
+  const rows = (snapshot.levels || []).filter((level) => kind === "all" || level.level.startsWith(`${kind}:`));
+  renderRows("attempt-rows", rows.map((level) => {
+    const first = level.first_cleared_by;
+    const by = first ? `${runLabels[first.run] || first.run}, attempt ${first.attempt}` : "not yet";
+    return [
+      level.name, format(level.normal_attempts, 0), format(level.practice_attempts, 0),
+      format(level.normal_clears, 0), `${format(100 * level.best_progress)}%`, by,
+    ];
+  }), "No attempts recorded for this group yet.", 6);
+}
+
 function overview() {
   const { progress, energy } = snapshot;
   const completed = progress.milestones.filter((item) => item.status === "done").length;
@@ -57,6 +74,7 @@ function overview() {
     row.study, row.agent, `${format(row.first_run_progress_pct)}%`,
     `${format(row.clears_within_3)} / ${row.drills}`, `${format(row.first_try_clears)} / ${row.drills}`,
   ]), "No study results are available.", 5);
+  attempts();
   renderRows("energy-rows", energy.rows.map((row) => [
     row.date, `${format(row.kwh, 4)} kWh`, usd.format(row.cost_usd),
   ]), "No power samples are available.", 3);
@@ -248,6 +266,7 @@ async function init() {
   }));
   byId("scope").addEventListener("change", () => { refreshGenerations(); draw(); });
   byId("generation").addEventListener("change", draw);
+  byId("attempt-kind").addEventListener("change", attempts);
   addEventListener("hashchange", route);
   addEventListener("resize", draw);
   route();

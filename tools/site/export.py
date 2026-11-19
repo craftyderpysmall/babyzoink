@@ -105,10 +105,19 @@ def resolve_anchors(rows, cache, metadata):
     return anchors, names
 
 
+def attempt_levels(directory):
+    """Per-level normal vs practice attempts (gdbot/attempts.py ledger; tools/site/backfill_attempts.py)."""
+    import sys
+    sys.path.insert(0, str(ROOT))
+    from gdbot.attempts import read, summarize as summarize_attempts
+    return summarize_attempts(read(directory)) if directory.exists() else []
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=ROOT / "site/data/dashboard.json")
     parser.add_argument("--telemetry", type=Path, default=ROOT / "build/telemetry")
+    parser.add_argument("--attempts", type=Path, default=ROOT / "build/attempts")
     parser.add_argument("--refresh-gddl", action="store_true", help="look up referenced public level IDs")
     parser.add_argument("--replace-anchors", action="store_true", help="refresh existing cached ratings too")
     options = parser.parse_args()
@@ -129,6 +138,7 @@ def main():
         "schema": 1, "updated_at": now, "progress": progress,
         "energy": energy(ROOT / "build/power", progress["price"]["cents_per_kwh"] / 100),
         "performance": summarize(rows, anchors), "level_names": names,
+        "levels": attempt_levels(options.attempts),
         "telemetry": {"sections": len(rows), "anchored_sections": sum(row.level in anchors for row in rows)},
         "gddl": {"version": cache["api_version"], "checked_at": cache["version_checked_at"]},
     }
