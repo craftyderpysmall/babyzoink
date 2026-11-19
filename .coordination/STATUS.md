@@ -65,6 +65,10 @@ One row per run. Don't take rows marked `waiting`. If a handoff conflicts with a
 | 42 | Retention: rotate bridge.log (>5 MB -> .prev), supervisor logs and power samples; nightly_refresh.ps1 checks every git command, unique index path, allowlisted diff (review #27/#28, low) | reviews/2026-11-19-safety-review-claude.md | no | open |
 | 43 | Skill Gotten Gains: 5,234 committed segments for x 17,300->24,819; find why segments barely advance and add a no-progress detector (review #27/#28, low) | reviews/2026-11-19-safety-review-claude.md | yes | open |
 | 44 | Pin native dependency hashes in mod/CMakeLists.txt; trusted-checkpoint policy for study CLIs (review #27/#28, low) | reviews/2026-11-19-safety-review-claude.md | no | open |
+| 45 | Review the M8 plan (human view: 1x watch + overlay hotkeys + launch defaults; CBF sub-tick input), round 1 | handoffs/2026-11-19-claude-to-codex-m8-plan-review.md | no | queued |
+| 46 | (claude) M8 bridge: hotkeys Ctrl+Alt+V (1x watch) / Ctrl+Alt+O (overlay), view.json, launch defaults (dedicated, overlay on), overlay node, resumable step/step_seq, set_overlay op | plans/2026-11-19-m8-human-view-and-cbf.md | yes | waiting: plan agreement (#45) |
+| 47 | M8 CBF C0: does sub-tick timing unlock anything k=1 can't? k=1 vs vanilla click-between-steps on #31 stall points + hardest drills; parity with CBS off | plans/2026-11-19-m8-human-view-and-cbf.md | yes | waiting: plan agreement (#45) |
+| 48 | M8 CBF C1-C4: bridge split-step (claude), step_seq fracs, adaptive sub-tick solver refinement, input_timing tags on attempts + Site (codex) | plans/2026-11-19-m8-human-view-and-cbf.md | yes | waiting: C0 go (#47) |
 
 ## Where we stopped (2026-11-19, read this first)
 
@@ -113,6 +117,7 @@ One row per run. Don't take rows marked `waiting`. If a handoff conflicts with a
 | codex | Job queue on the ChatGPT Site | handoffs/2026-11-19-claude-to-codex-site-jobs.md | completed, private deployment verified |
 | codex + claude | Two independent safety reviews (#27, #28) | handoffs/2026-11-19-claude-to-both-safety-review.md | Codex first pass recorded in `reviews/2026-11-19-safety-review-codex.md`; cross-check awaits Claude's independent first pass |
 | codex | Online solver stalls (#31) + multi-tape triple spike (#32) | handoffs/2026-11-19-claude-to-codex-online-stalls.md | pending |
+| codex | Review M8 plan round 1 (#45) | handoffs/2026-11-19-claude-to-codex-m8-plan-review.md | pending |
 | codex | Bridge rebuild: draw-skip, window colours, quit crash warning | handoffs/2026-11-19-claude-to-codex-bridge-perf.md | info |
 | claude | Transfer Dry Out solver files for #18 | handoffs/2026-11-19-codex-to-claude-dryout-claim.md | completed (reassigned to Codex, #22) |
 | claude | Profile memory during repeated M6 search | handoffs/2026-11-19-codex-to-claude-m6-slot-memory.md | completed (#29) |

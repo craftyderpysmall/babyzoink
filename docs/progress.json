@@ -42,6 +42,12 @@
       "name": "Held-out evaluation and polish",
       "status": "in_progress",
       "detail": "Search-teacher data at scale: 59 of 63 training drills verified; 0 online levels cleared so far (8 used the full search budget; solver stalls are #31). DAgger (#20) and the guided-search curve (#21) are done. Runs on parallel game slots with draw-skip and an automatic memory guard."
+    },
+    {
+      "id": "M8",
+      "name": "Human view and click-between-frames input",
+      "status": "planned",
+      "detail": "Hotkeys to watch at 1x and to show the overlay (attempts, speed, mode); launch defaults dedicated + overlay on; CBF sub-tick input if measurement shows it helps. Plan under review by both agents."
     }
   ],
   "results": [
