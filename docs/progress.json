@@ -35,7 +35,7 @@
       "id": "M5",
       "name": "Curriculum: drills to official levels",
       "status": "in_progress",
-      "detail": "All-mode drills verified; better collision features lift unseen drills to 22/27, but real levels stay at 2-13% (0/5 official, 0/10 online). Next: search-based teacher"
+      "detail": "The search teacher verified three official clears from 0%. Cloning those clears gave 0/5 official and 0/10 online. Adding one training search tape yielded a clean clear on an unseen triple-spike drill."
     },
     {
       "id": "M6",
@@ -170,6 +170,30 @@
       "clears_within_3": 0,
       "first_try_clears": 0,
       "drills": 10
+    },
+    {
+      "study": "M5c expert clone (10 frozen online levels)",
+      "agent": "Route features + three official search demos",
+      "first_run_progress_pct": 5.1,
+      "clears_within_3": null,
+      "first_try_clears": 0,
+      "drills": 10
+    },
+    {
+      "study": "M5c triple-spike follow-up (one unseen drill, seed 2357)",
+      "agent": "Expert clone",
+      "first_run_progress_pct": 10.0,
+      "clears_within_3": 0,
+      "first_try_clears": 0,
+      "drills": 1
+    },
+    {
+      "study": "M5c triple-spike follow-up (one unseen drill, seed 2357)",
+      "agent": "Expert clone + training search tape",
+      "first_run_progress_pct": 99.1,
+      "clears_within_3": 1,
+      "first_try_clears": 0,
+      "drills": 1
     }
   ],
   "price": {

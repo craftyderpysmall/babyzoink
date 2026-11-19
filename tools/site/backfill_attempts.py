@@ -3,7 +3,7 @@
 Idempotent: each study becomes one ledger file named after it, rewritten on every run.
 Sources: M4 paired practice, M5 curriculum (held-out, validation, train, official), M5b transfer
 (validation arms, official training + zero-shot, online held-out, drill regression), M5c search
-teacher solutions. Missing reports are skipped.
+teacher solutions, and the expert-cloning and triple-spike comparisons. Missing reports are skipped.
 """
 import json
 import re
@@ -119,8 +119,41 @@ def solver_row(name, res, t=None):
                first_clear_attempt=1 if res["verified"] else None, practice_clear=True)
 
 
+def m5c_expert():
+    p = ROOT / "build/m5c-expert/official/report.json"
+    if not p.exists():
+        return
+    report, t = json.loads(p.read_text(encoding="utf-8")), mtime(p)
+    rows = []
+    for i, name in enumerate(OFFICIAL, 1):
+        level = f"official:{i}"
+        if f"main:{i}" in report.get("demos", {}):
+            rows.append(row("m5c-demo-replay", level, name=name, t=t, normal_attempts=1,
+                            normal_clears=1, best_progress=1.0, first_clear_attempt=1))
+        if name in report.get("official", {}):
+            result = {"attempts": [report["official"][name]]}
+            rows.append(from_result("m5c-expert-official", level, result, name=name, t=t))
+    for key, attempt in report.get("online", {}).items():
+        ident, _, name = key.partition("/")
+        rows.append(from_result("m5c-expert-online", f"online:{ident}", {"attempts": [attempt]}, name=name, t=t))
+    write("m5c-expert", rows)
+
+
+def m5c_triple():
+    p = ROOT / "build/m5c-expert/triple/report.json"
+    if not p.exists():
+        return
+    report, t = json.loads(p.read_text(encoding="utf-8")), mtime(p)
+    rows = [from_result(f"m5c-triple-{arm}", report["heldout_level"], {"attempts": attempts}, t=t)
+            for arm, attempts in report["evaluation"].items() if attempts]
+    if "demo" in report:
+        rows.append(from_result("m5c-triple-demo-replay", report["training_level"],
+                                {"attempts": [report["demo"]]}, t=t))
+    write("m5c-triple", rows)
+
+
 if __name__ == "__main__":
-    for step in (m4, m5, m5b, m5c):
+    for step in (m4, m5, m5b, m5c, m5c_expert, m5c_triple):
         step()
     from gdbot.attempts import read, summarize
     s = summarize(read())

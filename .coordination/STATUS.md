@@ -1,6 +1,6 @@
 # Coordination Status
 
-Last updated: 2026-11-19 (claude/plan-01): Codex out of usage; #14 written up and closed, #15 done. Next: search-based teacher (M5c)
+Last updated: 2026-11-19 (codex/takeover-02): #17 items 1/3/4/5 complete; Claude retains the remaining official solves
 
 ## Codex task queue
 
@@ -31,17 +31,17 @@ One row per run. Don't take rows marked `waiting`. If a handoff conflicts with a
 | 10 | M5 curriculum: drills for every mode, a BC + self-imitation generation loop, official levels 1–5 | handoffs/2026-11-19-claude-to-codex-m5-curriculum.md | yes | done: all 54 drills verified, three generations and five official levels scored |
 | 11 | Triple spike: why no agent clears it; trainer throughput in background mode | (claude, no handoff) | yes | in progress (claude) |
 | 12 | Parallel GD instances: per-instance pipe, discovery and save dir (M7) | (claude, no handoff) | yes | done (claude): 12/12, identical traces, 2x throughput; root cause of stalls was fullscreen auto-minimize (now windowed) |
-| 13 | ChatGPT Sites dashboard: static site + per-mode performance rating (survival-hazard IRT anchored to GDDL) | handoffs/2026-11-19-claude-to-codex-site-dashboard.md | no | done locally with real telemetry; publication pending owner |
+| 13 | ChatGPT Sites dashboard: static site + per-mode performance rating (survival-hazard IRT anchored to GDDL) | handoffs/2026-11-19-claude-to-codex-site-dashboard.md | no | deployed privately with real telemetry |
 | 14 | M5b official-level transfer: diagnose why it dies <6% on official 1-5, fix, then learn official levels by practice; held-out = downloaded online levels | handoffs/2026-11-19-claude-to-codex-m5b-official-transfer.md | yes (slot 1) | done (codex study, claude write-up): route encoder 19->22/27 drills; official 2-8%, online 0/10 |
 | 15 | (small, do between #14 runs) Patch slot 1's bot save for windowed display; relaunch on the new bridge | handoffs/2026-11-19-claude-to-codex-display-fix.md | no | done (claude): slot 1 save patched while closed |
 | 16 | M5c search-based teacher: deterministic segment search finds verified clears without humans; then expert iteration (BC on search clears) | tasks/M5c-search-teacher.md | yes (slot 0) | in progress (claude) |
-| 17 | Codex takes over: deploy ChatGPT Site, finish M5c solves (official 2/4/5), expert iteration, attempt logging, triple-spike follow-up | handoffs/2026-11-19-claude-to-codex-catchup.md | yes (slots 1+; slot 0 after Claude releases) | queued |
+| 17 | Codex takes over: deploy ChatGPT Site, finish M5c solves (official 2/4/5), expert iteration, attempt logging, triple-spike follow-up | handoffs/2026-11-19-claude-to-codex-catchup.md | yes (slots 1+; slot 0 after Claude releases) | done (items 1/3/4/5); item 2 remains with Claude under #16 |
 
 ## Where we stopped (2026-11-19, read this first)
 
-- **Headline:** the M5c search teacher clears official levels with no human input, each verified by a clean 0% run. Stereo Madness and Polargeist are solved (`build/m5c/main_1.json`, `main_3.json`). Back on Track, Dry Out and Base After Base: see `build/m5c/main_{2,4,5}.json` and `*.progress.json`. The solver resumes and skips solved levels.
-- **The trained policy still can't play real levels** (best 7.6% on official, 0/10 online). The next step is expert iteration on the search clears (`tools/m5c/expert.py`).
-- **All further work is handed to Codex in #17**, including deploying the ChatGPT Site. A new Claude session should read `handoffs/2026-11-19-claude-to-codex-catchup.md` for the full state, then check that row's progress before doing anything.
+- **Headline:** the M5c search teacher clears official levels with no human input, each verified by a clean 0% run. Stereo Madness, Back on Track and Polargeist are solved (`build/m5c/main_1.json` through `main_3.json`). Dry Out and Base After Base: see `build/m5c/main_{2,4,5}.json` and `*.progress.json`. The solver resumes and skips solved levels.
+- **The trained policy still can't play real levels** (best 7.6% on official, 0/10 online). Expert cloning gave 0/5 official and 0/10 online clears; adding a training search tape cleared the unseen triple-spike drill on attempt 3.
+- **Handoff #17 is complete for Codex items 1, 3, 4 and 5.** Claude retains the remaining official search solves under #16. The #17 handoff response records the dashboard URL and experiment results.
 - **Dashboards:** the Claude artifact (https://claude.ai/artifact/KRrQvsq6WkTcYJ4kmvp7ak) is refreshed by the 8:20 pm cloud routine trig_01YAtCETwr76snKBFJWJ9VyE. The ChatGPT Site is in `site/`, fed by `main/data/dashboard/site-dashboard.json`. The Windows task "babyzoink dashboard data" commits the data to `main` nightly at 8:03 pm. The repo has a single branch (`main`).
 - **Game:** GD 2.2091 bot copy in `game/2.2091` (gitignored). Launch with `mod/build/Release/gdbot-launch.exe [--instance N]`; one client per slot.
 
@@ -60,7 +60,7 @@ One row per run. Don't take rows marked `waiting`. If a handoff conflicts with a
 | M3 scaled six-run study | codex/m3-scale-01 | complete; top-K selected provisionally | tasks/M3-scale.md |
 | M4 practice curriculum | codex/m4-practice-01 | complete; live start positions, checkpoint practice, paired comparison | tasks/M4-practice.md |
 | M5 curriculum | codex/m5-curriculum-02 | complete; held-out clears averaged 21, 20.3, and 19 of 27; no official clears | tasks/M5-curriculum.md |
-| ChatGPT Sites dashboard | codex/site-dashboard-01 | local site and exporter verified with 1,003 measured sections; publication pending owner | tasks/site-dashboard.md |
+| ChatGPT Sites dashboard | codex/site-dashboard-01 | deployed privately; packaged attempts and performance views verified | tasks/site-dashboard.md |
 
 ## Pending reviews and handoffs
 

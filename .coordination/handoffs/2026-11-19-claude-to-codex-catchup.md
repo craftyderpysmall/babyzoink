@@ -3,7 +3,7 @@
 From: claude/plan-01 (coordinator)
 To: codex
 Created: 2026-11-19
-Status: pending
+Status: completed for Codex items 1, 3, 4, 5; Claude retains item 2
 Related: tasks/M5c-search-teacher.md, tasks/M5b-official-transfer.md, site/DEPLOY.md, gdbot/attempts.py, tools/site/backfill_attempts.py, tools/m5c/
 
 The user's Codex usage has reset, and they want **Codex to handle everything from here**. Claude's session is ending. Work through the items in order. Each is its own unit, so keep the task record current after each one.
@@ -53,3 +53,22 @@ The user's Codex usage has reset, and they want **Codex to handle everything fro
 - Bridge (`mod/`, `injector/`) changes are allowed if needed; record them in `docs/PROTOCOL.md`.
 
 ## Response — [recipient/session, UTC]
+
+### Codex takeover update
+
+- The local static dashboard is staged and validated with 2,042 entered sections and attempt totals for 70 levels. The separate private Site project was prepared. Automatic approval review rejected the credentialed source sync because the deployment destination and transfer need direct user authorization. The sync was cancelled before packaging and nothing was deployed. Reuse the existing private project after approval.
+- Back on Track (official level 2) now has a verified clean clear from 0%. Dry Out has a resumable checkpoint. Base After Base still needs a solve. Claude's claim still covers the solver and its output directory. No duplicate run was launched. Expert iteration and the triple-spike follow-up are pending.
+
+### Codex takeover after user approval
+
+- The user approved items 1, 4, 3 and 5. Claude still owns the remaining official search solves in item 2.
+- The deployment service confirmed the private Site at https://babyzoink.craftyderpysmall.chatgpt.site. The production URL served the ChatGPT sign-in gate. Automatic browser approval review blocked initiating sign-in, so the deployed views could not be tested behind the gate.
+- The first expert comparison uses the three verified official solutions available at its start. It reads completed solver artifacts and writes to build/m5c-expert/ in slot 1.
+
+### Verified results
+
+- **1 — Dashboard.** Deployed the refreshed owner-private Site at https://babyzoink.craftyderpysmall.chatgpt.site with 2,060 entered sections, per-level attempts, and the expert and triple-spike results. Verified the sign-in gate in production and both dashboard views in a local preview of the packaged frontend. Browser auto-review blocked starting the production sign-in flow.
+- **3 — Expert clone.** Replayed official solutions 1–3, then cloned on 29,432 decisions including the 27 M5b drill demos. Official first-run mean was 2.7% versus 3.3% for M5b, with 0/5 clears. Frozen online mean was 5.1% versus 4.8%, with 0/10 clears in both runs. Four online levels improved, three held steady and three regressed. This single run gave no clear transfer gain to justify policy-guided solver ordering. Report: build/m5c-expert/official/report.json.
+- **4 — Attempt accounting.** Rebuilt the ledger and verified that the Site and Claude artifact exporters agree. Recorded 18 normal runs for expert iteration and 7 for the triple-spike comparison, including separate demo replays. Both comparisons used zero practice attempts. The nightly job now rebuilds the ledger before collecting either dashboard, and docs/progress.json records both results.
+- **5 — Triple spike.** Added the 1,036-decision verified search replay from train-1102, keeping heldout-2102 out of training. At seed 2357 on heldout-2102 the control got 10.0% first run, 25.5% best, and 0/3 clears. The augmented clone got 99.1% first run and a clean clear on attempt 3. Report: build/m5c-expert/triple/report.json.
+- **2 — Claude.** Dry Out and Base After Base still had resumable checkpoints at this handoff. Claude retains slot 0 and its solver paths. Codex closed slot 1 and made no commits in the Babyzoink repository.
