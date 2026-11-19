@@ -66,33 +66,41 @@ Requested by the user (2026-11-19). The user asked both agents to agree and cove
 - **Split update:** a `PlayerObject::update` hook splits that step: `update(stepDelta * f)`, then `handleButton`, then the rest of the step. Rotation is split too (`updateRotation`), and `m_lastPosition` is patched at the end of the step loop. Player 2 is handled the same way.
 - **Vanilla 2.2:** has "Click Between Steps" (CBS, limited to 480 TPS, about half a step) and "Click On Steps". CBF overrides both. Its README says "does not work with bots", because it reads real input devices.
 
-### What it means for us
+### Decision (user, 2026-11-19): CBF on every level, CBF's exact implementation
 
-- The bot doesn't need timestamps: it can name the fraction directly.
-- Its decisions today are every k=4 ticks (60 Hz) at whole-tick timing. k=1 already exists (240 Hz), which is finer than any human at 60 fps.
-- Sub-tick timing matters only where a press needs better than 1/240 s accuracy: tight orbs, frame-perfect jumps on fast speeds.
-- **Phase C0 measures this before we build anything.**
+- **Always on:** every level, every run (search, training, verification). There is no vanilla mode for results.
+- **No TPS bypass.** CBF's own "Physics Bypass" option is off too, so the step count stays vanilla (`calculateStepCount(..., forceVanilla)` path).
+- **"Exact implementation, by the dogma":** don't invent our own split-step. Port CBF's code faithfully.
 
-### Phases
+### Why we can't load the unmodified mod (facts, not preference)
 
-- **C0, measure where it helps** (Python plus one bridge flag, about 1 day; no longer a gate, see User decisions): on the #31 stall points and the hardest drills:
-  - (a) k=1 instead of k=4;
-  - (b) vanilla CBS on (set GD's own click-between-steps flag);
-  - (c) both.
+1. **Version:** CBF v1.5.0 (`mod.json`, upstream commit `9fa7c6f`) targets **GD 2.2081 with Geode 5.3.0**. Our bot copy is pinned at **2.2091**, and Geode support for 2.209x isn't confirmed. Moving to 2.2081 means redoing M0 (offsets) and needs the user's OK under the "stay on 2.2091" rule.
+2. **Input source:** CBF timestamps *real input devices* on a raw-input thread. Its README says "does not work with bots". The bot's presses never reach that thread.
+3. **Clock:** CBF places inputs by wall-clock time between frames (`input.m_timestamp - lastFrameTime`). The bot runs physics 50-100x faster than real time inside a single frame, so wall-clock timestamps don't mean anything for it.
 
-  Count which stalls become passable. Also measure replay parity: every verified tape must reproduce bit-identically with CBS off. **Go/no-go:** build C1 only if sub-tick timing unlocks something k=1 can't.
-- **C1, our own split-step in the bridge** (we're MinHook-based, not Geode, so it's a clean reimplementation following CBF's MIT design, credited):
-  - hook `PlayerObject::update` (RVA present in offsets_gen.hpp);
-  - find RVAs for `updateRotation` and the inlined collision-log reset, the 2.2091 equivalents of CBF's `decomp_resetCollisionLog`;
-  - with an input scheduled at fraction f of this tick: `update(dt*f)`, `handleButton`, `update(dt*(1-f))`, plus rotation and last-position fixes;
-  - off by default.
-- **C2, protocol:** `step_seq` takes an optional `fracs` array parallel to `actions` (0 = on the tick, today's behaviour). `hello` reports `capabilities.sub_tick`. The parity test: `fracs` all 0 gives identical traces.
-- **C3, solver:** don't multiply the candidate set everywhere. That multiplies search cost. Refine adaptively: only when a segment has no surviving candidate on the tick grid, retry its press ticks with fractions {0.25, 0.5, 0.75}.
-- **C4, legitimacy and reporting:**
-  - tag every attempt and clear with `input_timing: tick | cbs | cbf`;
-  - dashboards show it;
-  - prefer clears that also verify on the tick grid;
-  - some players and lists treat CBF as cheating (the Nullscapes controversy), so the user should see which clears depend on it.
+### Plan: a faithful port of CBF v1.5.0 into the bridge
+
+- **Pin:** upstream `theyareonit/Click-Between-Frames@9fa7c6f` (v1.5.0, MIT). Vendor `src/main.cpp`, `timestamp.hpp` and `includes.hpp` unmodified under `mod/third_party/cbf/` with its LICENSE, for reference and diffing.
+- **Port line by line.** CBF's logic is copied as written:
+  - `Step`/`EMPTY_STEP`, `stepQueue`, `buildStepQueue`, `popStepQueue`;
+  - `calculateStepCount` (vanilla path);
+  - the `processCommands` / `getModifiedDelta` step-queue hooks;
+  - the `PlayerObject::update` split, with sub-step `update(stepDelta * deltaFactor)`, `updateRotation`, P2 handling, `midStep`/`inputThisStep`/`p1Split`;
+  - the `m_lastPosition` fix-up hook;
+  - `decomp_resetCollisionLog`;
+  - the vanilla CBS/COS overrides.
+- **Only two adapters change, each documented:**
+  1. **Hook plumbing:** Geode `$modify` and `setHookPriority` become MinHook detours on the same functions. Each function's 2.2091 RVA and member offset is found and verified M0-style, against Geode's 2.2081 bindings as the reference.
+  2. **Input source:** CBF's raw-input thread and timestamps become a bot input queue. For each bot press, we compute the timestamp CBF's own formula would turn into the requested step fraction (`timestamp = lastFrameTime + stepDelta * (i + f)`). We push it into CBF's own `inputVector`. Everything downstream is unchanged CBF code. The bridge's physics loop feeds CBF's `lastFrameTime`/`currentFrameTime` from simulated time, not the wall clock.
+- **Port record:** `mod/src/cbf_port.md` maps every upstream function and line range to our code. Any unavoidable divergence (inlined functions, 2.2091 layout changes) is listed with its reason. Codex reviews the port against upstream line by line.
+- **Validation:**
+  - (a) Fraction 0 everywhere gives CBF's "input at step start" behaviour. Compare with real CBF semantics on drills.
+  - (b) Invariant tests from CBF's design: an input at fraction f moves the jump start by f·stepDelta.
+  - (c) Optional and strongest, needs the user's OK: a separate GD 2.2081 + Geode + real CBF copy. Drive identical inputs through both at real-time speed and compare player traces.
+- **Consequence:**
+  - Every existing verified result is vanilla-timed: Stereo Madness, Back on Track, Polargeist, 59/63 drills, all #19 data.
+  - After the port, re-verify each under CBF. Tapes whose presses all sit at step starts may still replay; measure it.
+  - Anything that doesn't replay is re-solved. #19 keeps running meanwhile: its prefixes seed the CBF re-solve.
 
 ## Risks
 
@@ -109,9 +117,10 @@ Requested by the user (2026-11-19). The user asked both agents to agree and cove
 
 ## User decisions after the proposal (2026-11-19)
 
-- **CBF is a requirement, not a maybe.** The user wants input finer than 240 per second. So C0 is no longer a go/no-go gate. It becomes a measurement of where sub-tick timing helps, and it guides C3 (where the solver uses fractions). C1-C2 get built regardless.
-  - What "more than 240" means here: GD 2.2 physics stays at 240 steps/s. CBF lets a press land at any fraction of a step (e.g. tick 100.37), so input resolution has no fixed limit.
-  - A "TPS bypass" would run physics itself faster. That changes how levels play (non-vanilla physics), so it's not planned. Note it as a possible later option if the user asks.
+- **CBF is required on every level, using CBF's exact implementation** (see section 3, Decision).
+  - The user wants input finer than 240 per second. GD 2.2 physics stays at 240 steps/s, and CBF lets a press land at any fraction of a step.
+  - **TPS bypass is ruled out by the user.**
+  - The earlier C0-C4 phases (own reimplementation, measure-first gate, "prefer tick-grid clears") are **superseded**.
 - **Overlay front end is Claude's,** not an open task: layout, look and contents. The user likes Claude's UI. The back end (data feed, set_overlay, Python side) can be either agent.
 
 ## Review history
