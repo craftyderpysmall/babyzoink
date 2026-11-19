@@ -6,7 +6,7 @@
 
 | Agent/session | Paths (exact files preferred) | Task | Claimed at (UTC) | Expected release | State |
 | --- | --- | --- | --- | --- | --- |
-| claude/plan-01 | mod/src/, injector/main.cpp, gdbot/instances.py, tools/m1/instances_test.py, tools/m3/near_field.py (offline edits only; RUNTIME released to Codex) | #11/#12 paused | 2026-11-19 | when Codex releases RUNTIME | active |
+| None | — | — | — | — | — |
 
 **Game runtime:** only one client can drive GD at a time. Claim it as the pseudo-path `RUNTIME:gd-2.2091` (meaning the GD process and its pipe) before launching `gdbot-launch.exe`, and release it when the game is closed.
 

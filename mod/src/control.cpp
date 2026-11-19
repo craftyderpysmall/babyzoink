@@ -755,6 +755,31 @@ BOOL CALLBACK find_game_window(HWND h, LPARAM out) {
     return FALSE;
 }
 
+// Primary defence: the window never minimizes. A minimize request (title-bar button, taskbar click,
+// Win+Down) is turned into "send behind every other window"; GD never sees the minimize at all.
+// Installed from control_frame (the window's own thread).
+WNDPROC g_orig_wndproc = nullptr;
+LRESULT CALLBACK no_minimize_wndproc(HWND h, UINT msg, WPARAM wp, LPARAM lp) {
+    if (msg == WM_SYSCOMMAND && (wp & 0xFFF0) == SC_MINIMIZE) {
+        SetWindowPos(h, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+        GLOG("minimize request: sent behind other windows instead (a minimized GD stalls the bot)");
+        return 0;
+    }
+    return CallWindowProcW(g_orig_wndproc, h, msg, wp, lp);
+}
+
+void install_no_minimize() {
+    static bool s_done = false;
+    if (s_done) return;
+    HWND w = nullptr;
+    EnumWindows(find_game_window, LPARAM(&w));
+    if (!w) return;
+    s_done = true;
+    g_orig_wndproc = (WNDPROC)SetWindowLongPtrW(w, GWLP_WNDPROC, (LONG_PTR)no_minimize_wndproc);
+    GLOG("window %p: minimize requests redirected (%s)", (void*)w, g_orig_wndproc ? "ok" : "FAILED");
+}
+
+// Fallback for minimizes that bypass WM_SYSCOMMAND (e.g. ShowWindow from another program).
 void keep_window_running() {
     static HWND s_wnd = nullptr;
     if (!s_wnd || !IsWindow(s_wnd)) { s_wnd = nullptr; EnumWindows(find_game_window, LPARAM(&s_wnd)); }
@@ -825,9 +850,17 @@ bool start_control() {
 }
 
 void control_frame(float) {
+    install_no_minimize();
     if (g_client_gone.exchange(false)) release_control("client disconnected");
     if (g_quit_pending) {
-        if (!g_layer && ++g_quit_wait_frames >= 45) {
+        // The fade back to the menu is timed in seconds, not frames. At uncapped frame rates (window
+        // hidden or minimized) 45 frames passed before it ended, and the next load_level then
+        // started inside the transition and never reached startGame. Require both.
+        static ULONGLONG s_gone_at = 0;
+        if (g_layer) s_gone_at = 0;
+        else if (!s_gone_at) s_gone_at = GetTickCount64();
+        if (!g_layer && ++g_quit_wait_frames >= 45 && GetTickCount64() - s_gone_at >= 1000) {
+            s_gone_at = 0;
             g_quit_pending = false;
             GLOG("quit_level: back at the menu");
             send_reply(g_quit_reply);

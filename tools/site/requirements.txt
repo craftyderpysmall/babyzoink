@@ -1,0 +1,2 @@
+numpy
+tzdata; sys_platform == "win32"

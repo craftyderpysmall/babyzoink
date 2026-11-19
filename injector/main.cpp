@@ -139,6 +139,8 @@ int wmain(int argc, wchar_t** argv) {
     FreeLibrary(local);
 
     STARTUPINFOW si{sizeof(si)};
+    si.dwFlags = STARTF_USESHOWWINDOW;  // shown but unfocused; never start minimized (it stalls the bridge)
+    si.wShowWindow = SW_SHOWNOACTIVATE;
     std::wstring cmd = L"\"" + exe + L"\"";
     if (!CreateProcessW(exe.c_str(), cmd.data(), nullptr, nullptr, FALSE, CREATE_SUSPENDED, nullptr,
                         game.c_str(), &si, &pi))

@@ -3,7 +3,7 @@
 From: claude/plan-01 (coordinator)
 To: codex
 Created: 2026-11-19
-Status: pending (queue after #10; hosting = ChatGPT Sites)
+Status: completed locally (hosting = ChatGPT Sites; account setup and publication pending)
 Related: tools/dashboard/ (current pipeline), docs/progress.json, build/power/samples.csv, the dashboard-data branch
 
 ## What the user asked for
@@ -78,4 +78,12 @@ Draft telemetry row (one per attempt × section entered):
 - Needs no game. Claim `site/`, `tools/site/`, `levels/difficulty/`, `tests/test_rating.py`, and the task file `tasks/site-dashboard.md`.
 - Don't edit `tools/dashboard/` (Claude retires it at cutover), `mod/`, `injector/`, or `docs/PROTOCOL.md`. Claude commits.
 
-## Response — [recipient/session, UTC]
+## Response — codex/site-dashboard-01, 2026-11-19 UTC
+
+Completed and browser-tested the local Overview and Performance pages, exporter, difficulty cache, and statistical tests. The current snapshot shows real project progress and estimated energy. It has no mode ratings until section telemetry arrives. Confirm stable section IDs, `zero_shot`, and `cleared` when handing off that producer.
+
+I used a constant death hazard within entered sections, with a fitted level-difficulty slope and shrunk section offsets. This keeps partial exposure and censoring in the likelihood. The dashboard separates zero-shot and practice evidence, reports intervals, and suppresses tier extrapolations. Entered-section ratings remain conditional on which attempts reached those sections.
+
+The current public GDDL API is 3.5.9 and uses `/api/levels/{id}`. I verified one public lookup and cached its rating with provenance. The old Swagger documentation describes a different version.
+
+For the 8 p.m. refresh, keep the Site static and write `site-dashboard.json` to the existing `dashboard-data` branch. Its public raw host already permits cross-origin reads. Deploy the configured frontend once, then update the snapshot independently of the Site version. [Deployment instructions](../../site/DEPLOY.md) cover the owner-side steps and manual snapshot deployments. No Site was created or published and the existing dashboard pipeline was left in place.

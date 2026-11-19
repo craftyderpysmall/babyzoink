@@ -1,0 +1,176 @@
+{
+  "schema": 1,
+  "updated_at": "2026-11-19T01:45:00+00:00",
+  "progress": {
+    "updated": "2026-11-19",
+    "milestones": [
+      {
+        "id": "M0",
+        "name": "Identify game build and map functions",
+        "status": "done",
+        "detail": "GD 2.2091 pinned by exe hash; 31 function addresses verified against the exe"
+      },
+      {
+        "id": "M1",
+        "name": "Isolated bridge into the game",
+        "status": "done",
+        "detail": "Mod controls GD tick by tick; save and network isolation verified byte-for-byte"
+      },
+      {
+        "id": "M2",
+        "name": "Replay parity and throughput",
+        "status": "done",
+        "detail": "60/60 parity checks with objects on; dedicated mode about 56x real time at k=4"
+      },
+      {
+        "id": "M3",
+        "name": "First learning on drills",
+        "status": "done",
+        "detail": "Imitation from 9 demo runs clears 6.3/9 unseen drills (vs 2.7 for PPO); imitation is the default recipe now"
+      },
+      {
+        "id": "M4",
+        "name": "Practice: checkpoints and start positions",
+        "status": "done",
+        "detail": "Practice from checkpoints plus re-cloning: 23/27 clean clears vs 19/27 without practice; triple spike still unsolved"
+      },
+      {
+        "id": "M5",
+        "name": "Curriculum: drills to official levels",
+        "status": "not_started",
+        "detail": "Mode-by-mode drills, then the official level ladder"
+      },
+      {
+        "id": "M6",
+        "name": "Held-out evaluation and polish",
+        "status": "not_started",
+        "detail": "Frozen protocol on unseen levels; attempts-to-first-clear over time"
+      },
+      {
+        "id": "M7",
+        "name": "Stretch goals",
+        "status": "not_started",
+        "detail": "Parallel game instances, cloud GPU, platformer mode"
+      }
+    ],
+    "results": [
+      {
+        "study": "M3 first baseline",
+        "agent": "Timing heuristic",
+        "first_run_progress_pct": 19.7,
+        "clears_within_3": 0,
+        "first_try_clears": 0,
+        "drills": 9
+      },
+      {
+        "study": "M3 first baseline",
+        "agent": "PPO top-K encoder",
+        "first_run_progress_pct": 38.2,
+        "clears_within_3": 4,
+        "first_try_clears": 0,
+        "drills": 9
+      },
+      {
+        "study": "M3 first baseline",
+        "agent": "PPO set encoder",
+        "first_run_progress_pct": 51.9,
+        "clears_within_3": 4,
+        "first_try_clears": 4,
+        "drills": 9
+      },
+      {
+        "study": "M3 scaled (3 seeds, ~1M steps)",
+        "agent": "PPO top-K encoder",
+        "first_run_progress_pct": 44.3,
+        "clears_within_3": 2.7,
+        "first_try_clears": 2.3,
+        "drills": 9
+      },
+      {
+        "study": "M3 scaled (3 seeds, ~1M steps)",
+        "agent": "PPO set encoder",
+        "first_run_progress_pct": 27.7,
+        "clears_within_3": 3.0,
+        "first_try_clears": 1.0,
+        "drills": 9
+      },
+      {
+        "study": "M3 imitation (3 seeds)",
+        "agent": "Behaviour cloning (top-K)",
+        "first_run_progress_pct": 73.1,
+        "clears_within_3": 6.3,
+        "first_try_clears": 6.0,
+        "drills": 9
+      },
+      {
+        "study": "M3 imitation (3 seeds)",
+        "agent": "Cloning then PPO",
+        "first_run_progress_pct": 57.7,
+        "clears_within_3": 4.3,
+        "first_try_clears": 4.3,
+        "drills": 9
+      },
+      {
+        "study": "M4 practice (3 seeds)",
+        "agent": "Cloning, no practice",
+        "first_run_progress_pct": 73.1,
+        "clears_within_3": 6.3,
+        "first_try_clears": 6.0,
+        "drills": 9
+      },
+      {
+        "study": "M4 practice (3 seeds)",
+        "agent": "Cloning + checkpoint practice",
+        "first_run_progress_pct": 73.1,
+        "clears_within_3": 7.7,
+        "first_try_clears": 6.0,
+        "drills": 9
+      }
+    ],
+    "price": {
+      "region": "California",
+      "sector": "Residential",
+      "month": "2026-08",
+      "cents_per_kwh": 29.75,
+      "source": "U.S. EIA Electric Power Monthly, Table 5.6.A",
+      "url": "https://www.eia.gov/electricity/monthly/epm_table_grapher.php?t=epmt_5_6_a"
+    }
+  },
+  "energy": {
+    "rows": [
+      {
+        "date": "2026-11-18",
+        "kwh": 0.014327,
+        "cumulative_kwh": 0.014327,
+        "cost_usd": 0.004262,
+        "cumulative_cost_usd": 0.004262
+      }
+    ],
+    "tracking_since": "2026-11-18T11:49:34-08:00",
+    "kwh": 0.014327,
+    "cost_usd": 0.004262
+  },
+  "performance": {
+    "zero_shot": {
+      "trend": [],
+      "difficulty_slope": null
+    },
+    "full": {
+      "trend": [],
+      "difficulty_slope": null
+    },
+    "all": {
+      "trend": [],
+      "difficulty_slope": null
+    }
+  },
+  "level_names": {},
+  "telemetry": {
+    "sections": 0,
+    "anchored_sections": 0
+  },
+  "gddl": {
+    "version": "3.5.9",
+    "checked_at": "2026-11-19T01:43:05+00:00"
+  }
+}

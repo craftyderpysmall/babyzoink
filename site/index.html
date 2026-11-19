@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Geometry Dash training progress, practice results, and per-mode performance.">
+  <title>Babyzoink · Training Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" type="module"></script>
+</head>
+<body>
+  <header class="bar">
+    <div class="wrap bar-content">
+      <a class="brand" href="#overview"><span class="mark" aria-hidden="true"><i></i><i></i><i></i></span> Babyzoink</a>
+      <nav aria-label="Dashboard pages">
+        <a href="#overview" id="nav-overview">Overview</a>
+        <a href="#performance" id="nav-performance">Performance</a>
+      </nav>
+      <span class="updated" id="updated"></span>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <p class="error" id="error" role="alert" hidden></p>
+    <section id="overview" aria-labelledby="overview-title">
+      <div class="heading">
+        <h1 id="overview-title">Training overview</h1>
+        <p>Geometry Dash learning, from the first replay to full-level clears.</p>
+      </div>
+      <div class="stats">
+        <article><h2>Milestones complete</h2><strong id="done">—</strong><small id="next"></small></article>
+        <article><h2>Estimated energy</h2><strong id="energy">—</strong><small id="tracking"></small></article>
+        <article><h2>Estimated electricity cost</h2><strong id="cost">—</strong><small id="price"></small></article>
+      </div>
+      <div class="overview-grid">
+        <section class="panel" aria-labelledby="milestone-title">
+          <div class="panel-head"><h2 id="milestone-title">Milestones</h2></div>
+          <ol id="milestones" class="milestones"></ol>
+        </section>
+        <section class="panel" aria-labelledby="energy-title">
+          <div class="panel-head"><h2 id="energy-title">Cumulative energy</h2><span class="tag">kWh</span></div>
+          <div class="chart"><canvas id="energy-chart" role="img" aria-label="Cumulative estimated energy by date"></canvas></div>
+          <p class="note">Estimated from game and trainer CPU time. Includes the processor package only.</p>
+          <details><summary>Daily figures</summary><div class="table-scroll">
+            <table><thead><tr><th>Date</th><th>Energy</th><th>Cost</th></tr></thead><tbody id="energy-rows"></tbody></table>
+          </div></details>
+        </section>
+      </div>
+      <section class="panel results" aria-labelledby="results-title">
+        <div class="panel-head"><h2 id="results-title">Study results</h2></div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>Study</th><th>Agent</th><th>First-run progress</th><th>Clears within 3</th><th>First-try clears</th></tr></thead>
+          <tbody id="results"></tbody>
+        </table></div>
+      </section>
+    </section>
+
+    <section id="performance" aria-labelledby="performance-title" hidden>
+      <div class="heading">
+        <h1 id="performance-title">Mode performance</h1>
+        <p>Survival by gameplay mode, adjusted for level difficulty.</p>
+      </div>
+      <div class="controls">
+        <label>Evidence scope
+          <select id="scope">
+            <option value="zero_shot">Zero-shot first runs</option>
+            <option value="full">Full runs only</option>
+            <option value="all">All starts, including practice</option>
+          </select>
+        </label>
+        <label>Generation <select id="generation"></select></label>
+      </div>
+      <div class="mode-cards" id="modes" aria-label="Choose a game mode"></div>
+      <section class="panel trend" aria-labelledby="trend-title">
+        <div class="panel-head"><h2 id="trend-title">Cube rating by generation</h2><span class="tag">95% interval</span></div>
+        <p id="trend-summary" class="note status" role="status"></p>
+        <div class="chart"><canvas id="trend-chart" role="img" aria-label="Mode rating by generation"></canvas></div>
+      </section>
+      <section class="panel results" aria-labelledby="level-title">
+        <div class="panel-head"><h2 id="level-title">Level breakdown</h2></div>
+        <div class="table-scroll"><table>
+          <thead><tr><th>Level</th><th>Difficulty</th><th>Observed</th><th>Deaths/min</th><th>Attempts to section clear</th></tr></thead>
+          <tbody id="level-rows"></tbody>
+        </table></div>
+      </section>
+      <details class="method">
+        <summary>How ratings work</summary>
+        <p>A rating is the modeled difficulty at which a typical entered section has a 50% chance of being survived for 10 seconds. The model uses time exposed and deaths. Sections the bot never reaches provide no evidence. Later sections may be entered by a stronger subset of attempts.</p>
+        <p>Drills and one- or two-star levels anchor zero. Other rated non-demons fall below tier 1. Demon anchors use the GD Demon Ladder. Ratings appear when observations cover the estimated rating and support calibration. Intervals reflect model uncertainty conditional on the recorded sections.</p>
+        <p>Attempts to section clear average confirmed clears across runs and sections. The observed entries and deaths include failed attempts.</p>
+      </details>
+    </section>
+    <footer><span id="data-source"></span><a href="https://gdladder.com/about" id="gddl-source">GD Demon Ladder</a></footer>
+  </main>
+</body>
+</html>

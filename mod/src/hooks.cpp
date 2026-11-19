@@ -144,24 +144,6 @@ void __fastcall h_pauseGame(void* self, bool unfocused) {
     o_pauseGame(self, unfocused);
 }
 
-// Minimizing the window makes cocos pause the director, so CCScheduler::update (and with it
-// control_frame) stops and every pipe request waits forever. The bot copy must keep running while
-// the user minimizes it (background mode), so the iconify notification is swallowed.
-using Iconify_t = void(__fastcall*)(void*, void*, int);
-Iconify_t o_iconify;
-void __fastcall h_iconify(void* self, void* window, int iconified) {
-    GLOG("window %s: kept running (iconify callback suppressed)", iconified ? "minimized" : "restored");
-    (void)self; (void)window;
-}
-
-using DirPause_t = void(__fastcall*)(void*);
-DirPause_t o_dirPause;
-void __fastcall h_dirPause(void* self) {
-    // Called on minimize / focus changes. The bot copy never pauses its director (see above).
-    GLOG("CCDirector::pause suppressed (bot in control=%d)", int(g_controlled));
-    (void)self;
-}
-
 SchedUpdate_t o_schedUpdate;
 void __fastcall h_schedUpdate(void* self, float dt) {
     o_schedUpdate(self, dt);
@@ -199,13 +181,6 @@ bool install_hooks() {
     MH_STATUS s = sched ? MH_CreateHook(sched, (void*)h_schedUpdate, (void**)&o_schedUpdate) : MH_ERROR_FUNCTION_NOT_FOUND;
     GLOG("hook CCScheduler::update (export): %s", MH_StatusToString(s));
     ok &= (s == MH_OK);
-    void* icon = cc ? (void*)GetProcAddress(cc, "?onGLFWWindowIconifyFunCallback@CCEGLView@cocos2d@@IEAAXPEAUGLFWwindow@@H@Z") : nullptr;
-    s = icon ? MH_CreateHook(icon, (void*)h_iconify, (void**)&o_iconify) : MH_ERROR_FUNCTION_NOT_FOUND;
-    GLOG("hook CCEGLView::onGLFWWindowIconifyFunCallback (export): %s", MH_StatusToString(s));
-    ok &= (s == MH_OK);
-    void* dp = cc ? (void*)GetProcAddress(cc, "?pause@CCDirector@cocos2d@@QEAAXXZ") : nullptr;
-    s = dp ? MH_CreateHook(dp, (void*)h_dirPause, (void**)&o_dirPause) : MH_ERROR_FUNCTION_NOT_FOUND;
-    GLOG("hook CCDirector::pause (export): %s", MH_StatusToString(s));
     return ok;
 }
 

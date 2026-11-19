@@ -1,6 +1,6 @@
 # Coordination Status
 
-Last updated: 2026-11-19 (codex/m5-curriculum-01), #10 offline stages implemented and live verification awaits the runtime
+Last updated: 2026-11-19 (codex/site-dashboard-01), #13 local dashboard and exporter complete and account publication pending
 
 ## Codex task queue
 
@@ -28,10 +28,10 @@ One row per run. Don't take rows marked `waiting`. If a handoff conflicts with a
 | 7 | M4 practice curriculum: start positions, death-hotspot drilling, clean full-run gate; measure attempts-to-clear with vs without practice | handoffs/2026-11-18-claude-to-codex-m4-practice.md | yes | done: 23/27 clean clears with practice vs 19/27 control |
 | 8 | Trainer follows the user's dedicated/background toggle (threads, priority, affinity) | handoffs/2026-11-18-claude-to-codex-mode-follow.md | yes | done (claude) |
 | 9 | Fix the training recipe: behaviour cloning from verified tapes, then PPO fine-tune; compare to the scaled-study baseline | handoffs/2026-11-18-claude-to-codex-m3-imitation.md | yes | done (claude): BC 6.3/9 held-out; PPO fine-tune hurts |
-| 10 | M5 curriculum: drills for every mode, a BC + self-imitation generation loop, official levels 1–5 (steps 1–2 offline while Claude holds the game) | handoffs/2026-11-19-claude-to-codex-m5-curriculum.md | yes (from step 3) | in progress (codex/m5-curriculum-01), awaiting runtime |
+| 10 | M5 curriculum: drills for every mode, a BC + self-imitation generation loop, official levels 1–5 | handoffs/2026-11-19-claude-to-codex-m5-curriculum.md | yes | queued (bridge fix verified 2026-11-19; see codex-to-claude-m5-bridge response) |
 | 11 | Triple spike: why no agent clears it; trainer throughput in background mode | (claude, no handoff) | yes | in progress (claude) |
 | 12 | Parallel GD instances: per-instance pipe, discovery and save dir (M7) | (claude, no handoff) | yes (test only) | paused (claude): slot 0 unchanged; slots 1+ lose levels on load, under investigation |
-| 13 | ChatGPT Sites dashboard: static site + per-mode performance rating (survival-hazard IRT anchored to GDDL) | handoffs/2026-11-19-claude-to-codex-site-dashboard.md | no | queued |
+| 13 | ChatGPT Sites dashboard: static site + per-mode performance rating (survival-hazard IRT anchored to GDDL) | handoffs/2026-11-19-claude-to-codex-site-dashboard.md | no | done locally; publication and live telemetry pending |
 
 ## Active work
 
@@ -47,7 +47,8 @@ One row per run. Don't take rows marked `waiting`. If a handoff conflicts with a
 | M3 CPU baselines | codex/m3-baseline-01 | complete; each PPO cleared 4/9 held-out within the cap | tasks/M3-baseline.md |
 | M3 scaled six-run study | codex/m3-scale-01 | complete; top-K selected provisionally | tasks/M3-scale.md |
 | M4 practice curriculum | codex/m4-practice-01 | complete; live start positions, checkpoint practice, paired comparison | tasks/M4-practice.md |
-| M5 curriculum | codex/m5-curriculum-01 | offline stages implemented; awaiting runtime for live verification and study | tasks/M5-curriculum.md |
+| M5 curriculum | codex/m5-curriculum-01 | 1 of 54 fixtures verified; awaiting sequential bridge load fix | tasks/M5-curriculum.md |
+| ChatGPT Sites dashboard | codex/site-dashboard-01 | local site and exporter verified; awaiting account setup and section telemetry | tasks/site-dashboard.md |
 
 ## Pending reviews and handoffs
 
@@ -65,7 +66,8 @@ One row per run. Don't take rows marked `waiting`. If a handoff conflicts with a
 | codex | Diagnose spike and orb failures | handoffs/2026-11-18-claude-to-codex-m3-diagnose.md | completed |
 | claude | Live-verify pending input state for orb activation | handoffs/2026-11-18-codex-to-claude-orb-diagnosis.md | completed |
 | codex | M5 curriculum | handoffs/2026-11-19-claude-to-codex-m5-curriculum.md | pending |
-| codex | ChatGPT Sites dashboard + mode ratings | handoffs/2026-11-19-claude-to-codex-site-dashboard.md | pending |
+| codex | ChatGPT Sites dashboard + mode ratings | handoffs/2026-11-19-claude-to-codex-site-dashboard.md | completed locally |
+| claude | Restore sequential custom level loads in slot 0 so M5 can resume | handoffs/2026-11-19-codex-to-claude-m5-bridge.md | pending |
 
 ## Decisions awaiting user
 
