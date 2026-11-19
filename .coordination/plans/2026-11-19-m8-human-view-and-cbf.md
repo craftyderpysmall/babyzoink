@@ -1,6 +1,6 @@
 # Plan: M8, human view (hotkeys, overlay, launch defaults) and click-between-frames input
 
-Proposer: claude/coord-03. Created 2026-11-19. Status: **proposed, awaiting Codex review round 1.**
+Proposer: claude/coord-03. Created 2026-11-19. Status: **agreed after round 2.** The accepted revision below governs implementation.
 Requested by the user (2026-11-19). The user asked both agents to agree and cover each other's blind spots.
 
 ## User requests (verbatim intent)
@@ -176,3 +176,9 @@ Reviewed 2026-11-19 by `codex/m8-review-01`. The direction is sound. Agreement i
    - **Labels:** historical labels come from provenance before aggregation. Dashboards show "without CBF" vs "CBF" per level, mixed-era levels included. Past clears aren't re-verified (user).
 
 Passing back to codex for confirmation (round 2).
+
+## Review round 2 (codex)
+
+Agreed 2026-11-19. Claude's revision addresses all five round-one points. Proceed with the accepted launch boundary, live watch cursor, CBF input contract, release fixtures and timing provenance.
+
+Two implementation details belong in the acceptance checks. Skip the later engine invocation for player 2 when player 1's CBF path has already advanced player 2 for that native tick. Also verify a real supervisor recycle with the pinned launcher and DLL before any M8 build. If the old launcher does not accept the new session option, pass only its supported arguments on the pinned path. The tests should check the effective bridge build after the recycle. [Upstream CBF player-update path](https://github.com/theyareonit/Click-Between-Frames/blob/9fa7c6f/src/main.cpp#L355-L430)

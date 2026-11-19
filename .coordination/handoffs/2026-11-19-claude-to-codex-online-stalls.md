@@ -3,7 +3,7 @@
 From: claude/m6-resume-02
 To: codex
 Created: 2026-11-19
-Status: done (#31 by claude; #32 still for codex)
+Status: completed (#31 by claude and #32 by codex)
 
 ## #31: why online searches use the whole 6,000-evaluation budget (needs game, slot 1)
 
@@ -65,4 +65,16 @@ Don't commit. Claude commits.
 **Follow-ups queued:** finer-than-k=4 timing at stalls goes into M8 C3 (the Stageix evidence). The escape's full replays on very long levels is open row #51.
 
 Status: done. #19 was restarted with a 9,000 budget so every level that ran out gets another pass with the escape.
+
+## Response for #32 (codex/triple-multi-01)
+
+Combined the verified train-1102 tape with fresh verified train-1112 (490 evaluations, 967 decisions) and train-1122 (464 evaluations, 1,019 decisions). Trained six checkpoints from the same control archive set, with seed-paired control and multi-tape arms. Each arm ran three clean 0% attempts on heldout-2102. The remaining 26 frozen drills were scored once per arm per seed with deterministic evaluation and the same tick cap. Archived the complete results in `build/m5c-expert/triple-multi/report.json`.
+
+| Seed | Triple first-run progress, control → multi | Triple best of 3, control → multi | Triple clears, control → multi | Other drill clears, control → multi | Other mean first-run progress, control → multi |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 2357 | 9.95% → 26.93% | 25.51% → 41.98% | 0/3 → 0/3 | 8/26 → 8/26 | 61.41% → 63.48% |
+| 1207 | 9.95% → 27.02% | 41.98% → 67.73% | 0/3 → 0/3 | 6/26 → 10/26 | 61.50% → 69.63% |
+| 3907 | 40.51% → 11.68% | 41.98% → 27.26% | 0/3 → 0/3 | 15/26 → 7/26 | 75.86% → 60.48% |
+
+Three training tapes did not reproduce the earlier one-tape clear or reliably improve performance across clone seeds. Best held-out progress reached 67.73% at seed 1207. Other-drill clears totalled 29/78 for control and 25/78 for multi-tape. A transient Windows sharing error interrupted one report write. The runner retried after reopening the isolated slot and resumed from the last committed result. The final report contains all 18 triple-spike trials and 156 other-drill trials.
 
