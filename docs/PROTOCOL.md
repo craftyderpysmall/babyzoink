@@ -192,7 +192,10 @@ It is enabled per session via `hello.capabilities.binary_obs`. This is only buil
   - The launcher starts GD shown and unfocused.
 - **`quit_level` timing fix.** The reply now waits for 45 frames *and* at least 1 s after the level layer is gone. At uncapped frame rates, 45 frames alone ended before the fade to the menu did, and the next `load_level` never started. Verified: `tools/m1/sequential_test.py 3` passes 6/6.
 - **Audio:** `tools/mute_gd.ps1` mutes the bot copy through the Windows per-app mixer.
-- **Windowed display.** The bot's save runs GD fullscreen, and a fullscreen GLFW window minimizes itself whenever it loses focus. That was the real cause of the "minimized GD" stalls and of new parallel copies dying, since they start unfocused. On its first frame the bridge switches the window to windowed mode with `CCEGLView::toggleFullScreen(false, false, false)`.
+- **Windowed display.** A fullscreen GLFW window minimizes itself whenever it loses focus, which caused the stalls and killed new parallel copies.
+  - The fix is GD's own setting: `gv_0025=1` (windowed) in each slot's bot save (`tools/gd_save.py <slot> set gv_0025 1`, only while that slot is closed). GD then starts in a 640×480 window with correct visuals.
+  - If a slot still starts fullscreen, the bridge falls back to `CCEGLView::toggleFullScreen(false, false, false)` on the first frame and logs `display: WARNING`. This keeps the bot working, but the runtime switch leaves stale GL state: a white quadrant, flashing, and untinted black-and-white sprites.
+- **`snapshot` (debug):** `{"op":"snapshot"}` reads the last presented frame (GL front buffer) and writes `snapshot.bmp` into the slot's directory. It returns `{path, width, height}` and never brings the window forward.
 - **Parallel instances (verified 2026-11-19, `tools/m1/instances_test.py` 12/12).**
   - `gdbot-launch.exe --instance N` (1–63) sets `GDBOT_INSTANCE`. Slot N keeps `bridge.json`, `bridge.log` and `save/` in `gdbot/inst<N>/`; a new slot's save is seeded from slot 0's bot save. `bridge.json` gains `"instance"`.
   - `mode.txt` stays shared, so one toggle drives every slot. Python helpers are in `gdbot/instances.py`.

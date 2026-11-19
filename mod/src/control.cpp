@@ -687,6 +687,44 @@ json op_set_mode(const json& req) {
     return r;
 }
 
+BOOL CALLBACK find_game_window(HWND h, LPARAM out);
+
+// Debug: save the last presented frame as a BMP (runs on the GL thread; reads the front buffer).
+// Lets an agent see the game without bringing the window over the user's screen.
+json op_snapshot(const json& req) {
+    HMODULE gl = GetModuleHandleW(L"opengl32.dll");
+    using ReadPixels_t = void(WINAPI*)(int, int, int, int, unsigned, unsigned, void*);
+    using ReadBuffer_t = void(WINAPI*)(unsigned);
+    using PixelStore_t = void(WINAPI*)(unsigned, int);
+    auto readPixels = gl ? (ReadPixels_t)GetProcAddress(gl, "glReadPixels") : nullptr;
+    auto readBuffer = gl ? (ReadBuffer_t)GetProcAddress(gl, "glReadBuffer") : nullptr;
+    auto pixelStore = gl ? (PixelStore_t)GetProcAddress(gl, "glPixelStorei") : nullptr;
+    HWND w = nullptr;
+    EnumWindows(find_game_window, LPARAM(&w));
+    RECT rc{};
+    if (!readPixels || !readBuffer || !pixelStore || !w || !GetClientRect(w, &rc) || rc.right <= 0 || rc.bottom <= 0)
+        return err(req, "INTERNAL", "no GL window to read");
+    int width = rc.right, height = rc.bottom, stride = (width * 3 + 3) & ~3;
+    std::vector<unsigned char> px(size_t(stride) * height);
+    pixelStore(0x0D05 /*GL_PACK_ALIGNMENT*/, 4);
+    readBuffer(0x0404 /*GL_FRONT*/);
+    readPixels(0, 0, width, height, 0x80E0 /*GL_BGR*/, 0x1401 /*GL_UNSIGNED_BYTE*/, px.data());
+    readBuffer(0x0405 /*GL_BACK*/);
+    std::wstring path = g_paths.inst_dir + L"\\snapshot.bmp";
+    FILE* f = _wfopen(path.c_str(), L"wb");
+    if (!f) return err(req, "INTERNAL", "cannot write snapshot.bmp");
+    BITMAPFILEHEADER fh{0x4D42, DWORD(sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + px.size()), 0, 0,
+                        DWORD(sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER))};
+    BITMAPINFOHEADER ih{sizeof(BITMAPINFOHEADER), width, height, 1, 24, BI_RGB, DWORD(px.size()), 0, 0, 0, 0};
+    fwrite(&fh, sizeof fh, 1, f); fwrite(&ih, sizeof ih, 1, f); fwrite(px.data(), 1, px.size(), f);
+    fclose(f);
+    char p8[MAX_PATH * 3];
+    WideCharToMultiByte(CP_UTF8, 0, path.c_str(), -1, p8, sizeof p8, nullptr, nullptr);
+    json r = ok(req);
+    r["path"] = p8; r["width"] = width; r["height"] = height;
+    return r;
+}
+
 json handle(const std::string& text) {
     json req;
     try { req = json::parse(text); } catch (const std::exception&) { return err(json::object(), "BAD_REQUEST", "invalid JSON"); }
@@ -701,6 +739,7 @@ json handle(const std::string& text) {
         if (op == "step") return op_step(req);
         if (op == "set_mode") return op_set_mode(req);
         if (op == "debug_peek") return op_debug_peek(req);
+        if (op == "snapshot") return op_snapshot(req);
         if (op == "set_practice") return op_set_practice(req);
         if (op == "checkpoint_create") return op_checkpoint_create(req);
         if (op == "checkpoint_pop") return op_checkpoint_pop(req);
@@ -780,13 +819,21 @@ LRESULT CALLBACK no_minimize_wndproc(HWND h, UINT msg, WPARAM wp, LPARAM lp) {
     return CallWindowProcW(g_orig_wndproc, h, msg, wp, lp);
 }
 
-// The bot copy's save runs GD fullscreen (borderless popup). A fullscreen GLFW window minimizes
-// itself whenever it loses focus, which is what kept stalling the bridge while the user used the
-// PC (and what crashed freshly launched parallel copies, which start unfocused). Run windowed.
+// The bot copy must run windowed: a fullscreen GLFW window minimizes itself whenever it loses focus,
+// which stalled the bridge while the user used the PC (and crashed freshly launched parallel copies).
+// The proper fix is GD's own setting, gv_0025=1 ("windowed") in the bot's save
+// (tools/gd_save.py <slot> set gv_0025 1), so GD starts windowed. This runtime switch is only a
+// FALLBACK: switching after startup leaves stale GL state (white quadrant, flashing, untinted
+// black-and-white sprites), so it keeps the bot running but looks broken. Visuals don't affect play.
 void force_windowed() {
     static bool s_done = false;
     if (s_done) return;
     s_done = true;
+    wchar_t keep[8] = {0};
+    if (GetEnvironmentVariableW(L"GDBOT_KEEP_FULLSCREEN", keep, 8) && keep[0] == L'1') {
+        GLOG("display: GDBOT_KEEP_FULLSCREEN=1, leaving the window mode alone");
+        return;
+    }
     HMODULE cc = GetModuleHandleW(L"libcocos2d.dll");
     using View_t = void*(__cdecl*)();
     using IsFs_t = bool(__fastcall*)(void*);
@@ -800,7 +847,8 @@ void force_windowed() {
     bool fs = is_fs(view), bl = is_bl(view);
     if (fs || bl) {
         toggle(view, false, false, false);
-        GLOG("display: was fullscreen=%d borderless=%d; switched to windowed (fullscreen minimizes on focus loss)", fs, bl);
+        GLOG("display: WARNING was fullscreen=%d borderless=%d; switched to windowed as a fallback (visuals will be "
+             "broken). Fix: close this slot and run tools/gd_save.py <slot> set gv_0025 1", fs, bl);
     } else {
         GLOG("display: already windowed");
     }
