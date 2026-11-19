@@ -21,4 +21,6 @@
 
 ## Resolved conflicts / transfers
 
+- 2026-11-19: codex/m5b-transfer-01 ran out of usage after its study completed; the user told Claude to finish up, so Claude released Codex's #14 claim (slot 1 process had already exited) and wrote the results.
+
 None.

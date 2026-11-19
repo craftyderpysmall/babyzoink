@@ -21,6 +21,7 @@ PLAYER_VECTOR_WIDTH = 2 * PLAYER_WIDTH + 2
 OBJECT_WIDTH = 13 + len(CATEGORIES) + len(ORB_KINDS) + len(MODES)
 NEAR_WIDTH = 3  # dx/near_x, gap/near_x, contact ticks/NEAR_TICKS (opt-in, see near_x)
 NEAR_TICKS = 60
+ROUTE_WIDTH = 3
 
 
 def _one_hot(value, options: tuple) -> list[int]:
@@ -36,7 +37,7 @@ class ObservationEncoder:
     def __init__(
         self, *, layout: str = "topk", max_objects: int = 32,
         horizon_s: float = 0.75, ahead_x: float = 900.0, behind_x: float = 90.0,
-        near_x: float | None = None,
+        near_x: float | None = None, route_geometry: bool = False,
     ):
         # near_x (opt-in): extra fine-scale timing features per object. dx/ahead_x moves only ~0.006
         # per k=4 decision, too coarse for narrow windows like triple spike.
@@ -50,7 +51,8 @@ class ObservationEncoder:
         self.ahead_x = ahead_x
         self.behind_x = behind_x
         self.near_x = near_x
-        self.object_width = OBJECT_WIDTH + (NEAR_WIDTH if near_x else 0)
+        self.route_geometry = route_geometry
+        self.object_width = OBJECT_WIDTH + (NEAR_WIDTH if near_x else 0) + (ROUTE_WIDTH if route_geometry else 0)
         if layout == "topk":
             shape = (PLAYER_VECTOR_WIDTH + max_objects * (self.object_width + 1),)
             self.space = spaces.Box(-np.inf, np.inf, shape, np.float32)
@@ -103,13 +105,23 @@ class ObservationEncoder:
                 dx / self.ahead_x, dy / self.ahead_x,
                 obj["w"] / self.ahead_x, obj["h"] / self.ahead_x,
                 sine, cosine, vx, vy, contact / self.horizon_s,
-                float(obj["active"]), float(previous is not None), obj["type_id"] / 1000.0, speed,
+                float(obj["active"]), float(previous is not None),
+                0.0 if self.route_geometry else obj["type_id"] / 1000.0, speed,
                 *_one_hot(obj["cat"], CATEGORIES), *_one_hot(params.get("kind"), ORB_KINDS),
                 *_one_hot(destination, MODES),
             ]
             if self.near_x:
                 row += [min(4.0, max(-2.0, dx / self.near_x)), min(4.0, gap / self.near_x),
                         min(4.0, contact * PHYSICS_HZ / NEAR_TICKS)]
+            if self.route_geometry:
+                radius = 7.5 if origin["mini"] else 15.0
+                vertical = -dy if origin["gravity_flipped"] else dy
+                half_height = obj["h"] / 2
+                intrusion = vertical + half_height + radius
+                above_head = vertical - half_height - radius
+                front = dx - half_span - radius
+                row += [min(4.0, max(-2.0, front / 60.0)), min(4.0, max(-4.0, intrusion / 30.0)),
+                        float(intrusion > 1 and above_head <= 0)]
             candidates.append(((contact, abs(dx), abs(dy), uid), row))
 
         self.previous_tick = tick

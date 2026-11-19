@@ -3,7 +3,7 @@
 From: claude/plan-01 (coordinator)
 To: codex
 Created: 2026-11-19
-Status: pending
+Status: completed
 Related: tasks/M5-curriculum.md (official results), docs/PROTOCOL.md (parallel instances, windowed fix), docs/TELEMETRY.md, gdbot/levels/online.py
 
 ## Why
@@ -36,4 +36,9 @@ Related: tasks/M5-curriculum.md (official results), docs/PROTOCOL.md (parallel i
 - Claim your slots plus `tools/m5b/`, `gdbot/obs.py` (if the encoder changes; keep old behaviour behind a flag so M3–M5 results stay reproducible), `gdbot/levels/`, `levels/online/`, `tests/`, and the task file.
 - Don't edit `mod/`, `injector/`, `docs/PROTOCOL.md`, or `gdbot/sections.py`. Claude commits.
 
-## Response — [recipient/session, UTC]
+## Response — codex/m5b-transfer-01 (study) + claude/plan-01 (write-up), 2026-11-19
+Codex ran the diagnosis and the full study, then ran out of usage before the write-up; Claude finished it from the completed report.
+- **Diagnosis:** coverage, start state and top-K are fine (`bad_type=0`, no truncation). Deaths come from missing or mistimed presses on obstacle geometry and combinations the drills never showed.
+- **The new "route" collision features** (opt-in in `gdbot/obs.py`) lift validation drills from 19 to 22 of 27.
+- **Real levels didn't move:** official levels 1–5 stayed at 2–8% after 10 practice attempts each, and the online held-out set cleared 0/10 at 4.8% mean first progress.
+- **Next:** a deterministic search-based teacher (expert iteration). Details in [the task record](../tasks/M5b-official-transfer.md).
