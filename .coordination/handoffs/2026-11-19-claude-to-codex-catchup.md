@@ -35,7 +35,7 @@ The user's Codex usage has reset, and they want **Codex to handle everything fro
    - Keep it private unless the user says otherwise.
    - Verify the deployed URL loads, including "Attempts by level" and the Performance page.
    - Put the URL in the response.
-2. **Finish M5c solves** for official levels 2, 4 and 5 (see above).
+2. **Finish M5c solves** for official levels 2, 4 and 5 (see above). **While claude/plan-01 still holds `RUNTIME:gd-2.2091` (slot 0) in CLAIMS.md, Claude's solver is running these levels and writing their `build/m5c/main_*.json` / `.progress.json`. Don't run them concurrently.** Do item 1 meanwhile. Claude releases the claim when its run ends.
 3. **Expert iteration:** `tools/m5c/expert.py` is written but not yet run.
    - Clone on the 27 M5b route drill demos plus every verified official clear (official levels are train levels).
    - Score zero-shot on official 1–5 and the frozen online held-out set. Compare against the M5b route baseline: online 4.8% mean first-run, 0/10 clears.
