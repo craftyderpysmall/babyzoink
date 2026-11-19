@@ -57,6 +57,10 @@ def main():
     ap.add_argument("--interval", type=int, default=120)
     ap.add_argument("--once", action="store_true", help="print what is pending now and exit")
     a = ap.parse_args()
+    try:  # Windows consoles default to a legacy code page; never crash on characters like "≈"
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):
+        pass
     seen = set()
     first = True
     while True:
