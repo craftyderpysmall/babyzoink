@@ -25,6 +25,17 @@ MAX_RESTARTS_PER_JOB = 40
 HUNG = -9  # the watchdog stopped a worker that had made no progress
 QUIET_S = 600  # a hang: no new worker output for this long ...
 IDLE_CPU_S = 1.0  # ... and GD used less than this much CPU over the last QUIET_S / 2
+LOG_LIMIT = 5 * 1024 * 1024
+
+
+def rotate_log(path: Path, limit: int = LOG_LIMIT) -> None:
+    """Keep one previous log. Run only between workers, when their output handle is closed."""
+    try:
+        size = path.stat().st_size
+    except FileNotFoundError:
+        return
+    if size > limit:
+        path.replace(path.with_suffix(path.suffix + ".prev"))
 
 
 def gd_cpu_s(pid):
@@ -101,7 +112,7 @@ def close_slot(slot, log):
     return True
 
 
-def fresh_slot(slot, log):
+def fresh_slot(slot, log, launcher=None):
     if not close_slot(slot, log):
         raise RuntimeError(f"slot {slot}: could not close the previous bot GD")
     for attempt in range(1, 6):
@@ -109,7 +120,13 @@ def fresh_slot(slot, log):
             log("waiting for Steam (GD exits at startup without it)")
             time.sleep(60)
             continue
-        found = launch(slot)
+        try:
+            found = launch(slot, **({"launcher": launcher} if launcher else {}))
+        except (RuntimeError, OSError, subprocess.TimeoutExpired) as error:
+            # e.g. the closed GD still holds the slot's bridge DLL copy for a moment after exiting
+            log(f"slot {slot} launch failed (attempt {attempt}): {error}; retrying")
+            time.sleep(15)
+            continue
         time.sleep(8)
         if alive(slot, found["pid"]):
             log(f"slot {slot} up, pid {found['pid']}")
@@ -129,6 +146,8 @@ def main():
     ap.add_argument("--max-private-mb", type=int, default=1500)
     ap.add_argument("--min-avail-mb", type=int, default=900)
     ap.add_argument("--log", type=Path)
+    ap.add_argument("--launcher", type=Path,
+                    help="gdbot-launch.exe to use (e.g. mod/build/pinned-pre-cbf/ so a new bridge build can't reach this run)")
     a = ap.parse_args()
     state_path = ROOT / f"build/m6-scale/supervise-slot{a.slot}.json"
     log_path = a.log or ROOT / f"build/m6-scale/supervise-slot{a.slot}.log"
@@ -147,7 +166,11 @@ def main():
     for job in a.job:
         restarts = 0
         while True:
-            pid = fresh_slot(a.slot, log)
+            try:
+                rotate_log(log_path)
+            except OSError as error:
+                log(f"log rotation failed: {error}")
+            pid = fresh_slot(a.slot, log, a.launcher)
             save(state="running", job=job, game_pid=pid)
             cmd = [sys.executable, "-B", "-u", str(ROOT / "tools/m6/solve_pool.py"), "--slot", str(a.slot),
                    *shlex.split(job), "--budget", str(a.budget), "--look", str(a.look),
