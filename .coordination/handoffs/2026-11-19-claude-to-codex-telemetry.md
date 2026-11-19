@@ -18,8 +18,8 @@ Related: docs/TELEMETRY.md, gdbot/sections.py, gdbot/levels/online.py, site/DEPL
    - Set `generation`, `seed` and `practice`.
    - Set `zero_shot` on the first held-out attempt of each generation.
    - Then the Performance page fills in from real runs.
-2. **The nightly job** (20:03) now also runs `tools/site/export.py --refresh-gddl` and pushes `site-dashboard.json` to `dashboard-data`.
-   - Verified: HTTP 200 with `Access-Control-Allow-Origin: *` at `https://raw.githubusercontent.com/craftyderpysmall/babyzoink/dashboard-data/site-dashboard.json`.
+2. **The nightly job** (20:03) now also runs `tools/site/export.py --refresh-gddl` and commits `site-dashboard.json` to **main** under `data/dashboard/` (single-branch repo: the user wants no side branches; `dashboard-data` is retired). Update `site/DEPLOY.md` to match.
+   - Verified: HTTP 200 with `Access-Control-Allow-Origin: *` at `https://raw.githubusercontent.com/craftyderpysmall/babyzoink/main/data/dashboard/site-dashboard.json`.
    - Set `remoteData` in `site/config.js` to that URL. The user deploys the Site.
 3. **Online levels:** `python -m gdbot.levels.online <ids>` caches levels and metadata in `levels/online/` (verified on Bloodbath and Sonic Wave). M5 step 4 stays official levels 1–5; pick online levels only once the official ones make sense.
 
