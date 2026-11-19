@@ -15,23 +15,8 @@ sys.path.insert(0, str(ROOT / "tools" / "m7"))
 sys.path.insert(0, str(ROOT / "tools" / "m6"))
 from gdbot.instances import discovery  # noqa: E402
 from gdbot.protocol import BridgeClient, NamedPipeTransport  # noqa: E402
-from perf_bench import Proc  # noqa: E402
+from perf_bench import Proc, avail_mb  # noqa: E402
 from solve_pool import levels  # noqa: E402
-
-import ctypes  # noqa: E402
-
-
-class MEMSTAT(ctypes.Structure):
-    _fields_ = [("dwLength", ctypes.c_ulong), ("dwMemoryLoad", ctypes.c_ulong)] + [
-        (n, ctypes.c_ulonglong) for n in ("total", "avail", "pagetotal", "pageavail", "virttotal", "virtavail", "ext")]
-
-
-def avail_mb():
-    m = MEMSTAT()
-    m.dwLength = ctypes.sizeof(m)
-    ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(m))
-    return round(m.avail / 2**20)
-
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__)

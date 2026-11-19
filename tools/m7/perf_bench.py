@@ -52,6 +52,19 @@ class Proc:
                 "private": m.PrivateUsage / 2**20}
 
 
+class MEMSTAT(ctypes.Structure):
+    _fields_ = [("dwLength", ctypes.c_ulong), ("dwMemoryLoad", ctypes.c_ulong)] + [
+        (n, ctypes.c_ulonglong) for n in ("total", "avail", "pagetotal", "pageavail", "virttotal", "virtavail", "ext")]
+
+
+def avail_mb():
+    """Available physical memory on the machine, in MB."""
+    m = MEMSTAT()
+    m.dwLength = ctypes.sizeof(m)
+    k32.GlobalMemoryStatusEx(ctypes.byref(m))
+    return round(m.avail / 2**20)
+
+
 def parity_key(r):
     return {k: r.get(k) for k in ("tick", "ticks_advanced", "decisions", "terminal", "player")}
 

@@ -23,8 +23,7 @@ sys.path.insert(0, str(ROOT / "tools" / "m7"))
 sys.path.insert(0, str(ROOT / "tools" / "m5c"))
 from gdbot.instances import discovery, instance_dir  # noqa: E402
 from gdbot.protocol import BridgeClient, NamedPipeTransport  # noqa: E402
-from mem_probe import avail_mb  # noqa: E402
-from perf_bench import Proc  # noqa: E402
+from perf_bench import Proc, avail_mb  # noqa: E402
 from solver import level_spec  # noqa: E402
 
 

@@ -14,6 +14,15 @@ from solver import Solver  # noqa: E402
 from gdbot.instances import discovery  # noqa: E402
 from gdbot.protocol import BridgeClient, NamedPipeTransport, RemoteError  # noqa: E402
 
+sys.path.insert(0, str(ROOT / "tools/m7"))
+from perf_bench import Proc, avail_mb  # noqa: E402
+
+RESTART = 75  # exit code: GD grew past the memory cap; tools/m6/supervise.py relaunches the slot and resumes
+
+
+class MemoryCap(Exception):
+    pass
+
 
 def levels(pool, split):
     for row in json.loads((pool / f"{split}-train.json").read_text(encoding="utf-8")):
@@ -31,11 +40,13 @@ def levels(pool, split):
         yield key, name, row["sha256"], {"kind": "level_string", "name": name, "data": data}
 
 
-def run(pool, split, slot, shard, shards, budget, limit, look, present_every_ms):
+def run(pool, split, slot, shard, shards, budget, limit, look, present_every_ms, max_private_mb=0, min_avail_mb=0):
     directory = pool / "solutions"
     directory.mkdir(parents=True, exist_ok=True)
     attempted = 0
-    with BridgeClient(NamedPipeTransport(discovery(slot)["pipe"])) as client:
+    found = discovery(slot)
+    game = Proc(found["pid"]) if max_private_mb or min_avail_mb else None
+    with BridgeClient(NamedPipeTransport(found["pipe"])) as client:
         hello = client.require_isolated()
         try:
             client.request("quit_level")
@@ -55,8 +66,21 @@ def run(pool, split, slot, shard, shards, budget, limit, look, present_every_ms)
                     continue
                 attempted += 1
                 print(f"{key} {name}:", flush=True)
+                current = {}
+
+                def log(message):
+                    print(message, flush=True)
+                    # GD grows during long practice-mode searches (docs/PROTOCOL.md, "Memory growth during long
+                    # searches"). Progress lines come right after a commit, where the saved prefix is consistent.
+                    if game and current and message.startswith("  x="):
+                        private, avail = game.mem_mb()["private"], avail_mb()
+                        if (max_private_mb and private > max_private_mb) or (min_avail_mb and avail < min_avail_mb):
+                            current["solver"].save_progress()
+                            raise MemoryCap(f"GD private {private:.0f} MB, system available {avail} MB")
+
                 solver = Solver(client, spec, budget=budget, look=look, progress=path.with_suffix(".progress.json"),
-                                log=lambda message: print(message, flush=True))
+                                log=log)
+                current["solver"] = solver
                 solver.verification_attempts = prior.get("normal_attempts", 0)
                 started = perf_counter()
                 if draw_skip:
@@ -80,8 +104,14 @@ def run(pool, split, slot, shard, shards, budget, limit, look, present_every_ms)
                 print(f"  verified={report['verified']}, evaluations={solver.evals}", flush=True)
                 if attempted == limit:
                     break
+        except MemoryCap as cap:
+            print(f"memory cap reached ({cap}); progress saved, slot restart requested", flush=True)
+            sys.exit(RESTART)
         finally:
-            client.request("set_mode", mode="normal")
+            try:
+                client.request("set_mode", mode="normal")
+            except Exception:
+                pass
 
 
 if __name__ == "__main__":
@@ -94,9 +124,14 @@ if __name__ == "__main__":
     parser.add_argument("--budget", type=int, default=20_000)
     parser.add_argument("--look", type=int, default=28, help="lookahead in four-tick decisions")
     parser.add_argument("--limit", type=int, default=0, help="stop after this many newly attempted levels")
+    parser.add_argument("--max-private-mb", type=int, default=0,
+                        help="save progress and exit 75 when GD's private bytes pass this (0 = off)")
+    parser.add_argument("--min-avail-mb", type=int, default=0,
+                        help="save progress and exit 75 when available system RAM falls below this (0 = off)")
     parser.add_argument("--present-every-ms", type=int, default=0,
                         help="limit game rendering to this interval on supported bridges")
     args = parser.parse_args()
     if not 0 <= args.shard < args.shards or min(args.budget, args.look) <= 0 or min(args.limit, args.present_every_ms) < 0:
         parser.error("invalid shard, budget, lookahead, limit or render interval")
-    run(args.pool, args.split, args.slot, args.shard, args.shards, args.budget, args.limit, args.look, args.present_every_ms)
+    run(args.pool, args.split, args.slot, args.shard, args.shards, args.budget, args.limit, args.look, args.present_every_ms,
+        args.max_private_mb, args.min_avail_mb)

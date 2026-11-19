@@ -51,3 +51,11 @@ The first game launch after opening Steam exited before sign-in finished. Once S
 For the current worker and live checkpoints, see build/m6-scale/online-run-state.json, online-shard0-older-anchor.log and solutions/*.progress.json. Claude has a standby handoff in handoffs/2026-11-19-codex-to-claude-m6-continuity.md. Keep these coordination notes current at each completed level and recheck them during long searches.
 
 Paused at the user's request. Codex stopped slot 2; Claude's GD was left alone. Latest saved Skill Gotten Gains checkpoint: segment 320, x=17317, 1013 evaluations.
+
+## Claude runs #19 (2026-11-19 08:30 UTC, claude/m6-run-01)
+The user asked Claude to run M6 while Codex is paused. Two detached supervisors (`tools/m6/supervise.py`, venv Python), budget 6,000, lookahead 40, draw-skip at 1,000 ms:
+- Slot 2: `--split online --shards 2 --shard 0`. It resumed Skill Gotten Gains at segment 320 (x 17,317).
+- Slot 1: `--split drills`, then `--split online --shards 2 --shard 1`.
+- Memory guard (#29): solve_pool saves progress and exits 75 when GD's private bytes pass 1,500 MB or available RAM falls below 900 MB. The supervisor kills only that slot's GD (its discovery PID), relaunches it, waits for Steam if needed, and resumes. It allows at most 40 restarts per job.
+- Live state: `build/m6-scale/supervise-slot{1,2}.json` and `.log`. To stop, end the two supervisor `python.exe` processes, then close the slots' GD windows. Progress resumes from `solutions/*.progress.json`.
+- After the run: with 10 or more verified online clears, run the scaling comparison (`tools/m6/curve.py`).
