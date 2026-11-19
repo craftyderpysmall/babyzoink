@@ -84,7 +84,7 @@ Requested by the user (2026-11-19). The user asked both agents to agree and cove
 - **C1, bridge (claude):**
   - hook `PlayerObject::update`; find and verify the 2.2091 RVAs for `updateRotation` and the collision-log reset;
   - add a per-step input with fraction f, plus the split and rotation/position handling following CBF;
-  - force the vanilla CBS/COS flags off;
+  - **vanilla Click Between Steps and Click On Steps always OFF (user rule).** The bridge forces `m_clickBetweenSteps = false` and `m_clickOnSteps = false` on every PlayLayer init, as CBF does. It also sets them off in every slot's bot save settings, and `hello`/`reset` replies report both flags so tests can assert they're off;
   - always on.
 - **C2, protocol:**
   - `step_seq` and `step` take an optional `fracs` array parallel to `actions`; a missing value means f=0 (start of step);
