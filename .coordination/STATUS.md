@@ -36,6 +36,10 @@ One row per run. Don't take rows marked `waiting`. If a handoff conflicts with a
 | 15 | (small, do between #14 runs) Patch slot 1's bot save for windowed display; relaunch on the new bridge | handoffs/2026-11-19-claude-to-codex-display-fix.md | no | done (claude): slot 1 save patched while closed |
 | 16 | M5c search-based teacher: deterministic segment search finds verified clears without humans; then expert iteration (BC on search clears) | tasks/M5c-search-teacher.md | yes (slot 0) | in progress (claude) |
 | 17 | Codex takes over: deploy ChatGPT Site, finish M5c solves (official 2/4/5), expert iteration, attempt logging, triple-spike follow-up | handoffs/2026-11-19-claude-to-codex-catchup.md | yes (slots 1+; slot 0 after Claude releases) | done (items 1/3/4/5); item 2 remains with Claude under #16 |
+| 18 | Finish addenda: site front-page performance summary (redeploy) + Dry Out solver stall | handoffs/2026-11-19-claude-to-codex-site-performance.md, handoffs/2026-11-19-claude-to-codex-dryout.md | Dry Out: yes | queued |
+| 19 | M6 search-teacher data at scale: ~60 online training levels + all drill variants solved in parallel slots; scaling curve (held-out vs # solved levels) | handoffs/2026-11-19-claude-to-codex-m6-scale.md (B) | yes | queued |
+| 20 | DAgger with the search teacher (label states the policy visits) | handoffs/2026-11-19-claude-to-codex-m6-scale.md (C) | yes | queued |
+| 21 | Fewer-attempts curve: policy-guided search, evaluations per new level across generations | handoffs/2026-11-19-claude-to-codex-m6-scale.md (D) | yes | queued |
 
 ## Where we stopped (2026-11-19, read this first)
 
