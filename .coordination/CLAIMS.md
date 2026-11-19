@@ -6,7 +6,6 @@
 
 | Agent/session | Paths (exact files preferred) | Task | Claimed at (UTC) | Expected release | State |
 | --- | --- | --- | --- | --- | --- |
-| claude/m6-run-01 | `RUNTIME:gd-2.2091/slot1`, `RUNTIME:gd-2.2091/slot2`, `tools/m6/solve_pool.py`, `tools/m6/supervise.py`, `build/m6-scale/`, `.coordination/tasks/M6-scale.md` | #19 M6 run (user asked Claude to run it) + #29 memory guard | 2026-11-19 08:40 | when the run ends or the user stops it | active |
 
 **Game runtime:** only one client can drive GD at a time. Claim it as the pseudo-path `RUNTIME:gd-2.2091` (meaning the GD process and its pipe) before launching `gdbot-launch.exe`, and release it when the game is closed. Parallel instances: claim `RUNTIME:gd-2.2091/slot<N>` for `gdbot-launch.exe --instance N`; plain `RUNTIME:gd-2.2091` means slot 0. One client per slot.
 

@@ -37,7 +37,7 @@ One row per run. Don't take rows marked `waiting`. If a handoff conflicts with a
 | 16 | M5c search-based teacher: deterministic segment search finds verified clears without humans; then expert iteration (BC on search clears) | tasks/M5c-search-teacher.md | yes (slot 0) | done (claude): Stereo Madness, Back on Track, Polargeist verified; #18 advanced Dry Out and Base After Base without full clears |
 | 17 | Codex takes over: deploy ChatGPT Site, finish M5c solves (official 2/4/5), expert iteration, attempt logging, triple-spike follow-up | handoffs/2026-11-19-claude-to-codex-catchup.md | yes (slots 1+; slot 0 after Claude releases) | done (items 1/3/4/5); two full clears still pending under #16 |
 | 18 | Finish addenda: site front-page performance summary (redeploy) + Dry Out solver stall | handoffs/2026-11-19-claude-to-codex-site-performance.md, handoffs/2026-11-19-claude-to-codex-dryout.md | Dry Out: yes | done: Overview deployed; both original stalls passed and longer prefixes saved; full clears still pending under #16 |
-| 19 | M6 search-teacher data at scale: ~60 online training levels + all drill variants solved in parallel slots; scaling curve (held-out vs # solved levels) | handoffs/2026-11-19-claude-to-codex-m6-scale.md (B) | yes | in progress (claude/m6-run-01): user asked Claude to run it; slot 2 = online shard 0, slot 1 = drills then online shard 1, via tools/m6/supervise.py |
+| 19 | M6 search-teacher data at scale: ~60 online training levels + all drill variants solved in parallel slots; scaling curve (held-out vs # solved levels) | handoffs/2026-11-19-claude-to-codex-m6-scale.md (B) | yes | paused by the user (claude stopped it 2026-11-19): drills 59/63 verified, online 0 verified (2 at budget, Skill Gotten Gains saved mid-search); resume with tools/m6/supervise.py |
 | 20 | DAgger with the search teacher (label states the policy visits) | handoffs/2026-11-19-claude-to-codex-m6-scale.md (C) | yes | queued |
 | 21 | Fewer-attempts curve: policy-guided search, evaluations per new level across generations | handoffs/2026-11-19-claude-to-codex-m6-scale.md (D) | yes | queued |
 | 22 | Solver stalls on Dry Out (x≈1,370) and Base After Base (x≈10,150): find what the candidate set / 4-tick grid / backtrack depth misses (`snapshot` at the saved prefix), fix, resume both (`--level main:4 --level main:5`) | handoffs/2026-11-19-codex-to-claude-dryout-claim.md (response) | yes | done with #18: original stalls passed; Dry Out and Base After Base remain uncleared |
@@ -48,6 +48,7 @@ One row per run. Don't take rows marked `waiting`. If a handoff conflicts with a
 | 27 | Independent safety review (pass 1 alone, then cross-check vs #28): memory/storage leaks, unsafe or dangerous code, whole repo | handoffs/2026-11-19-claude-to-both-safety-review.md | optional | queued |
 | 28 | (claude) Independent safety review, same handoff as #27 (pass 1 alone, then cross-check) | handoffs/2026-11-19-claude-to-both-safety-review.md | optional | queued (claude) - saved for later by the user |
 | 29 | M6 slot-memory mitigation in `tools/m6/solve_pool.py`: save + relaunch the slot above about 1.6 GB private or below 1.5 GB free system RAM, one fresh launch per level; then resume #19 | handoffs/2026-11-19-codex-to-claude-m6-slot-memory.md (response) | yes | done (claude): solve_pool --max-private-mb/--min-avail-mb (exit 75) + tools/m6/supervise.py relaunch-and-resume |
+| 30 | ChatGPT Site: add a Job queue section (every numbered job, owner, status, progress), generated from STATUS.md in the nightly data build; redeploy | handoffs/2026-11-19-claude-to-codex-site-jobs.md | no | queued |
 
 ## Where we stopped (2026-11-19, read this first)
 
@@ -93,6 +94,7 @@ One row per run. Don't take rows marked `waiting`. If a handoff conflicts with a
 | codex | ChatGPT Sites dashboard + mode ratings | handoffs/2026-11-19-claude-to-codex-site-dashboard.md | completed locally |
 | claude | Restore sequential custom level loads in slot 0 so M5 can resume | handoffs/2026-11-19-codex-to-claude-m5-bridge.md | completed |
 | codex | Record M5 telemetry and point the site at the public main-branch feed | handoffs/2026-11-19-claude-to-codex-telemetry.md | completed |
+| codex | Job queue on the ChatGPT Site | handoffs/2026-11-19-claude-to-codex-site-jobs.md | pending |
 | codex + claude | Two independent safety reviews (#27, #28) | handoffs/2026-11-19-claude-to-both-safety-review.md | pending |
 | codex | Bridge rebuild: draw-skip, window colours, quit crash warning | handoffs/2026-11-19-claude-to-codex-bridge-perf.md | info |
 | claude | Transfer Dry Out solver files for #18 | handoffs/2026-11-19-codex-to-claude-dryout-claim.md | completed (reassigned to Codex, #22) |
