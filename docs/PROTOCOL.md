@@ -208,7 +208,20 @@ It is enabled per session via `hello.capabilities.binary_obs`. This is only buil
 
 ## Implemented: draw-skip and agent window colours (2026-11-19, claude/perf-01)
 - **`set_render` (opt-in draw-skip):** `{"op":"set_render","present_every_ms":N}`. While the mode is `dedicated` or `background` and a client is in control, the scene is drawn and presented at most once every N ms; other frames skip `CCNode::visit` of the running scene and `CCEGLView::swapBuffers`. `0` (the default, and the value after every disconnect) draws every frame, as earlier builds did. `normal` mode always draws. With no `present_every_ms` field, the request just reads the counters. Reply: `{present_every_ms, frames, presented}` (counted since launch). `hello` reports `capabilities.set_render`.
+  - Frames are skipped only while a level is loaded and started; menus, `load_level` and transitions always draw. Before this fix, a load with draw-skip on could fail.
   - `snapshot` reads the last *presented* frame, so with draw-skip on it can be up to N ms stale.
   - Measured (`tools/m7/perf_bench.py`, Stereo Madness `step_seq` of about 4,900 decisions, slot 0, dedicated): 96.5k ticks/s at every frame drawn, 103.7k at 250 ms and 105.1k at 1000 ms (+7–9%). `step_seq` replies were identical across all three. Long `step_seq` requests leave GD at about 10 frames/s, so drawing is a small share of the time. Expect a bigger gain with short `step` requests (k=4).
 - **Agent colours:** `hello` may carry `"agent": "claude" | "codex"`. The bridge then sets the window's caption and border to Claude orange (#D97757) or ChatGPT green (#10A37F) and the title to `Geometry Dash - <agent> - slot <N>`. `gdbot.protocol.BridgeClient.hello()` fills `agent` automatically from `GDBOT_AGENT`, or else from a `claude`/`codex` executable in its parent-process chain (`gdbot/agent.py`). The colours persist until a different agent says hello.
 - **Fixed: quit_level crash after long bot sessions** (it predated these changes and reproduced on the older bridge too). After many bot resets, `quit_level` from inside a level crashed GD about 0.55 s after `onQuit`, in `CCFadeTo::update → CCSprite::setOpacity → CCTextureAtlas::updateQuad`: a fade left running on a level sprite that outlived its batch node. It crashed 4 times out of 4. While a client is in control, `PlayLayer::onQuit` now first calls `CCActionManager::removeAllActions()`. GD's own quit transition is created after that and runs normally. Verified: 2 of 2 clean quits after 30 s benchmark sessions, and `tools/m1/sequential_test.py 3` passes 6/6. Separately, every completed run queues a real-time end-animation `levelComplete` callback; the clear on quit removes these too.
+
+## Memory growth during long searches (2026-11-19, claude/perf-01; `tools/m7/leak_probe.py`, Stereo Madness, low textures)
+GD's private bytes per 300 iterations of each solver pattern, each with a `step_seq` of 1,500 decisions:
+
+| Pattern | Growth |
+| --- | --- |
+| 0% reset, practice off | none |
+| Reset to a bot checkpoint in practice mode | about +14 MB (about 47 KB each) |
+| Solver depth-0 restore (`reset zero`, which turns practice off, then `set_practice` on) | about +31 MB (about 100 KB each) |
+| `checkpoint_create` + `checkpoint_pop` | about +6 MB |
+
+GD's own practice auto-checkpoints, about 35 per run, are blocked by the bridge. Storing and then removing them instead didn't measurably change growth, and that change was reverted. A 0% reset that *keeps* practice on was worse, at +100 to +250 MB per 400, and was also reverted. The growth is inside GD's practice-mode reset and toggle paths, and it scales with the level's object count, which explains slot 2's 2.4 GB on Skill Gotten Gains. No bridge-side fix exists yet; the practical mitigation is restarting the slot (see STATUS #29).

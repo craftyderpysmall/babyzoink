@@ -174,7 +174,7 @@ void __fastcall h_schedUpdate(void* self, float dt) {
     ++g_frames_total;
     static ULONGLONG s_last_present = 0;
     ULONGLONG now = GetTickCount64();
-    g_skip_draw = g_present_every_ms > 0 && g_controlled && g_mode_allows_skip &&
+    g_skip_draw = g_present_every_ms > 0 && g_controlled && g_mode_allows_skip && g_layer && g_started &&  // menus, loads, transitions draw
                   now - s_last_present < ULONGLONG(g_present_every_ms);
     g_skip_scene = g_skip_draw ? p_getRunningScene(p_sharedDirector()) : nullptr;
     if (!g_skip_scene) g_skip_draw = false;  // no scene to identify (e.g. mid-transition): draw normally
