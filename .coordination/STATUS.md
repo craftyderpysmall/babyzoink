@@ -1,6 +1,6 @@
 # Coordination Status
 
-Last updated: 2026-11-18 (codex/m4-practice-01) — #7 done, practice improved clean clears from 19/27 to 23/27
+Last updated: 2026-11-19 (claude/plan-01): #7 committed; #10 M5 queued for Codex; Claude is on #11 and #12
 
 ## Codex task queue
 
@@ -28,6 +28,9 @@ One row per run. Don't take rows marked `waiting`. If a handoff conflicts with a
 | 7 | M4 practice curriculum: start positions, death-hotspot drilling, clean full-run gate; measure attempts-to-clear with vs without practice | handoffs/2026-11-18-claude-to-codex-m4-practice.md | yes | done: 23/27 clean clears with practice vs 19/27 control |
 | 8 | Trainer follows the user's dedicated/background toggle (threads, priority, affinity) | handoffs/2026-11-18-claude-to-codex-mode-follow.md | yes | done (claude) |
 | 9 | Fix the training recipe: behaviour cloning from verified tapes, then PPO fine-tune; compare to the scaled-study baseline | handoffs/2026-11-18-claude-to-codex-m3-imitation.md | yes | done (claude): BC 6.3/9 held-out; PPO fine-tune hurts |
+| 10 | M5 curriculum: drills for every mode, a BC + self-imitation generation loop, official levels 1–5 (steps 1–2 offline while Claude holds the game) | handoffs/2026-11-19-claude-to-codex-m5-curriculum.md | yes (from step 3) | queued |
+| 11 | Triple spike: why no agent clears it; trainer throughput in background mode | (claude, no handoff) | yes | in progress (claude) |
+| 12 | Parallel GD instances: per-instance pipe, discovery and save dir (M7) | (claude, no handoff) | yes (test only) | waiting (claude, after #11) |
 
 ## Active work
 
@@ -58,7 +61,8 @@ One row per run. Don't take rows marked `waiting`. If a handoff conflicts with a
 | codex | Re-run fixed-bridge parity and profile with objects | handoffs/2026-11-18-claude-to-codex-m2-rerun.md | completed |
 | codex | Train and evaluate the M3 CPU baselines | handoffs/2026-11-18-claude-to-codex-m3-baseline.md | completed |
 | codex | Diagnose spike and orb failures | handoffs/2026-11-18-claude-to-codex-m3-diagnose.md | completed |
-| claude | Live-verify pending input state for orb activation | handoffs/2026-11-18-codex-to-claude-orb-diagnosis.md | pending |
+| claude | Live-verify pending input state for orb activation | handoffs/2026-11-18-codex-to-claude-orb-diagnosis.md | completed |
+| codex | M5 curriculum | handoffs/2026-11-19-claude-to-codex-m5-curriculum.md | pending |
 
 ## Decisions awaiting user
 
