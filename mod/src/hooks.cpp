@@ -100,9 +100,17 @@ void __fastcall h_endAnim(void* self, uint64_t pos) {
 }
 void __fastcall h_levelComplete(void* self) {
     if (g_controlled && !g_end_reached) {
-        // A real-time end-animation callback from an episode the bot already reset: ignore it.
-        GLOG("suppressed stale levelComplete at tick %lld (bot in control, episode was reset)", g_tick);
-        return;
+        if (g_in_step) {
+            // Called from inside a bot-driven physics step: the level ended this tick without the end animation
+            // (end trigger levels, e.g. Skill Gotten Gains: the player stopped at 98.65% in UFO mode, #43).
+            // Before this fix such completions were dropped as stale and the solver searched on forever.
+            GLOG("levelComplete inside a bot step at tick %lld (no end animation): counted as completion", g_tick);
+            g_end_reached = true;
+        } else {
+            // A real-time end-animation callback from an episode the bot already reset: ignore it.
+            GLOG("suppressed stale levelComplete at tick %lld (bot in control, episode was reset)", g_tick);
+            return;
+        }
     }
     GLOG("PlayLayer::levelComplete tick=%lld", g_tick);
     g_completed = true;
