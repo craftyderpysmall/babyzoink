@@ -114,6 +114,20 @@ void __fastcall h_onQuit(void* self) {
     else GLOG("PlayLayer::onQuit (caller %p, outside exe)", (void*)ra);
     g_layer = nullptr;
     g_started = false;
+    // Bot sessions reset the level hundreds of times; each reset can leave real-time CCActions (fades) on
+    // level sprites. After quit those sprites outlive their batch node and the next fade step crashes in
+    // CCTextureAtlas::updateQuad (0.55 s after onQuit). Clear every pending action before GD's own quit
+    // sequence starts (its transition actions are created inside o_onQuit, after this).
+    if (g_controlled) {
+        HMODULE cc = GetModuleHandleW(L"libcocos2d.dll");
+        using Static_t = void*(*)();
+        using GetPtr_t = void*(__fastcall*)(void*);
+        auto dir = cc ? (Static_t)GetProcAddress(cc, "?sharedDirector@CCDirector@cocos2d@@SAPEAV12@XZ") : nullptr;
+        auto am = cc ? (GetPtr_t)GetProcAddress(cc, "?getActionManager@CCDirector@cocos2d@@UEAAPEAVCCActionManager@2@XZ") : nullptr;
+        auto clear = cc ? (Void0_t)GetProcAddress(cc, "?removeAllActions@CCActionManager@cocos2d@@QEAAXXZ") : nullptr;
+        if (dir && am && clear) { clear(am(dir())); GLOG("onQuit: cleared pending actions (bot in control)"); }
+        else GLOG("onQuit: WARNING action-manager exports missing; pending actions kept");
+    }
     o_onQuit(self);
 }
 
