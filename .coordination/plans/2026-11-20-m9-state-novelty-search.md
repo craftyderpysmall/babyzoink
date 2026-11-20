@@ -154,3 +154,18 @@ The matched benchmark script is `build/m9-research/archive_comparison.py`. It us
 - **Costs and next steps:**
   - Restores are about 95% of archive ticks: clean replay from 0%, about 17k ticks each, and this level runs at about 10k ticks/s. Checkpoint-based restore for verified common prefixes is the next speed-up (open row).
   - Archive attempts are independent, so a level's archive can also be spread across slots (open row).
+
+## #59 parallel-slot archive, first live result (claude, 2026-11-20)
+
+`tools/m9/parallel_archive.py`: N worker processes, one game slot each, each running the full solver (V2 + archive) on its own copy of a stalled prefix. The workers differ only in the archive's random stream (a salt in `Archive.digest`). The first verified clear wins. No shared files are edited.
+
+**Reflected (online:13124688),** stalled in #19 at segment 176 after 9,000 evaluations; 2 slots, +3,000 evaluations each:
+- Both workers first moved from 176 to 222. The work is identical and deterministic up to the first archive call.
+- **Worker on slot 1:** the archive handed back after 171 evaluations, and the solver reached **segment 262 (x=8,507)** before its budget ended.
+- **Worker on slot 3:** the archive spent 602 evaluations with no hand-back and stayed at segment 222.
+- Neither cleared within the budget.
+
+**Takeaway:** archive success has high variance across random streams (one success in two here), so parallel workers raise the chance of passing a stall in the same wall time.
+
+**Next improvement:** when one worker hands back past a stall, the others should adopt its progress, synchronizing on the winner's prefix, instead of continuing on their own copies. That needs a shared progress handoff between workers, so it's left as follow-up.
+
