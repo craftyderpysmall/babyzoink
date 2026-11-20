@@ -6,6 +6,9 @@
 
 | Agent/session | Paths (exact files preferred) | Task | Claimed at (UTC) | Expected release | State |
 | --- | --- | --- | --- | --- | --- |
+| claude/m9-parallel-11 | RUNTIME:gd-2.2091/slot1, RUNTIME:gd-2.2091/slot3, tools/m9/, build/m9-research/parallel/ | #59 parallel-slot archive | 2026-11-20 | after #59 | active |
+
+| codex/cbf-migrate-20 | tools/m5c/solver.py, tools/m6/guided.py, tools/m6/solve_pool.py, tools/m6/watch.py, tools/m6/stall_probe.py, tools/m5c/expert.py, tools/m5b/expert_iteration.py, tools/m5b/triple_multi.py, tools/m6/dagger.py, tools/m6/curve.py, gdbot/protocol.py, gdbot/env.py, tests/test_solver_timing.py, .coordination/STATUS.md, .coordination/handoffs/2026-11-20-claude-to-codex-timing-migration.md | #48 timing migration | 2026-11-20 | after tests | active |
 
 **Game runtime:** only one client can drive GD at a time. Claim it as the pseudo-path `RUNTIME:gd-2.2091` (meaning the GD process and its pipe) before launching `gdbot-launch.exe`, and release it when the game is closed. Parallel instances: claim `RUNTIME:gd-2.2091/slot<N>` for `gdbot-launch.exe --instance N`; plain `RUNTIME:gd-2.2091` means slot 0. One client per slot.
 
