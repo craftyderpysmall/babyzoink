@@ -365,3 +365,18 @@ New fields:
 **Findings on the Because I Loved Her stall:**
 - No gameplay object's group-disabled state and no item count changes in the whole run; `world_hash` stays at the empty-set value. The group-98 toggle Codex measured enables the key objects, which aren't gameplay objects. The keys and doors are decoration at the collision level, as the user saw with hitboxes. The section is a physical routing problem for two dual-mode cubes.
 - The death: player 1, `object_null: true`, `caller_rva 0x4f1a22`. That's inside `PlayerObject::collidedWithObjectInternal` (0x4efd50 in the bindings), so it **is a solid collision** (side or crush), not a scripted or boundary kill.
+
+## Fix: `quit_level` deadlock after a completed level (2026-11-20, claude)
+
+**Seen on #19, slot 2:**
+1. After Moving Obstacles was cleared, the solver sent `quit_level`, and `PlayLayer::onQuit` ran.
+2. About 1 s later GD started the level again by itself (`PlayLayer::init` + `startGame`).
+3. The pending quit waits for "no layer", so it never replied, and the worker waited forever.
+4. The supervisor watchdog didn't fire: a frozen GD still burns CPU in its skipped-update loop.
+
+**Fix:**
+- While a quit is pending, a different started layer is quit too (logged, at most 3 retries).
+- The whole quit times out after 20 s with `INTERNAL: quit_level timed out`, instead of hanging.
+
+The watchdog follow-up is an open row.
+

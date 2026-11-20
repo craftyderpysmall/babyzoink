@@ -582,16 +582,22 @@ json op_load_level(const json& req) {
 bool g_quit_pending = false;
 json g_quit_reply;
 int g_quit_wait_frames = 0;
+void* g_quit_layer = nullptr;      // the layer the bot asked to quit
+ULONGLONG g_quit_started = 0;      // GetTickCount64 at quit_level
+int g_quit_retries = 0;
 json op_quit_level(const json& req) {
     if (!g_layer) return err(req, "NOT_IN_LEVEL", "no level loaded");
     press(false);
     g_practice = false;  // the layer (and its checkpoints) goes away with the level
     g_cps.clear();
+    g_quit_layer = g_layer;
     reinterpret_cast<Void0_t>(rva_ptr(PlayLayer__onQuit))(g_layer);
     g_objs.clear();
     g_objects_ok = false;
     g_quit_pending = true;
     g_quit_wait_frames = 0;
+    g_quit_started = GetTickCount64();
+    g_quit_retries = 0;
     g_quit_reply = ok(req);
     return json();
 }
@@ -1395,6 +1401,26 @@ void control_frame(float) {
         // hidden or minimized) 45 frames passed before it ended, and the next load_level then
         // started inside the transition and never reached startGame. Require both.
         static ULONGLONG s_gone_at = 0;
+        // 2026-11-20 deadlock (#19, slot 2): after a completed level was quit, GD started the level again by
+        // itself (PlayLayer::init + startGame ~1 s after onQuit), so "no layer" never came and the quit never
+        // replied. A different layer appearing while a quit is pending gets quit too (bounded retries), and the
+        // whole quit times out with an error the client can recover from instead of hanging forever.
+        if (g_layer && g_layer != g_quit_layer && g_quit_retries < 3 && g_started) {
+            ++g_quit_retries;
+            GLOG("quit_level: GD started a level by itself during the quit (layer %p); quitting it too (retry %d)",
+                 g_layer, g_quit_retries);
+            g_quit_layer = g_layer;
+            press(false);
+            reinterpret_cast<Void0_t>(rva_ptr(PlayLayer__onQuit))(g_layer);
+            g_quit_wait_frames = 0;
+        }
+        if (GetTickCount64() - g_quit_started > 20000) {
+            g_quit_pending = false;
+            s_gone_at = 0;
+            GLOG("quit_level: TIMED OUT after 20 s (layer %p still present); replying with an error", g_layer);
+            send_reply(err(g_quit_reply, "INTERNAL", "quit_level timed out: the game did not return to the menu"));
+            return;
+        }
         if (g_layer) s_gone_at = 0;
         else if (!s_gone_at) s_gone_at = GetTickCount64();
         if (!g_layer && ++g_quit_wait_frames >= 45 && GetTickCount64() - s_gone_at >= 1000) {
