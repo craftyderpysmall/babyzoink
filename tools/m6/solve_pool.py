@@ -34,14 +34,18 @@ def guard_evaluations(solver, check, every_s=15.0, clock=perf_counter):
     evaluate = solver.evaluate
     last = [clock()]
 
-    def guarded(cand):
+    def check_due():
         now = clock()
         if now - last[0] >= every_s:
             last[0] = now
             check(solver)
+
+    def guarded(cand):
+        check_due()
         return evaluate(cand)
 
     solver.evaluate = guarded
+    solver.archive_guard = check_due
     return solver
 
 
@@ -121,7 +125,7 @@ def run(pool, split, slot, shard, shards, budget, limit, look, present_every_ms,
                         show(current["solver"], "stall escape")
 
                 solver = Solver(client, spec, budget=budget, look=look, progress=path.with_suffix(".progress.json"),
-                                log=log)
+                                log=log, expected_input_timing=prior.get("input_timing", "tick") if prior else None)
                 if game:
                     guard_evaluations(solver, check)
                 current["solver"] = solver
@@ -136,6 +140,8 @@ def run(pool, split, slot, shard, shards, budget, limit, look, present_every_ms,
                 report = {
                     "level": key, "name": name, "sha256": digest, "budget": budget,
                     "lookahead": look,
+                    "input_timing": solver.input_timing,
+                    **solver.timing_migration,
                     "verified": bool(result and result["verified"]), "result": result,
                     "practice_attempts": solver.evals,
                     "normal_attempts": solver.verification_attempts,

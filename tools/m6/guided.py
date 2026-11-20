@@ -54,7 +54,7 @@ class GuidedSolver(Solver):
             self.encoder.encode(start["obs"], tick)
         tail = prefix[-2:]
         for index, action in enumerate(tail):
-            reply = self.c.step(episode=self.ep, tick=tick, action=action, k=K)
+            reply = self.c.step(episode=self.ep, tick=tick, action=action & 1, k=K, frac=(action >> 1) / 4)
             self.ticks += reply["ticks_advanced"]
             if reply["terminal"]:
                 return []
@@ -137,6 +137,8 @@ def run(client, args):
             print(f"generation {generation}, {key}", flush=True)
             solution = solver.solve()
             results[key] = {"name": name, "practice_attempts": solver.evals,
+                            "input_timing": solver.input_timing,
+                            **solver.timing_migration,
                             "normal_attempts": solver.verification_attempts, "verified": bool(solution),
                             "saved_x": max(solver.seg_x, default=0), "ticks": solver.ticks,
                             "wall_s": perf_counter() - start, "result": solution}

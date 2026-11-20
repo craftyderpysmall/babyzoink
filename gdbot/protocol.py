@@ -207,10 +207,13 @@ class BridgeClient:
             raise ProtocolError("bridge must confirm save redirection and HTTP blocking")
         return reply
 
-    def step(self, *, episode: int, tick: int, action: int, k: int) -> dict:
+    def step(self, *, episode: int, tick: int, action: int, k: int, frac: float = 0) -> dict:
         if type(action) is not int or action not in (0, 1) or type(k) is not int or k < 1:
             raise ValueError("step expects a binary action and a positive tick count")
-        reply = self.request("step", episode=episode, action=action, k=k)
+        if not 0 <= frac < 1:
+            raise ValueError("step fraction must be in [0, 1)")
+        timing = {"frac": frac} if frac else {}
+        reply = self.request("step", episode=episode, action=action, k=k, **timing)
         advanced = reply.get("ticks_advanced")
         terminal = reply.get("terminal")
         if (

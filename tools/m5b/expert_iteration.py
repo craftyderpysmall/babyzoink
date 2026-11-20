@@ -53,7 +53,8 @@ def run(slot, official, output):
         try:
             env = TransferEnv(client, "route")
             if "demo" not in report or not demo.exists():
-                observations, actions = solution_demo(env, train, source["result"]["actions"])
+                result = source["result"]
+                observations, actions = solution_demo(env, train, result["actions"], fracs=result.get("fracs"))
                 save_demonstration(demo, observations, actions)
                 report["demo"] = {"decisions": len(actions), "terminal": "complete", "peak_progress": 1.0}
                 save_report(output, report)

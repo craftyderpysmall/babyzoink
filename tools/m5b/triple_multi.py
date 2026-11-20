@@ -58,7 +58,7 @@ def collect_tapes(client, env, output, report, fixtures, budget):
             print(f"Search {fixture.variant}", flush=True)
             solution = solver.solve()
             if solution is not None and solution["verified"] and solution["k"] == K:
-                observations, actions = solution_demo(env, fixture, solution["actions"])
+                observations, actions = solution_demo(env, fixture, solution["actions"], fracs=solution.get("fracs"))
                 save_demonstration(path, observations, actions)
                 recorded = {"verified": True, "decisions": len(actions), "evaluations": solver.evals,
                             "archive_sha256": archive_hash(path)}

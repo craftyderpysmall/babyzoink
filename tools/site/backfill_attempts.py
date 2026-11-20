@@ -100,18 +100,19 @@ def m5c():
         if "level" not in d:
             continue
         outcome = solver_row(d["level"], d["result"], t=mtime(p))
-        rows[outcome["level"]] = outcome
+        rows[outcome["level"]] = timed_solver_rows(outcome, d["result"] or d)
     for p in sorted(directory.glob("main_*.progress.json")):
         number = int(p.name.split("_", 1)[1].split(".", 1)[0])
         level = f"official:{number}"
-        if rows.get(level, {}).get("normal_clears"):
+        if any(entry["normal_clears"] for entry in rows.get(level, [])):
             continue
         progress = json.loads(p.read_text(encoding="utf-8"))
-        rows[level] = row("m5c-search", level, name=OFFICIAL[number - 1], t=mtime(p),
-                          normal_attempts=progress.get("verification_attempts", 0),
-                          practice_attempts=progress["evals"])
+        outcome = row("m5c-search", level, name=OFFICIAL[number - 1], t=mtime(p),
+                      normal_attempts=progress.get("verification_attempts", 0),
+                      practice_attempts=progress["evals"])
+        rows[level] = timed_solver_rows(outcome, progress)
     if rows:
-        write("m5c-search", rows.values())
+        write("m5c-search", [entry for entries in rows.values() for entry in entries])
 
 
 def solver_row(name, res, t=None):
@@ -130,6 +131,23 @@ def solver_row(name, res, t=None):
     return row("m5c-search", level, name=label, t=t, normal_attempts=normal, practice_attempts=res["evals"],
                normal_clears=int(res["verified"]), best_progress=1.0 if res["verified"] else 0.0,
                first_clear_attempt=normal if res["verified"] else None, practice_clear=bool(res["verified"]))
+
+
+def timed_solver_rows(entry, record):
+    current = entry | {"input_timing": record.get("input_timing", "tick")}
+    if record.get("migrated_from") != "tick":
+        return [current]
+    normal = record["tick_verification_attempts"]
+    practice = record["tick_evaluations"]
+    if not 0 <= normal <= current["normal_attempts"] or not 0 <= practice <= current["practice_attempts"]:
+        raise ValueError("migration counters exceed the recorded solver totals")
+    current["normal_attempts"] -= normal
+    current["practice_attempts"] -= practice
+    if current["first_clear_attempt"] is not None:
+        current["first_clear_attempt"] -= normal
+    historical = row(f"{entry['run']}-pre-cbf", entry["level"], name=entry["name"], t=entry["t"],
+                     normal_attempts=normal, practice_attempts=practice)
+    return [historical, current]
 
 
 def m5c_expert():
@@ -167,18 +185,41 @@ def m5c_triple():
 
 def m6_search():
     rows = []
-    for p in sorted((ROOT / "build/m6-scale/solutions").glob("*.json")):
+    pool = ROOT / "build/m6-scale"
+    solutions = pool / "solutions"
+    online_index = pool / "online-train.json"
+    online_names = ({f"online:{item['id']}": item["name"]
+                     for item in json.loads(online_index.read_text(encoding="utf-8"))}
+                    if online_index.exists() else {})
+    reported = set()
+    for p in sorted(solutions.glob("*.json")):
         if p.name.endswith(".progress.json"):
             continue
         report = json.loads(p.read_text(encoding="utf-8"))
+        reported.add(report["level"])
         verified = report["verified"]
         normal = report["normal_attempts"]
-        rows.append(row("m6-search", report["level"], name=report["name"], t=mtime(p),
-                        normal_attempts=normal, practice_attempts=report["practice_attempts"],
+        progress_file = p.with_suffix(".progress.json")
+        progress = (json.loads(progress_file.read_text(encoding="utf-8"))
+                    if not verified and progress_file.exists() else {})
+        entry = row("m6-search", report["level"], name=report["name"], t=mtime(p),
+                        normal_attempts=max(normal, progress.get("verification_attempts", 0)),
+                        practice_attempts=max(report["practice_attempts"], progress.get("evals", 0)),
                         input_timing=report.get("input_timing", "tick"),
                         normal_clears=int(verified), practice_clear=verified,
                         best_progress=1.0 if verified else 0.0,
-                        first_clear_attempt=normal if verified else None))
+                        first_clear_attempt=normal if verified else None)
+        rows.extend(timed_solver_rows(entry, report | progress))
+    for level, name in online_names.items():
+        p = solutions / f"{level.replace(':', '_')}.progress.json"
+        if level in reported or not p.exists():
+            continue
+        progress = json.loads(p.read_text(encoding="utf-8"))
+        entry = row("m6-search", level, name=name, t=mtime(p),
+                        normal_attempts=progress.get("verification_attempts", 0),
+                        practice_attempts=progress["evals"],
+                        input_timing=progress.get("input_timing", "tick"))
+        rows.extend(timed_solver_rows(entry, progress))
     if rows:
         write("m6-search", rows)
 
@@ -216,16 +257,54 @@ def m6_guided():
         for key, result in run["levels"].items():
             verified = result["verified"]
             normal = result["normal_attempts"]
-            rows.append(row(label, key, name=result["name"], t=mtime(path), normal_attempts=normal,
+            entry = row(label, key, name=result["name"], t=mtime(path), normal_attempts=normal,
                             practice_attempts=result["practice_attempts"], normal_clears=int(verified),
                             input_timing=result.get("input_timing", "tick"),
-                            best_progress=float(verified), first_clear_attempt=normal if verified else None))
+                            best_progress=float(verified), first_clear_attempt=normal if verified else None)
+            rows.extend(timed_solver_rows(entry, result))
     if rows:
         write("m6-guided", rows)
 
 
+def m6_dagger():
+    p = ROOT / "build/m6-scale/dagger/report.json"
+    if not p.exists():
+        return
+    report = json.loads(p.read_text(encoding="utf-8"))
+    rows = []
+    for label, run in report["runs"].items():
+        for variant, attempt in run.get("drills", {}).items():
+            rows.append(from_result(f"m6-{label}", drill(variant), {"attempts": [attempt]}, t=mtime(p)))
+        for entry, attempt in run.get("online", {}).items():
+            level, _, name = entry.partition("/")
+            rows.append(from_result(f"m6-{label}", f"online:{level}", {"attempts": [attempt]}, name=name, t=mtime(p)))
+    if rows:
+        write("m6-dagger", rows)
+
+
+def m5c_triple_multi():
+    p = ROOT / "build/m5c-expert/triple-multi/report.json"
+    if not p.exists():
+        return
+    report = json.loads(p.read_text(encoding="utf-8"))
+    rows = []
+    for label, run in report["runs"].items():
+        source = f"m5c-triple-multi-{label}"
+        rows.append(from_result(source, "drill:triple-spike/heldout-2102", {"attempts": run["triple"]}, t=mtime(p)))
+        for variant, attempt in run["other"].items():
+            rows.append(from_result(source, drill(variant), {"attempts": [attempt]}, t=mtime(p)))
+    for variant, tape in report["tapes"].items():
+        if tape["verified"]:
+            rows.append(row("m5c-triple-training-search", f"drill:triple-spike/{variant}", t=mtime(p),
+                            normal_attempts=1, practice_attempts=tape["evaluations"], normal_clears=1,
+                            practice_clear=True, best_progress=1.0, first_clear_attempt=1))
+    if rows:
+        write("m5c-triple-multi", rows)
+
+
 if __name__ == "__main__":
-    for step in (m4, m5, m5b, m5c, m5c_expert, m5c_triple, m6_search, m6_curve, m6_guided):
+    for step in (m4, m5, m5b, m5c, m5c_expert, m5c_triple, m6_search, m6_curve, m6_guided,
+                 m6_dagger, m5c_triple_multi):
         step()
     from gdbot.attempts import read, summarize
     s = summarize(read())

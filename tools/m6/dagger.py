@@ -179,7 +179,7 @@ def run(client, args):
                                          progress=archive.with_suffix(".progress.json"))
                         solution = teacher.solve()
                         if solution:
-                            obs, actions = solution_demo(env, fixture, solution["actions"])
+                            obs, actions = solution_demo(env, fixture, solution["actions"], fracs=solution.get("fracs"))
                         else:
                             client.request("quit_level")
                             obs, actions = [], []

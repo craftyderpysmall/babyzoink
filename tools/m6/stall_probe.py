@@ -21,7 +21,7 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "tools/m5c"))
 from gdbot.instances import discovery  # noqa: E402
 from gdbot.protocol import BridgeClient, NamedPipeTransport, RemoteError  # noqa: E402
-from solver import K  # noqa: E402
+from solver import K, decision_payload  # noqa: E402
 
 POOL = ROOT / "build/m6-scale"
 
@@ -47,13 +47,16 @@ class Probe:
 
     def play(self, prefix_k4, tail, k_tail):
         """Clean 0% run: prefix at k=4, then tail at k_tail. Returns (terminal, x_end)."""
-        ep = self.c.request("reset", start={"kind": "zero"})["episode"]
+        reset = self.c.request("reset", start={"kind": "zero"})
+        if any(action > 1 for action in prefix_k4) and not reset.get("input_timing", {}).get("cbf"):
+            raise ValueError("replaying a fractional prefix requires the CBF bridge")
+        ep = reset["episode"]
         if k_tail == K:
             actions = prefix_k4 + tail
-            r = self.c.request("step_seq", episode=ep, actions=actions, k=K)
+            r = self.c.request("step_seq", episode=ep, k=K, **decision_payload(actions))
         else:
             if prefix_k4:
-                r = self.c.request("step_seq", episode=ep, actions=prefix_k4, k=K)
+                r = self.c.request("step_seq", episode=ep, k=K, **decision_payload(prefix_k4))
                 if r["terminal"]:
                     return r["terminal"], r["player"]["x"]
             r = self.c.request("step_seq", episode=ep, actions=tail, k=k_tail)
@@ -74,8 +77,11 @@ def probe_level(client, key, trials, backs, margin, seed, log):
               "prefix_replay": {"terminal": term, "x": x, "exact": abs(x - stall_x) < 1e-3}, "backs": {}}
     log(f"{key}: depth {depth}, stall x {stall_x:.1f}, prefix replay {term} at x={x:.1f}")
     # what is at the stall: the state and objects right there
-    ep = client.request("reset", start={"kind": "zero"})["episode"]
-    r = client.request("step_seq", episode=ep, actions=flat, k=K) if flat else None
+    reset = client.request("reset", start={"kind": "zero"})
+    if any(action > 1 for action in flat) and not reset.get("input_timing", {}).get("cbf"):
+        raise ValueError("replaying a fractional prefix requires the CBF bridge")
+    ep = reset["episode"]
+    r = client.request("step_seq", episode=ep, k=K, **decision_payload(flat)) if flat else None
     obs = client.request("step", episode=ep, action=0, k=1)["obs"]
     pl = obs["players"][0]
     ahead = sorted(({"cat": o["cat"], "type_id": o["type_id"], "dx": round(o["x"] - pl["x"], 1),

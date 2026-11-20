@@ -60,8 +60,12 @@ def ordered_online(rows, solutions):
 
 
 def signature(solution):
-    return {"level_sha256": solution["sha256"],
-            "action_sha256": digest(json.dumps(solution["result"]["actions"], separators=(",", ":")))}
+    tape = solution["result"]
+    signature = {"level_sha256": solution["sha256"],
+                 "action_sha256": digest(json.dumps(tape["actions"], separators=(",", ":")))}
+    if "fracs" in tape:
+        signature["fraction_sha256"] = digest(json.dumps(tape["fracs"], separators=(",", ":")))
+    return signature
 
 
 def run(pool, output, slot, seeds):
@@ -106,9 +110,11 @@ def run(pool, output, slot, seeds):
                         raise RuntimeError(f"cached level {key} changed since search")
                     archive = demos / f"{key.replace(':', '_').replace('/', '_')}.npz"
                     if key not in report["demos"] or not archive.exists():
-                        actions = solutions[key]["result"]["actions"]
+                        solution = solutions[key]["result"]
+                        actions = solution["actions"]
                         env.max_ticks = max(60_000, 4 * len(actions) + 4)
-                        obs, decisions = solution_demo(env, OnlineLevel(0, name, selector=spec), actions)
+                        obs, decisions = solution_demo(env, OnlineLevel(0, name, selector=spec), actions,
+                                                       fracs=solution.get("fracs"))
                         save_demonstration(archive, obs, decisions)
                         report["demos"][key] = {"name": name, "decisions": len(decisions)}
                         save_json(path, report)

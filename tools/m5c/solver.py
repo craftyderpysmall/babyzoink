@@ -21,8 +21,26 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 from gdbot.instances import discovery  # noqa: E402
 from gdbot.protocol import BridgeClient, NamedPipeTransport, RemoteError  # noqa: E402
+from tools.m5c.archive import Archive, run_path  # noqa: E402
 
 K = 4
+
+
+def decision_payload(decisions):
+    """Convert packed quarter-tick decisions into the bridge's action and fraction arrays."""
+    if all(action in (0, 1) for action in decisions):
+        return {"actions": decisions}
+    return {"actions": [action & 1 for action in decisions],
+            "fracs": [(action >> 1) / 4 for action in decisions]}
+
+
+def fractional_candidates(pattern, previous):
+    """Shift one transition at a time while retaining the underlying input pattern."""
+    for index, action in enumerate(pattern):
+        if action != previous:
+            for quarter in (1, 2, 3):
+                yield pattern[:index] + [action + 2 * quarter] + pattern[index + 1:]
+        previous = action
 
 
 def candidates(seg: int, prev: int):
@@ -73,24 +91,36 @@ class Solver:
     ESCAPE_TRIES = 40
     ESCAPE_AHEAD = 6       # segments past the stall a continuation must survive (plus the lookahead)
 
-    def __init__(self, client, level: dict, *, seg=8, look=28, budget=20000, log=print, progress=None):
+    def __init__(self, client, level: dict, *, seg=8, look=28, budget=20000, log=print, progress=None,
+                 expected_input_timing=None):
         self.c, self.level, self.seg, self.look, self.budget, self.log = client, level, seg, look, budget, log
         self.evals = 0
         self.ticks = 0
         self.verification_attempts = 0
+        self.input_timing = None
+        self.expected_input_timing = expected_input_timing
+        self.allow_timing_migration = os.environ.get("GDBOT_MIGRATE_TICK_PREFIX") == "1"
+        self.migration_pending = False
+        self.timing_migration = {}
         self.progress = progress              # Path for resumable state (saved at every re-anchor)
         self.persist_frontier = os.environ.get("GDBOT_SOLVER_V2") == "1"
+        self.use_archive = self.persist_frontier and os.environ.get("GDBOT_SOLVER_ARCHIVE") == "1"
+        self.archive_guard = None
         self.rejected = [set()]
         self.partial = None
         self.next_save = time.monotonic() + 10
         self.checkpoint_anchors = 0
 
     def save_progress(self):
-        if self.progress:
+        if self.progress and not self.migration_pending:
             tmp = self.progress.with_suffix(".tmp")
             state = {"committed": self.committed, "seg_x": self.seg_x,
+                                       "input_timing": self.input_timing or self.expected_input_timing or "tick",
                                        "bad": sorted(self.bad), "evals": self.evals, "ticks": self.ticks,
                                        "verification_attempts": self.verification_attempts}
+            state.update(self.timing_migration)
+            if self.input_timing == "cbf":
+                state["decision_encoding"] = "action-plus-two-times-quarter"
             if self.persist_frontier:
                 state.update(frontier_version=1, rejected=[sorted(row) for row in self.rejected],
                              partial=self.partial, frontier_config=[self.seg, self.look])
@@ -101,7 +131,16 @@ class Solver:
     def load_progress(self):
         if self.progress and self.progress.exists():
             d = json.loads(self.progress.read_text(encoding="utf-8"))
+            timing = d.get("input_timing", "tick")
+            self.require_input_timing(timing)
+            self.expected_input_timing = timing
             self.committed, self.seg_x, self.bad = d["committed"], d["seg_x"], set(d["bad"])
+            self.timing_migration = {key: d[key] for key in ("migrated_from", "migrated_at_depth",
+                                                           "tick_evaluations", "tick_verification_attempts") if key in d}
+            self.fraction_free_prefix = (
+                all(type(action) is int and action in (0, 1) for seg in self.committed for action in seg)
+                and not any(f for seg in d.get("committed_fracs", []) for f in seg)
+            )
             self.evals, self.ticks = d["evals"], d["ticks"]
             self.verification_attempts = d.get("verification_attempts", self.verification_attempts)
             if self.persist_frontier:
@@ -122,10 +161,32 @@ class Solver:
                      f"the replay check re-verifies the saved prefix")
 
     # -- bridge helpers -------------------------------------------------------------------------
-    def reset_zero(self):
-        reply = self.c.request("reset", start={"kind": "zero"})
+    def require_input_timing(self, timing):
+        if timing not in ("tick", "cbf"):
+            raise ValueError(f"unknown solver input timing: {timing!r}")
+        expected = self.input_timing or self.expected_input_timing
+        if expected is not None and expected != timing:
+            raise ValueError(f"solver input timing changed from {expected} to {timing}; use a new output directory")
+
+    def accept_reset(self, reply):
+        flags = reply.get("input_timing")
+        timing = "tick"
+        if flags is not None:
+            if (flags.get("cbf") is not True or flags.get("click_between_steps") is not False
+                    or flags.get("click_on_steps") is not False):
+                raise RuntimeError("bridge must enable CBF and disable native click-timing options")
+            timing = "cbf"
+        if (self.allow_timing_migration and self.input_timing is None and self.expected_input_timing == "tick"
+                and timing == "cbf" and getattr(self, "fraction_free_prefix", False)):
+            self.migration_pending = True
+        else:
+            self.require_input_timing(timing)
+        self.input_timing = timing
         self.ep = reply["episode"]
         return reply
+
+    def reset_zero(self):
+        return self.accept_reset(self.c.request("reset", start={"kind": "zero"}))
 
     def restore(self):
         """Go to the newest restore point: a real checkpoint, or a clean 0% start for depth 0."""
@@ -133,14 +194,16 @@ class Solver:
             reply = self.reset_zero()
             self.c.request("set_practice", enabled=True)
         else:
-            reply = self.c.request("reset", start={"kind": "checkpoint"})
-            self.ep = reply["episode"]
+            reply = self.accept_reset(self.c.request("reset", start={"kind": "checkpoint"}))
         return reply
 
-    def run(self, actions, xs=False):
+    def run(self, actions, xs=False, *, cells=False):
         if not actions:
             return {"terminal": None, "decisions": 0, "xs": [], "ticks_advanced": 0}
-        r = self.c.request("step_seq", episode=self.ep, actions=actions, k=K, xs=xs)
+        options = {"cells": True} if cells else {}
+        if self.input_timing != "cbf" and any(action > 1 for action in actions):
+            raise ValueError("fractional solver decisions require the CBF bridge")
+        r = self.c.request("step_seq", episode=self.ep, k=K, xs=xs, **decision_payload(actions), **options)
         self.ticks += r["ticks_advanced"]
         return r
 
@@ -158,14 +221,20 @@ class Solver:
 
     def remaining(self, previous, depth):
         if not self.persist_frontier:
-            return self.choices(previous)
+            return self.timed_choices(previous & 1)
         return self.untried(previous, depth)
+
+    def timed_choices(self, previous):
+        yield from self.choices(previous)
+        if self.input_timing == "cbf":
+            for pattern in candidates(self.seg, previous):
+                yield from fractional_candidates(pattern, previous)
 
     def untried(self, previous, depth):
         partial = self.partial if depth == len(self.committed) else None
         if partial:
             yield partial["candidate"]
-        for cand in self.choices(previous):
+        for cand in self.timed_choices(previous & 1):
             if tuple(cand) not in self.rejected[depth] and (not partial or cand != partial["candidate"]):
                 yield cand
 
@@ -368,6 +437,45 @@ class Solver:
         if not anchor or not self.replay_from_checkpoint(anchor, target):
             self.rebuild(target)
 
+    def archive_escape(self, t0):
+        seed = [action for segment in self.committed for action in segment]
+        if not seed or self.budget - self.evals < 3:
+            return None
+        archive = Archive(self, seed)
+        self.drop_checkpoints()
+        self.cps = [0]
+        before = self.evals
+        candidate = archive.explore()
+        self.log(f"  archive: {self.evals - before} evaluations, {len(archive.groups)} cells, "
+                 f"{archive.replay_ticks} cumulative restore ticks, deepest decision {archive.furthest}")
+        if candidate:
+            tape, boundary = candidate
+            if boundary is None:
+                result = self.finish(tape, t0)
+                if result["verified"]:
+                    return result
+            else:
+                archive.reset()
+                lead = archive.run(tape[:-1], xs=True)
+                end = archive.run(tape[-1:], cells=True, xs=True) if not lead["terminal"] else lead
+                xs = lead["xs"] + end["xs"]
+                if not end["terminal"] and end["cells"] == [boundary] and len(xs) == len(tape):
+                    segments = [tape[i:i + self.seg] for i in range(0, len(tape), self.seg)]
+                    shared = next((i for i, pair in enumerate(zip(self.committed, segments))
+                                   if pair[0] != pair[1]), min(len(self.committed), len(segments)))
+                    self.committed = segments
+                    self.seg_x = xs[self.seg - 1::self.seg]
+                    self.reset_frontier(shared)
+                    self.rejected.extend(set() for _ in segments[shared:])
+                    self.stack = [self.remaining(0, 0)] + [
+                        self.remaining(segment[-1], depth) for depth, segment in enumerate(segments, 1)
+                    ]
+                    self.bad = {depth for depth in self.bad if depth <= shared}
+                    self.log(f"  archive hand-back at segment {len(segments)}, after shared segment {shared}")
+        self.rebuild(len(self.committed))
+        self.save_progress()
+        return None
+
     def adopt(self, seg):
         """Commit a given segment on the live path (same steps as a searched commit)."""
         depth = len(self.committed)
@@ -412,6 +520,8 @@ class Solver:
             r = self.run_segment(self.committed[depth], depth + 1, checkpoint=depth + 1 in checkpoints)
             end = r["xs"][-1] if r.get("xs") else None
             if r["terminal"] or end is None or abs(end - self.seg_x[depth]) > 1e-3:
+                if self.migration_pending:
+                    raise ValueError(f"tick-to-CBF migration diverged at segment {depth}; saved prefix was left intact")
                 self.drifts += 1
                 # The search reached this segment from an inexact restore at some depth <= `depth`.
                 # Exclude a window of restore points below the first not-yet-excluded depth at once,
@@ -441,6 +551,19 @@ class Solver:
         self.cps = [0]                        # restore points (depths); 0 = clean reset, not a checkpoint
         self.load_progress()
         self.rebuild(len(self.committed))
+        if self.migration_pending:
+            depth = len(self.committed)
+            self.timing_migration = {"migrated_from": "tick", "migrated_at_depth": depth,
+                                     "tick_evaluations": self.evals,
+                                     "tick_verification_attempts": self.verification_attempts}
+            # The successful tape has been replayed. Rejected candidates have not.
+            self.rejected = [set() for _ in range(depth + 1)]
+            self.partial = None
+            self.stack = [self.remaining(0, 0)] + [
+                self.remaining(segment[-1], index) for index, segment in enumerate(self.committed, 1)
+            ]
+            self.migration_pending = False
+            self.save_progress()
         furthest, t0, since_anchor = 0.0, time.perf_counter(), 0
         self.escapes = 0
         best_depth, best_at = len(self.committed), self.evals
@@ -453,6 +576,11 @@ class Solver:
                 if self.escape():
                     self.save_progress()
                     continue
+                if self.use_archive:
+                    result = self.archive_escape(t0)
+                    if result:
+                        return result
+                    best_at = self.evals
             chosen = None
             stalled = False
             for cand in self.stack[-1]:
@@ -539,11 +667,12 @@ class Solver:
         self.reset_zero()
         self.verification_attempts += 1
         self.save_progress()
-        r = self.run(actions)
+        r = run_path(self, actions) if self.use_archive or self.input_timing == "cbf" else self.run(actions)
         verified = r["terminal"] == "complete"
         self.log(f"  verification from 0%: {r['terminal']} after {r['decisions']} decisions "
                  f"(anchors {self.anchors}, drifts {self.drifts})")
-        return {"actions": actions, "k": K, "verified": verified, "evals": self.evals, "search_ticks": self.ticks,
+        return {**decision_payload(actions), "k": K, "input_timing": self.input_timing, **self.timing_migration,
+                "verified": verified, "evals": self.evals, "search_ticks": self.ticks,
                 "verification_attempts": self.verification_attempts,
                 "anchors": self.anchors, "drifts": self.drifts,
                 "wall_s": round(time.perf_counter() - t0, 2), "decisions": len(actions)}
@@ -591,9 +720,13 @@ def main():
             if prior and prior.get("result") and prior["result"].get("verified"):
                 print("  already solved (verified); skipping", flush=True)
                 continue
-            res = Solver(client, level_spec(name), seg=a.seg, look=a.look, budget=a.budget,
-                         log=lambda m: print(m, flush=True), progress=out.with_suffix(".progress.json")).solve()
-            out.write_text(json.dumps({"level": name, "result": res}, indent=1), encoding="utf-8")
+            solver = Solver(client, level_spec(name), seg=a.seg, look=a.look, budget=a.budget,
+                            log=lambda m: print(m, flush=True), progress=out.with_suffix(".progress.json"),
+                            expected_input_timing=prior.get("input_timing", "tick") if prior else None)
+            res = solver.solve()
+            out.write_text(json.dumps({"level": name, "input_timing": solver.input_timing,
+                                       **solver.timing_migration, "result": res}, indent=1),
+                           encoding="utf-8")
             print(f"  -> {out.name}: {'VERIFIED CLEAR' if res and res['verified'] else 'no verified clear'}", flush=True)
             client.request("quit_level")
         client.request("set_mode", mode="normal")

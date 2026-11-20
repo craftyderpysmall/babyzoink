@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated_at": "2026-11-20T03:35:59+00:00",
+  "updated_at": "2026-11-20T03:48:22+00:00",
   "progress": {
     "updated": "2026-11-19",
     "milestones": [
@@ -100,8 +100,8 @@
         "study": "M3 scaled (3 seeds, ~1M steps)",
         "agent": "PPO set encoder",
         "first_run_progress_pct": 27.7,
-        "clears_within_3": 3.0,
-        "first_try_clears": 1.0,
+        "clears_within_3": 3,
+        "first_try_clears": 1,
         "drills": 9,
         "input_timing": "tick"
       },
@@ -110,7 +110,7 @@
         "agent": "Behaviour cloning (top-K)",
         "first_run_progress_pct": 73.1,
         "clears_within_3": 6.3,
-        "first_try_clears": 6.0,
+        "first_try_clears": 6,
         "drills": 9,
         "input_timing": "tick"
       },
@@ -128,7 +128,7 @@
         "agent": "Cloning, no practice",
         "first_run_progress_pct": 73.1,
         "clears_within_3": 6.3,
-        "first_try_clears": 6.0,
+        "first_try_clears": 6,
         "drills": 9,
         "input_timing": "tick"
       },
@@ -137,7 +137,7 @@
         "agent": "Cloning + checkpoint practice",
         "first_run_progress_pct": 73.1,
         "clears_within_3": 7.7,
-        "first_try_clears": 6.0,
+        "first_try_clears": 6,
         "drills": 9,
         "input_timing": "tick"
       },
@@ -145,7 +145,7 @@
         "study": "M5 generations (3 seeds, 27 unseen drills)",
         "agent": "Generation 1",
         "first_run_progress_pct": 71.5,
-        "clears_within_3": 21.0,
+        "clears_within_3": 21,
         "first_try_clears": null,
         "drills": 27,
         "input_timing": "tick"
@@ -154,7 +154,7 @@
         "study": "M5 generations (3 seeds, 27 unseen drills)",
         "agent": "Generation 3",
         "first_run_progress_pct": 73.4,
-        "clears_within_3": 19.0,
+        "clears_within_3": 19,
         "first_try_clears": null,
         "drills": 27,
         "input_timing": "tick"
@@ -171,7 +171,7 @@
       {
         "study": "M5b encoder comparison (seed 2357, 27 validation drills)",
         "agent": "Original features",
-        "first_run_progress_pct": 78.0,
+        "first_run_progress_pct": 78,
         "clears_within_3": 19,
         "first_try_clears": null,
         "drills": 27,
@@ -180,7 +180,7 @@
       {
         "study": "M5b encoder comparison (seed 2357, 27 validation drills)",
         "agent": "Collision 'route' features",
-        "first_run_progress_pct": 87.0,
+        "first_run_progress_pct": 87,
         "clears_within_3": 22,
         "first_try_clears": null,
         "drills": 27,
@@ -207,7 +207,7 @@
       {
         "study": "M5c triple-spike follow-up (one unseen drill, seed 2357)",
         "agent": "Expert clone",
-        "first_run_progress_pct": 10.0,
+        "first_run_progress_pct": 10,
         "clears_within_3": 0,
         "first_try_clears": 0,
         "drills": 1,
@@ -220,6 +220,132 @@
         "clears_within_3": 1,
         "first_try_clears": 0,
         "drills": 1,
+        "input_timing": "tick"
+      },
+      {
+        "study": "M6 DAgger (27 held-out drills)",
+        "agent": "Starting policy",
+        "first_run_progress_pct": 59.5,
+        "clears_within_3": null,
+        "first_try_clears": 8,
+        "drills": 27,
+        "input_timing": "tick"
+      },
+      {
+        "study": "M6 DAgger (10 held-out online levels)",
+        "agent": "Starting policy",
+        "first_run_progress_pct": 5.06,
+        "clears_within_3": null,
+        "first_try_clears": 0,
+        "drills": 10,
+        "input_timing": "tick"
+      },
+      {
+        "study": "M6 DAgger (27 held-out drills)",
+        "agent": "Expert-only, round 1",
+        "first_run_progress_pct": 65.98,
+        "clears_within_3": null,
+        "first_try_clears": 8,
+        "drills": 27,
+        "input_timing": "tick"
+      },
+      {
+        "study": "M6 DAgger (10 held-out online levels)",
+        "agent": "Expert-only, round 1",
+        "first_run_progress_pct": 4.78,
+        "clears_within_3": null,
+        "first_try_clears": 0,
+        "drills": 10,
+        "input_timing": "tick"
+      },
+      {
+        "study": "M6 DAgger (27 held-out drills)",
+        "agent": "Expert-only, round 2",
+        "first_run_progress_pct": 65.51,
+        "clears_within_3": null,
+        "first_try_clears": 10,
+        "drills": 27,
+        "input_timing": "tick"
+      },
+      {
+        "study": "M6 DAgger (10 held-out online levels)",
+        "agent": "Expert-only, round 2",
+        "first_run_progress_pct": 5.22,
+        "clears_within_3": null,
+        "first_try_clears": 0,
+        "drills": 10,
+        "input_timing": "tick"
+      },
+      {
+        "study": "M6 DAgger (27 held-out drills)",
+        "agent": "DAgger, round 1",
+        "first_run_progress_pct": 76.6,
+        "clears_within_3": null,
+        "first_try_clears": 16,
+        "drills": 27,
+        "input_timing": "tick"
+      },
+      {
+        "study": "M6 DAgger (10 held-out online levels)",
+        "agent": "DAgger, round 1",
+        "first_run_progress_pct": 5.66,
+        "clears_within_3": null,
+        "first_try_clears": 0,
+        "drills": 10,
+        "input_timing": "tick"
+      },
+      {
+        "study": "M6 DAgger (27 held-out drills)",
+        "agent": "DAgger, round 2",
+        "first_run_progress_pct": 67.66,
+        "clears_within_3": null,
+        "first_try_clears": 11,
+        "drills": 27,
+        "input_timing": "tick"
+      },
+      {
+        "study": "M6 DAgger (10 held-out online levels)",
+        "agent": "DAgger, round 2",
+        "first_run_progress_pct": 5.45,
+        "clears_within_3": null,
+        "first_try_clears": 0,
+        "drills": 10,
+        "input_timing": "tick"
+      },
+      {
+        "study": "M5c multi-tape triple spike (3 seeds)",
+        "agent": "One training tape",
+        "first_run_progress_pct": 20.14,
+        "clears_within_3": 0,
+        "first_try_clears": 0,
+        "drills": 3,
+        "input_timing": "tick"
+      },
+      {
+        "study": "M5c multi-tape regression (26 drills ? 3 seeds)",
+        "agent": "One training tape",
+        "first_run_progress_pct": 66.26,
+        "clears_within_3": null,
+        "first_try_clears": 29,
+        "drills": 78,
+        "input_timing": "tick"
+      },
+      {
+        "study": "M5c multi-tape triple spike (3 seeds)",
+        "agent": "Three training tapes",
+        "first_run_progress_pct": 21.88,
+        "clears_within_3": 0,
+        "first_try_clears": 0,
+        "drills": 3,
+        "input_timing": "tick"
+      },
+      {
+        "study": "M5c multi-tape regression (26 drills ? 3 seeds)",
+        "agent": "Three training tapes",
+        "first_run_progress_pct": 64.53,
+        "clears_within_3": null,
+        "first_try_clears": 25,
+        "drills": 78,
         "input_timing": "tick"
       }
     ],
@@ -12545,75 +12671,75 @@
     }
   },
   "level_names": {
-    "drill:yellow-pad/validation-6107": "yellow-pad/validation-6107",
-    "official:2": "Back on Track",
-    "drill:dash-orb/validation-6114": "dash-orb/validation-6114",
-    "drill:black-orb/heldout-7113": "black-orb/heldout-7113",
-    "drill:speed-change/validation-4107": "speed-change/validation-4107",
-    "drill:blue-pad/validation-6109": "blue-pad/validation-6109",
-    "drill:block-steps/heldout-2103": "block-steps/heldout-2103",
-    "drill:moving-geometry/heldout-2108": "moving-geometry/heldout-2108",
-    "drill:block-steps/validation-4103": "block-steps/validation-4103",
-    "drill:ufo-to-wave/heldout-7117": "ufo-to-wave/heldout-7117",
-    "drill:mini-cube/heldout-7115": "mini-cube/heldout-7115",
-    "drill:dash-orb/heldout-7114": "dash-orb/heldout-7114",
-    "official:1": "Stereo Madness",
-    "online:6508283": "ReTraY",
-    "official:3": "Polargeist",
-    "online:74730213": "Curfew",
-    "drill:blue-orb/validation-6111": "blue-orb/validation-6111",
-    "drill:blue-orb/heldout-7111": "blue-orb/heldout-7111",
-    "drill:green-orb/validation-6112": "green-orb/validation-6112",
-    "drill:black-orb/validation-6113": "black-orb/validation-6113",
-    "online:83923662": "e4",
-    "drill:pink-orb/heldout-7110": "pink-orb/heldout-7110",
-    "drill:single-spike/validation-4100": "single-spike/validation-4100",
-    "drill:swing-corridor/heldout-7106": "swing-corridor/heldout-7106",
-    "online:112109153": "Vision",
-    "drill:swing-corridor/validation-6106": "swing-corridor/validation-6106",
-    "drill:speed-change/heldout-2107": "speed-change/heldout-2107",
-    "drill:gravity-portal/heldout-2106": "gravity-portal/heldout-2106",
-    "official:5": "Base After Base",
-    "drill:mini-cube/validation-6115": "mini-cube/validation-6115",
-    "drill:wave-corridor/heldout-7103": "wave-corridor/heldout-7103",
-    "online:137883268": "Chillwave",
-    "drill:ufo-to-wave/validation-6117": "ufo-to-wave/validation-6117",
-    "drill:double-spike/validation-4101": "double-spike/validation-4101",
-    "drill:ship-to-ball/validation-6116": "ship-to-ball/validation-6116",
-    "online:4454123": "Sonar",
-    "drill:ufo-taps/validation-6102": "ufo-taps/validation-6102",
-    "drill:ufo-taps/heldout-7102": "ufo-taps/heldout-7102",
-    "official:4": "Dry Out",
-    "online:94887416": "Magic Valley",
     "drill:spider-switches/validation-6105": "spider-switches/validation-6105",
-    "drill:triple-spike/heldout-2102": "triple-spike/heldout-2102",
-    "drill:ball-switches/validation-6101": "ball-switches/validation-6101",
-    "drill:ball-switches/heldout-7101": "ball-switches/heldout-7101",
-    "drill:yellow-orb/validation-4105": "yellow-orb/validation-4105",
-    "drill:single-spike/heldout-2100": "single-spike/heldout-2100",
-    "online:83653641": "lil Horizon",
-    "drill:yellow-orb/heldout-2105": "yellow-orb/heldout-2105",
-    "drill:wave-corridor/validation-6103": "wave-corridor/validation-6103",
-    "drill:robot-jumps/heldout-7104": "robot-jumps/heldout-7104",
-    "drill:triple-spike/validation-4102": "triple-spike/validation-4102",
-    "drill:robot-jumps/validation-6104": "robot-jumps/validation-6104",
-    "drill:pink-orb/validation-6110": "pink-orb/validation-6110",
-    "drill:pillar-gaps/heldout-2104": "pillar-gaps/heldout-2104",
-    "drill:ship-to-ball/heldout-7116": "ship-to-ball/heldout-7116",
-    "online:146319148": "Sigil",
-    "drill:ship-corridor/validation-6100": "ship-corridor/validation-6100",
-    "drill:gravity-portal/validation-4106": "gravity-portal/validation-4106",
-    "drill:pink-pad/heldout-7108": "pink-pad/heldout-7108",
-    "drill:double-spike/heldout-2101": "double-spike/heldout-2101",
-    "drill:blue-pad/heldout-7109": "blue-pad/heldout-7109",
-    "drill:pink-pad/validation-6108": "pink-pad/validation-6108",
+    "drill:block-steps/heldout-2103": "block-steps/heldout-2103",
     "online:11940": "Level Easy",
-    "drill:pillar-gaps/validation-4104": "pillar-gaps/validation-4104",
-    "drill:spider-switches/heldout-7105": "spider-switches/heldout-7105",
-    "drill:yellow-pad/heldout-7107": "yellow-pad/heldout-7107",
-    "drill:green-orb/heldout-7112": "green-orb/heldout-7112",
     "drill:ship-corridor/heldout-7100": "ship-corridor/heldout-7100",
-    "drill:moving-geometry/validation-4108": "moving-geometry/validation-4108"
+    "drill:black-orb/validation-6113": "black-orb/validation-6113",
+    "online:94887416": "Magic Valley",
+    "drill:pillar-gaps/heldout-2104": "pillar-gaps/heldout-2104",
+    "drill:yellow-orb/heldout-2105": "yellow-orb/heldout-2105",
+    "official:4": "Dry Out",
+    "online:6508283": "ReTraY",
+    "drill:triple-spike/validation-4102": "triple-spike/validation-4102",
+    "online:83923662": "e4",
+    "drill:yellow-pad/validation-6107": "yellow-pad/validation-6107",
+    "drill:ufo-to-wave/heldout-7117": "ufo-to-wave/heldout-7117",
+    "official:2": "Back on Track",
+    "online:4454123": "Sonar",
+    "drill:swing-corridor/validation-6106": "swing-corridor/validation-6106",
+    "drill:dash-orb/validation-6114": "dash-orb/validation-6114",
+    "drill:gravity-portal/heldout-2106": "gravity-portal/heldout-2106",
+    "drill:ball-switches/validation-6101": "ball-switches/validation-6101",
+    "drill:swing-corridor/heldout-7106": "swing-corridor/heldout-7106",
+    "drill:blue-orb/heldout-7111": "blue-orb/heldout-7111",
+    "drill:green-orb/heldout-7112": "green-orb/heldout-7112",
+    "official:1": "Stereo Madness",
+    "online:146319148": "Sigil",
+    "online:83653641": "lil Horizon",
+    "official:3": "Polargeist",
+    "drill:speed-change/validation-4107": "speed-change/validation-4107",
+    "official:5": "Base After Base",
+    "drill:wave-corridor/validation-6103": "wave-corridor/validation-6103",
+    "drill:double-spike/validation-4101": "double-spike/validation-4101",
+    "drill:double-spike/heldout-2101": "double-spike/heldout-2101",
+    "drill:speed-change/heldout-2107": "speed-change/heldout-2107",
+    "drill:ship-to-ball/heldout-7116": "ship-to-ball/heldout-7116",
+    "drill:gravity-portal/validation-4106": "gravity-portal/validation-4106",
+    "drill:moving-geometry/heldout-2108": "moving-geometry/heldout-2108",
+    "drill:blue-orb/validation-6111": "blue-orb/validation-6111",
+    "drill:wave-corridor/heldout-7103": "wave-corridor/heldout-7103",
+    "online:74730213": "Curfew",
+    "drill:pink-orb/validation-6110": "pink-orb/validation-6110",
+    "drill:pink-orb/heldout-7110": "pink-orb/heldout-7110",
+    "drill:robot-jumps/validation-6104": "robot-jumps/validation-6104",
+    "drill:green-orb/validation-6112": "green-orb/validation-6112",
+    "drill:yellow-pad/heldout-7107": "yellow-pad/heldout-7107",
+    "drill:ball-switches/heldout-7101": "ball-switches/heldout-7101",
+    "drill:mini-cube/heldout-7115": "mini-cube/heldout-7115",
+    "drill:black-orb/heldout-7113": "black-orb/heldout-7113",
+    "drill:triple-spike/heldout-2102": "triple-spike/heldout-2102",
+    "online:112109153": "Vision",
+    "online:137883268": "Chillwave",
+    "drill:ship-corridor/validation-6100": "ship-corridor/validation-6100",
+    "drill:blue-pad/validation-6109": "blue-pad/validation-6109",
+    "drill:spider-switches/heldout-7105": "spider-switches/heldout-7105",
+    "drill:single-spike/validation-4100": "single-spike/validation-4100",
+    "drill:dash-orb/heldout-7114": "dash-orb/heldout-7114",
+    "drill:robot-jumps/heldout-7104": "robot-jumps/heldout-7104",
+    "drill:ufo-taps/validation-6102": "ufo-taps/validation-6102",
+    "drill:pillar-gaps/validation-4104": "pillar-gaps/validation-4104",
+    "drill:block-steps/validation-4103": "block-steps/validation-4103",
+    "drill:mini-cube/validation-6115": "mini-cube/validation-6115",
+    "drill:yellow-orb/validation-4105": "yellow-orb/validation-4105",
+    "drill:moving-geometry/validation-4108": "moving-geometry/validation-4108",
+    "drill:ufo-taps/heldout-7102": "ufo-taps/heldout-7102",
+    "drill:ship-to-ball/validation-6116": "ship-to-ball/validation-6116",
+    "drill:blue-pad/heldout-7109": "blue-pad/heldout-7109",
+    "drill:pink-pad/heldout-7108": "pink-pad/heldout-7108",
+    "drill:ufo-to-wave/validation-6117": "ufo-to-wave/validation-6117",
+    "drill:single-spike/heldout-2100": "single-spike/heldout-2100",
+    "drill:pink-pad/validation-6108": "pink-pad/validation-6108"
   },
   "levels": [
     {
@@ -12707,16 +12833,46 @@
       ]
     },
     {
+      "level": "online:77117125",
+      "name": "BNUN",
+      "normal_attempts": 0,
+      "practice_attempts": 9000,
+      "normal_clears": 0,
+      "practice_clear": false,
+      "best_progress": 0.0,
+      "runs": 1,
+      "first_cleared_by": null,
+      "last_attempt_t": 1795131473.63,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "online:26791333",
+      "name": "Because I Loved Her",
+      "normal_attempts": 0,
+      "practice_attempts": 3947,
+      "normal_clears": 0,
+      "practice_clear": false,
+      "best_progress": 0.0,
+      "runs": 1,
+      "first_cleared_by": null,
+      "last_attempt_t": 1795141495.821,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
       "level": "online:137883268",
       "name": "Chillwave",
-      "normal_attempts": 4,
+      "normal_attempts": 9,
       "practice_attempts": 39,
       "normal_clears": 0,
       "practice_clear": false,
       "best_progress": 0.0368,
-      "runs": 2,
+      "runs": 7,
       "first_cleared_by": null,
-      "last_attempt_t": 1795067650.596,
+      "last_attempt_t": 1795119639.376,
       "input_timing": [
         "tick"
       ]
@@ -12724,14 +12880,59 @@
     {
       "level": "online:74730213",
       "name": "Curfew",
-      "normal_attempts": 4,
+      "normal_attempts": 9,
       "practice_attempts": 10,
       "normal_clears": 0,
       "practice_clear": false,
       "best_progress": 0.1979,
-      "runs": 2,
+      "runs": 7,
       "first_cleared_by": null,
-      "last_attempt_t": 1795067650.596,
+      "last_attempt_t": 1795119639.376,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "online:11280109",
+      "name": "Dark Paradise",
+      "normal_attempts": 0,
+      "practice_attempts": 9000,
+      "normal_clears": 0,
+      "practice_clear": false,
+      "best_progress": 0.0,
+      "runs": 1,
+      "first_cleared_by": null,
+      "last_attempt_t": 1795130543.494,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "online:215705",
+      "name": "End Of Line",
+      "normal_attempts": 0,
+      "practice_attempts": 9000,
+      "normal_clears": 0,
+      "practice_clear": false,
+      "best_progress": 0.0,
+      "runs": 1,
+      "first_cleared_by": null,
+      "last_attempt_t": 1795133055.972,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "online:64398355",
+      "name": "Forest of Fun",
+      "normal_attempts": 0,
+      "practice_attempts": 1781,
+      "normal_clears": 0,
+      "practice_clear": false,
+      "best_progress": 0.0,
+      "runs": 1,
+      "first_cleared_by": null,
+      "last_attempt_t": 1795077538.249,
       "input_timing": [
         "tick"
       ]
@@ -12739,14 +12940,14 @@
     {
       "level": "online:11940",
       "name": "Level Easy",
-      "normal_attempts": 4,
+      "normal_attempts": 9,
       "practice_attempts": 26,
       "normal_clears": 0,
       "practice_clear": false,
       "best_progress": 0.0404,
-      "runs": 2,
+      "runs": 7,
       "first_cleared_by": null,
-      "last_attempt_t": 1795067650.596,
+      "last_attempt_t": 1795119639.376,
       "input_timing": [
         "tick"
       ]
@@ -12754,14 +12955,59 @@
     {
       "level": "online:94887416",
       "name": "Magic Valley",
-      "normal_attempts": 4,
+      "normal_attempts": 9,
       "practice_attempts": 26,
       "normal_clears": 0,
       "practice_clear": false,
-      "best_progress": 0.06,
-      "runs": 2,
+      "best_progress": 0.1326,
+      "runs": 7,
       "first_cleared_by": null,
-      "last_attempt_t": 1795067650.596,
+      "last_attempt_t": 1795119639.376,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "online:3945967",
+      "name": "Moving Obstacles",
+      "normal_attempts": 0,
+      "practice_attempts": 9000,
+      "normal_clears": 0,
+      "practice_clear": false,
+      "best_progress": 0.0,
+      "runs": 1,
+      "first_cleared_by": null,
+      "last_attempt_t": 1795128194.42,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "online:11686946",
+      "name": "Never Be Alone",
+      "normal_attempts": 0,
+      "practice_attempts": 9000,
+      "normal_clears": 0,
+      "practice_clear": false,
+      "best_progress": 0.0,
+      "runs": 1,
+      "first_cleared_by": null,
+      "last_attempt_t": 1795130915.969,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "online:149768815",
+      "name": "Quiet Time",
+      "normal_attempts": 0,
+      "practice_attempts": 9000,
+      "normal_clears": 0,
+      "practice_clear": false,
+      "best_progress": 0.0,
+      "runs": 1,
+      "first_cleared_by": null,
+      "last_attempt_t": 1795130884.108,
       "input_timing": [
         "tick"
       ]
@@ -12769,12 +13015,12 @@
     {
       "level": "online:6508283",
       "name": "ReTraY",
-      "normal_attempts": 4,
+      "normal_attempts": 9,
       "practice_attempts": 1606,
       "normal_clears": 0,
       "practice_clear": false,
       "best_progress": 0.1876,
-      "runs": 6,
+      "runs": 11,
       "first_cleared_by": null,
       "last_attempt_t": 1795120733.457,
       "input_timing": [
@@ -12782,16 +13028,51 @@
       ]
     },
     {
+      "level": "online:13124688",
+      "name": "Reflected",
+      "normal_attempts": 0,
+      "practice_attempts": 9000,
+      "normal_clears": 0,
+      "practice_clear": false,
+      "best_progress": 0.0,
+      "runs": 1,
+      "first_cleared_by": null,
+      "last_attempt_t": 1795132258.244,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
       "level": "online:146319148",
       "name": "Sigil",
-      "normal_attempts": 4,
+      "normal_attempts": 9,
       "practice_attempts": 42,
       "normal_clears": 0,
       "practice_clear": false,
       "best_progress": 0.0585,
-      "runs": 2,
+      "runs": 7,
       "first_cleared_by": null,
-      "last_attempt_t": 1795067650.596,
+      "last_attempt_t": 1795119639.376,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "online:148701354",
+      "name": "Skill Gotten Gains",
+      "normal_attempts": 1,
+      "practice_attempts": 9000,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795131770.488,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795131770.488,
       "input_timing": [
         "tick"
       ]
@@ -12799,12 +13080,12 @@
     {
       "level": "online:4454123",
       "name": "Sonar",
-      "normal_attempts": 4,
+      "normal_attempts": 9,
       "practice_attempts": 1606,
       "normal_clears": 0,
       "practice_clear": false,
       "best_progress": 0.0785,
-      "runs": 6,
+      "runs": 11,
       "first_cleared_by": null,
       "last_attempt_t": 1795120733.457,
       "input_timing": [
@@ -12814,14 +13095,34 @@
     {
       "level": "online:977287",
       "name": "Stageix",
+      "normal_attempts": 1,
+      "practice_attempts": 8036,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795128138.922,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795128138.922,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "online:25711231",
+      "name": "Unknown seas",
       "normal_attempts": 0,
-      "practice_attempts": 2000,
+      "practice_attempts": 9000,
       "normal_clears": 0,
       "practice_clear": false,
       "best_progress": 0.0,
       "runs": 1,
       "first_cleared_by": null,
-      "last_attempt_t": 1795070512.614,
+      "last_attempt_t": 1795133984.162,
       "input_timing": [
         "tick"
       ]
@@ -12829,14 +13130,29 @@
     {
       "level": "online:112109153",
       "name": "Vision",
-      "normal_attempts": 4,
+      "normal_attempts": 9,
       "practice_attempts": 31,
       "normal_clears": 0,
       "practice_clear": false,
       "best_progress": 0.0303,
-      "runs": 2,
+      "runs": 7,
       "first_cleared_by": null,
-      "last_attempt_t": 1795067650.596,
+      "last_attempt_t": 1795119639.376,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "online:75243812",
+      "name": "boo",
+      "normal_attempts": 0,
+      "practice_attempts": 9000,
+      "normal_clears": 0,
+      "practice_clear": false,
+      "best_progress": 0.0,
+      "runs": 1,
+      "first_cleared_by": null,
+      "last_attempt_t": 1795132993.993,
       "input_timing": [
         "tick"
       ]
@@ -12844,14 +13160,14 @@
     {
       "level": "online:83923662",
       "name": "e4",
-      "normal_attempts": 4,
+      "normal_attempts": 9,
       "practice_attempts": 8,
       "normal_clears": 0,
       "practice_clear": false,
       "best_progress": 0.0503,
-      "runs": 2,
+      "runs": 7,
       "first_cleared_by": null,
-      "last_attempt_t": 1795067650.596,
+      "last_attempt_t": 1795119639.376,
       "input_timing": [
         "tick"
       ]
@@ -12859,14 +13175,74 @@
     {
       "level": "online:83653641",
       "name": "lil Horizon",
-      "normal_attempts": 4,
+      "normal_attempts": 9,
       "practice_attempts": 64,
       "normal_clears": 0,
       "practice_clear": false,
-      "best_progress": 0.0214,
-      "runs": 2,
+      "best_progress": 0.0236,
+      "runs": 7,
       "first_cleared_by": null,
-      "last_attempt_t": 1795067650.596,
+      "last_attempt_t": 1795119639.376,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:ball-switches/train-5101",
+      "name": "ball-switches-train-5101",
+      "normal_attempts": 1,
+      "practice_attempts": 90,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077159.789,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077159.789,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:ball-switches/train-8101",
+      "name": "ball-switches-train-8101",
+      "normal_attempts": 1,
+      "practice_attempts": 214,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077258.714,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077258.714,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:ball-switches/train-9101",
+      "name": "ball-switches-train-9101",
+      "normal_attempts": 1,
+      "practice_attempts": 129,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077368.41,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077368.41,
       "input_timing": [
         "tick"
       ]
@@ -12874,19 +13250,19 @@
     {
       "level": "drill:ball-switches/heldout-7101",
       "name": "ball-switches/heldout-7101",
-      "normal_attempts": 17,
+      "normal_attempts": 28,
       "practice_attempts": 516,
       "normal_clears": 12,
       "practice_clear": false,
       "best_progress": 1.0,
-      "runs": 13,
+      "runs": 24,
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 1,
         "t": 1795056871.776,
         "input_timing": "tick"
       },
-      "last_attempt_t": 1795120733.457,
+      "last_attempt_t": 1795128600.547,
       "input_timing": [
         "tick"
       ]
@@ -12912,21 +13288,81 @@
       ]
     },
     {
+      "level": "drill:black-orb/train-5113",
+      "name": "black-orb-train-5113",
+      "normal_attempts": 1,
+      "practice_attempts": 78,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077195.617,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077195.617,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:black-orb/train-8113",
+      "name": "black-orb-train-8113",
+      "normal_attempts": 1,
+      "practice_attempts": 115,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077295.047,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077295.047,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:black-orb/train-9113",
+      "name": "black-orb-train-9113",
+      "normal_attempts": 1,
+      "practice_attempts": 80,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077404.877,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077404.877,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
       "level": "drill:black-orb/heldout-7113",
       "name": "black-orb/heldout-7113",
-      "normal_attempts": 22,
+      "normal_attempts": 33,
       "practice_attempts": 204,
-      "normal_clears": 5,
+      "normal_clears": 8,
       "practice_clear": false,
       "best_progress": 1.0,
-      "runs": 9,
+      "runs": 20,
       "first_cleared_by": {
         "run": "m5-g1-s2357",
         "attempt": 2,
         "t": 1795056871.776,
         "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776,
+      "last_attempt_t": 1795128600.547,
       "input_timing": [
         "tick"
       ]
@@ -12974,19 +13410,19 @@
     {
       "level": "drill:block-steps/heldout-2103",
       "name": "block-steps/heldout-2103",
-      "normal_attempts": 32,
+      "normal_attempts": 43,
       "practice_attempts": 283,
-      "normal_clears": 10,
+      "normal_clears": 11,
       "practice_clear": true,
       "best_progress": 1.0,
-      "runs": 15,
+      "runs": 26,
       "first_cleared_by": {
         "run": "m4-control",
         "attempt": 1,
         "t": 1795049259.589,
         "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776,
+      "last_attempt_t": 1795128600.547,
       "input_timing": [
         "tick"
       ]
@@ -13012,21 +13448,81 @@
       ]
     },
     {
+      "level": "drill:blue-orb/train-5111",
+      "name": "blue-orb-train-5111",
+      "normal_attempts": 1,
+      "practice_attempts": 80,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077189.992,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077189.992,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:blue-orb/train-8111",
+      "name": "blue-orb-train-8111",
+      "normal_attempts": 1,
+      "practice_attempts": 78,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077289.294,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077289.294,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:blue-orb/train-9111",
+      "name": "blue-orb-train-9111",
+      "normal_attempts": 1,
+      "practice_attempts": 83,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077399.362,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077399.362,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
       "level": "drill:blue-orb/heldout-7111",
       "name": "blue-orb/heldout-7111",
-      "normal_attempts": 17,
+      "normal_attempts": 28,
       "practice_attempts": 27,
-      "normal_clears": 9,
+      "normal_clears": 14,
       "practice_clear": false,
       "best_progress": 1.0,
-      "runs": 9,
+      "runs": 20,
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 2,
         "t": 1795056871.776,
         "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776,
+      "last_attempt_t": 1795128600.547,
       "input_timing": [
         "tick"
       ]
@@ -13052,21 +13548,81 @@
       ]
     },
     {
+      "level": "drill:blue-pad/train-5109",
+      "name": "blue-pad-train-5109",
+      "normal_attempts": 1,
+      "practice_attempts": 31,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077184.352,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077184.352,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:blue-pad/train-8109",
+      "name": "blue-pad-train-8109",
+      "normal_attempts": 1,
+      "practice_attempts": 30,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077283.588,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077283.588,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:blue-pad/train-9109",
+      "name": "blue-pad-train-9109",
+      "normal_attempts": 1,
+      "practice_attempts": 30,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077393.641,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077393.641,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
       "level": "drill:blue-pad/heldout-7109",
       "name": "blue-pad/heldout-7109",
-      "normal_attempts": 13,
+      "normal_attempts": 24,
       "practice_attempts": 144,
-      "normal_clears": 13,
+      "normal_clears": 24,
       "practice_clear": false,
       "best_progress": 1.0,
-      "runs": 13,
+      "runs": 24,
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 1,
         "t": 1795056871.776,
         "input_timing": "tick"
       },
-      "last_attempt_t": 1795120733.457,
+      "last_attempt_t": 1795128600.547,
       "input_timing": [
         "tick"
       ]
@@ -13092,16 +13648,81 @@
       ]
     },
     {
+      "level": "drill:dash-orb/train-5114",
+      "name": "dash-orb-train-5114",
+      "normal_attempts": 1,
+      "practice_attempts": 335,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077199.133,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077199.133,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:dash-orb/train-8114",
+      "name": "dash-orb-train-8114",
+      "normal_attempts": 1,
+      "practice_attempts": 336,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077298.491,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077298.491,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:dash-orb/train-9114",
+      "name": "dash-orb-train-9114",
+      "normal_attempts": 1,
+      "practice_attempts": 335,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077408.266,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077408.266,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
       "level": "drill:dash-orb/heldout-7114",
       "name": "dash-orb/heldout-7114",
-      "normal_attempts": 27,
+      "normal_attempts": 38,
       "practice_attempts": 452,
-      "normal_clears": 0,
+      "normal_clears": 7,
       "practice_clear": false,
-      "best_progress": 0.5114,
-      "runs": 9,
-      "first_cleared_by": null,
-      "last_attempt_t": 1795056871.776,
+      "best_progress": 1.0,
+      "runs": 20,
+      "first_cleared_by": {
+        "run": "m6-expert-1",
+        "attempt": 1,
+        "t": 1795119639.376,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795128600.547,
       "input_timing": [
         "tick"
       ]
@@ -13149,19 +13770,19 @@
     {
       "level": "drill:double-spike/heldout-2101",
       "name": "double-spike/heldout-2101",
-      "normal_attempts": 17,
+      "normal_attempts": 28,
       "practice_attempts": 45,
-      "normal_clears": 15,
+      "normal_clears": 16,
       "practice_clear": false,
       "best_progress": 1.0,
-      "runs": 15,
+      "runs": 26,
       "first_cleared_by": {
         "run": "m4-control",
         "attempt": 1,
         "t": 1795049259.589,
         "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776,
+      "last_attempt_t": 1795128600.547,
       "input_timing": [
         "tick"
       ]
@@ -13187,21 +13808,41 @@
       ]
     },
     {
+      "level": "drill:gravity-portal/train-1106",
+      "name": "gravity-portal-train-1106",
+      "normal_attempts": 1,
+      "practice_attempts": 186,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077115.331,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077115.331,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
       "level": "drill:gravity-portal/heldout-2106",
       "name": "gravity-portal/heldout-2106",
-      "normal_attempts": 31,
+      "normal_attempts": 42,
       "practice_attempts": 201,
       "normal_clears": 14,
       "practice_clear": true,
       "best_progress": 1.0,
-      "runs": 16,
+      "runs": 27,
       "first_cleared_by": {
         "run": "m4-control",
         "attempt": 1,
         "t": 1795049259.589,
         "input_timing": "tick"
       },
-      "last_attempt_t": 1795060512.084,
+      "last_attempt_t": 1795128600.547,
       "input_timing": [
         "tick"
       ]
@@ -13227,21 +13868,81 @@
       ]
     },
     {
+      "level": "drill:green-orb/train-5112",
+      "name": "green-orb-train-5112",
+      "normal_attempts": 1,
+      "practice_attempts": 82,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077192.844,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077192.844,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:green-orb/train-8112",
+      "name": "green-orb-train-8112",
+      "normal_attempts": 1,
+      "practice_attempts": 114,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077292.23,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077292.23,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:green-orb/train-9112",
+      "name": "green-orb-train-9112",
+      "normal_attempts": 1,
+      "practice_attempts": 77,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077402.157,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077402.157,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
       "level": "drill:green-orb/heldout-7112",
       "name": "green-orb/heldout-7112",
-      "normal_attempts": 18,
+      "normal_attempts": 29,
       "practice_attempts": 27,
-      "normal_clears": 9,
+      "normal_clears": 13,
       "practice_clear": false,
       "best_progress": 1.0,
-      "runs": 9,
+      "runs": 20,
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 2,
         "t": 1795056871.776,
         "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776,
+      "last_attempt_t": 1795128600.547,
       "input_timing": [
         "tick"
       ]
@@ -13267,21 +13968,81 @@
       ]
     },
     {
+      "level": "drill:mini-cube/train-5115",
+      "name": "mini-cube-train-5115",
+      "normal_attempts": 1,
+      "practice_attempts": 220,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077202.333,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077202.333,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:mini-cube/train-8115",
+      "name": "mini-cube-train-8115",
+      "normal_attempts": 1,
+      "practice_attempts": 214,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077301.618,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077301.618,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:mini-cube/train-9115",
+      "name": "mini-cube-train-9115",
+      "normal_attempts": 1,
+      "practice_attempts": 220,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077411.501,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077411.501,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
       "level": "drill:mini-cube/heldout-7115",
       "name": "mini-cube/heldout-7115",
-      "normal_attempts": 9,
+      "normal_attempts": 20,
       "practice_attempts": 0,
-      "normal_clears": 9,
+      "normal_clears": 16,
       "practice_clear": false,
       "best_progress": 1.0,
-      "runs": 9,
+      "runs": 20,
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 1,
         "t": 1795056871.776,
         "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776,
+      "last_attempt_t": 1795128600.547,
       "input_timing": [
         "tick"
       ]
@@ -13307,21 +14068,41 @@
       ]
     },
     {
+      "level": "drill:moving-geometry/train-1108",
+      "name": "moving-geometry-train-1108",
+      "normal_attempts": 1,
+      "practice_attempts": 216,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077130.531,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077130.531,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
       "level": "drill:moving-geometry/heldout-2108",
       "name": "moving-geometry/heldout-2108",
-      "normal_attempts": 15,
+      "normal_attempts": 26,
       "practice_attempts": 0,
-      "normal_clears": 15,
+      "normal_clears": 19,
       "practice_clear": false,
       "best_progress": 1.0,
-      "runs": 15,
+      "runs": 26,
       "first_cleared_by": {
         "run": "m4-control",
         "attempt": 1,
         "t": 1795049259.589,
         "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776,
+      "last_attempt_t": 1795128600.547,
       "input_timing": [
         "tick"
       ]
@@ -13369,19 +14150,19 @@
     {
       "level": "drill:pillar-gaps/heldout-2104",
       "name": "pillar-gaps/heldout-2104",
-      "normal_attempts": 32,
+      "normal_attempts": 43,
       "practice_attempts": 529,
-      "normal_clears": 12,
+      "normal_clears": 13,
       "practice_clear": true,
       "best_progress": 1.0,
-      "runs": 16,
+      "runs": 27,
       "first_cleared_by": {
         "run": "m4-control",
         "attempt": 1,
         "t": 1795049259.589,
         "input_timing": "tick"
       },
-      "last_attempt_t": 1795060509.248,
+      "last_attempt_t": 1795128600.547,
       "input_timing": [
         "tick"
       ]
@@ -13407,21 +14188,81 @@
       ]
     },
     {
+      "level": "drill:pink-orb/train-5110",
+      "name": "pink-orb-train-5110",
+      "normal_attempts": 1,
+      "practice_attempts": 86,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077187.159,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077187.159,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:pink-orb/train-8110",
+      "name": "pink-orb-train-8110",
+      "normal_attempts": 1,
+      "practice_attempts": 83,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077286.462,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077286.462,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:pink-orb/train-9110",
+      "name": "pink-orb-train-9110",
+      "normal_attempts": 1,
+      "practice_attempts": 83,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077396.466,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077396.466,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
       "level": "drill:pink-orb/heldout-7110",
       "name": "pink-orb/heldout-7110",
-      "normal_attempts": 16,
+      "normal_attempts": 27,
       "practice_attempts": 45,
-      "normal_clears": 9,
+      "normal_clears": 15,
       "practice_clear": false,
       "best_progress": 1.0,
-      "runs": 9,
+      "runs": 20,
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 2,
         "t": 1795056871.776,
         "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776,
+      "last_attempt_t": 1795128600.547,
       "input_timing": [
         "tick"
       ]
@@ -13447,21 +14288,81 @@
       ]
     },
     {
+      "level": "drill:pink-pad/train-5108",
+      "name": "pink-pad-train-5108",
+      "normal_attempts": 1,
+      "practice_attempts": 67,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077181.762,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077181.762,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:pink-pad/train-8108",
+      "name": "pink-pad-train-8108",
+      "normal_attempts": 1,
+      "practice_attempts": 100,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077281.008,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077281.008,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:pink-pad/train-9108",
+      "name": "pink-pad-train-9108",
+      "normal_attempts": 1,
+      "practice_attempts": 74,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077390.983,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077390.983,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
       "level": "drill:pink-pad/heldout-7108",
       "name": "pink-pad/heldout-7108",
-      "normal_attempts": 9,
+      "normal_attempts": 20,
       "practice_attempts": 0,
-      "normal_clears": 9,
+      "normal_clears": 18,
       "practice_clear": false,
       "best_progress": 1.0,
-      "runs": 9,
+      "runs": 20,
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 1,
         "t": 1795056871.776,
         "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776,
+      "last_attempt_t": 1795128600.547,
       "input_timing": [
         "tick"
       ]
@@ -13487,21 +14388,81 @@
       ]
     },
     {
+      "level": "drill:robot-jumps/train-5104",
+      "name": "robot-jumps-train-5104",
+      "normal_attempts": 1,
+      "practice_attempts": 347,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077170.172,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077170.172,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:robot-jumps/train-8104",
+      "name": "robot-jumps-train-8104",
+      "normal_attempts": 1,
+      "practice_attempts": 366,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077269.394,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077269.394,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:robot-jumps/train-9104",
+      "name": "robot-jumps-train-9104",
+      "normal_attempts": 1,
+      "practice_attempts": 332,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077379.288,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077379.288,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
       "level": "drill:robot-jumps/heldout-7104",
       "name": "robot-jumps/heldout-7104",
-      "normal_attempts": 25,
+      "normal_attempts": 36,
       "practice_attempts": 271,
-      "normal_clears": 3,
+      "normal_clears": 6,
       "practice_clear": false,
       "best_progress": 1.0,
-      "runs": 9,
+      "runs": 20,
       "first_cleared_by": {
         "run": "m5-g1-s3907",
         "attempt": 2,
         "t": 1795056871.776,
         "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776,
+      "last_attempt_t": 1795128600.547,
       "input_timing": [
         "tick"
       ]
@@ -13527,21 +14488,71 @@
       ]
     },
     {
+      "level": "drill:ship-corridor/train-5100",
+      "name": "ship-corridor-train-5100",
+      "normal_attempts": 0,
+      "practice_attempts": 6000,
+      "normal_clears": 0,
+      "practice_clear": false,
+      "best_progress": 0.0,
+      "runs": 1,
+      "first_cleared_by": null,
+      "last_attempt_t": 1795077157.062,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:ship-corridor/train-8100",
+      "name": "ship-corridor-train-8100",
+      "normal_attempts": 1,
+      "practice_attempts": 2774,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077255.34,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077255.34,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:ship-corridor/train-9100",
+      "name": "ship-corridor-train-9100",
+      "normal_attempts": 0,
+      "practice_attempts": 6000,
+      "normal_clears": 0,
+      "practice_clear": false,
+      "best_progress": 0.0,
+      "runs": 1,
+      "first_cleared_by": null,
+      "last_attempt_t": 1795077365.471,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
       "level": "drill:ship-corridor/heldout-7100",
       "name": "ship-corridor/heldout-7100",
-      "normal_attempts": 18,
+      "normal_attempts": 29,
       "practice_attempts": 64,
-      "normal_clears": 7,
+      "normal_clears": 10,
       "practice_clear": false,
       "best_progress": 1.0,
-      "runs": 9,
+      "runs": 20,
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 1,
         "t": 1795056871.776,
         "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776,
+      "last_attempt_t": 1795128600.547,
       "input_timing": [
         "tick"
       ]
@@ -13562,21 +14573,71 @@
       ]
     },
     {
+      "level": "drill:ship-to-ball/train-5116",
+      "name": "ship-to-ball-train-5116",
+      "normal_attempts": 0,
+      "practice_attempts": 6000,
+      "normal_clears": 0,
+      "practice_clear": false,
+      "best_progress": 0.0,
+      "runs": 1,
+      "first_cleared_by": null,
+      "last_attempt_t": 1795077233.237,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:ship-to-ball/train-8116",
+      "name": "ship-to-ball-train-8116",
+      "normal_attempts": 0,
+      "practice_attempts": 6000,
+      "normal_clears": 0,
+      "practice_clear": false,
+      "best_progress": 0.0,
+      "runs": 1,
+      "first_cleared_by": null,
+      "last_attempt_t": 1795077331.105,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:ship-to-ball/train-9116",
+      "name": "ship-to-ball-train-9116",
+      "normal_attempts": 1,
+      "practice_attempts": 2978,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077428.589,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077428.589,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
       "level": "drill:ship-to-ball/heldout-7116",
       "name": "ship-to-ball/heldout-7116",
-      "normal_attempts": 20,
+      "normal_attempts": 31,
       "practice_attempts": 76,
       "normal_clears": 4,
       "practice_clear": false,
       "best_progress": 1.0,
-      "runs": 9,
+      "runs": 20,
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 1,
         "t": 1795056871.776,
         "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776,
+      "last_attempt_t": 1795128600.547,
       "input_timing": [
         "tick"
       ]
@@ -13624,19 +14685,19 @@
     {
       "level": "drill:single-spike/heldout-2100",
       "name": "single-spike/heldout-2100",
-      "normal_attempts": 15,
+      "normal_attempts": 26,
       "practice_attempts": 0,
-      "normal_clears": 15,
+      "normal_clears": 20,
       "practice_clear": false,
       "best_progress": 1.0,
-      "runs": 15,
+      "runs": 26,
       "first_cleared_by": {
         "run": "m4-control",
         "attempt": 1,
         "t": 1795049259.589,
         "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776,
+      "last_attempt_t": 1795128600.547,
       "input_timing": [
         "tick"
       ]
@@ -13662,21 +14723,41 @@
       ]
     },
     {
+      "level": "drill:speed-change/train-1107",
+      "name": "speed-change-train-1107",
+      "normal_attempts": 1,
+      "practice_attempts": 472,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077122.411,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077122.411,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
       "level": "drill:speed-change/heldout-2107",
       "name": "speed-change/heldout-2107",
-      "normal_attempts": 15,
+      "normal_attempts": 26,
       "practice_attempts": 0,
-      "normal_clears": 15,
+      "normal_clears": 20,
       "practice_clear": false,
       "best_progress": 1.0,
-      "runs": 15,
+      "runs": 26,
       "first_cleared_by": {
         "run": "m4-control",
         "attempt": 1,
         "t": 1795049259.589,
         "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776,
+      "last_attempt_t": 1795128600.547,
       "input_timing": [
         "tick"
       ]
@@ -13702,21 +14783,81 @@
       ]
     },
     {
+      "level": "drill:spider-switches/train-5105",
+      "name": "spider-switches-train-5105",
+      "normal_attempts": 1,
+      "practice_attempts": 49,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077172.912,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077172.912,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:spider-switches/train-8105",
+      "name": "spider-switches-train-8105",
+      "normal_attempts": 1,
+      "practice_attempts": 89,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077272.234,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077272.234,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:spider-switches/train-9105",
+      "name": "spider-switches-train-9105",
+      "normal_attempts": 1,
+      "practice_attempts": 89,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077382.128,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077382.128,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
       "level": "drill:spider-switches/heldout-7105",
       "name": "spider-switches/heldout-7105",
-      "normal_attempts": 20,
+      "normal_attempts": 31,
       "practice_attempts": 111,
       "normal_clears": 8,
       "practice_clear": false,
       "best_progress": 1.0,
-      "runs": 9,
+      "runs": 20,
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 2,
         "t": 1795056871.776,
         "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776,
+      "last_attempt_t": 1795128600.547,
       "input_timing": [
         "tick"
       ]
@@ -13742,21 +14883,81 @@
       ]
     },
     {
+      "level": "drill:swing-corridor/train-5106",
+      "name": "swing-corridor-train-5106",
+      "normal_attempts": 1,
+      "practice_attempts": 206,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077176.342,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077176.342,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:swing-corridor/train-8106",
+      "name": "swing-corridor-train-8106",
+      "normal_attempts": 1,
+      "practice_attempts": 204,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077275.571,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077275.571,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:swing-corridor/train-9106",
+      "name": "swing-corridor-train-9106",
+      "normal_attempts": 1,
+      "practice_attempts": 206,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077385.686,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077385.686,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
       "level": "drill:swing-corridor/heldout-7106",
       "name": "swing-corridor/heldout-7106",
-      "normal_attempts": 19,
+      "normal_attempts": 30,
       "practice_attempts": 201,
-      "normal_clears": 4,
+      "normal_clears": 7,
       "practice_clear": false,
       "best_progress": 1.0,
-      "runs": 9,
+      "runs": 20,
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 1,
         "t": 1795056871.776,
         "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776,
+      "last_attempt_t": 1795128600.547,
       "input_timing": [
         "tick"
       ]
@@ -13784,19 +14985,19 @@
     {
       "level": "drill:triple-spike/heldout-2102",
       "name": "triple-spike/heldout-2102",
-      "normal_attempts": 51,
+      "normal_attempts": 74,
       "practice_attempts": 3546,
-      "normal_clears": 4,
+      "normal_clears": 5,
       "practice_clear": true,
       "best_progress": 1.0,
-      "runs": 22,
+      "runs": 33,
       "first_cleared_by": {
         "run": "m5-g2-s3907",
         "attempt": 1,
         "t": 1795056871.776,
         "input_timing": "tick"
       },
-      "last_attempt_t": 1795120733.457,
+      "last_attempt_t": 1795128600.547,
       "input_timing": [
         "tick"
       ]
@@ -13822,6 +15023,46 @@
       ]
     },
     {
+      "level": "drill:triple-spike/train-1112",
+      "name": "triple-spike/train-1112",
+      "normal_attempts": 1,
+      "practice_attempts": 490,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m5c-triple-training-search",
+        "attempt": 1,
+        "t": 1795128600.547,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795128600.547,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:triple-spike/train-1122",
+      "name": "triple-spike/train-1122",
+      "normal_attempts": 1,
+      "practice_attempts": 464,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m5c-triple-training-search",
+        "attempt": 1,
+        "t": 1795128600.547,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795128600.547,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
       "level": "drill:triple-spike/validation-4102",
       "name": "triple-spike/validation-4102",
       "normal_attempts": 31,
@@ -13842,21 +15083,81 @@
       ]
     },
     {
+      "level": "drill:ufo-taps/train-5102",
+      "name": "ufo-taps-train-5102",
+      "normal_attempts": 1,
+      "practice_attempts": 392,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077163.374,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077163.374,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:ufo-taps/train-8102",
+      "name": "ufo-taps-train-8102",
+      "normal_attempts": 1,
+      "practice_attempts": 397,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077262.774,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077262.774,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:ufo-taps/train-9102",
+      "name": "ufo-taps-train-9102",
+      "normal_attempts": 1,
+      "practice_attempts": 393,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077372.274,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077372.274,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
       "level": "drill:ufo-taps/heldout-7102",
       "name": "ufo-taps/heldout-7102",
-      "normal_attempts": 15,
+      "normal_attempts": 26,
       "practice_attempts": 27,
-      "normal_clears": 9,
+      "normal_clears": 16,
       "practice_clear": false,
       "best_progress": 1.0,
-      "runs": 9,
+      "runs": 20,
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 3,
         "t": 1795056871.776,
         "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776,
+      "last_attempt_t": 1795128600.547,
       "input_timing": [
         "tick"
       ]
@@ -13882,21 +15183,81 @@
       ]
     },
     {
+      "level": "drill:ufo-to-wave/train-5117",
+      "name": "ufo-to-wave-train-5117",
+      "normal_attempts": 1,
+      "practice_attempts": 586,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077239.416,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077239.416,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:ufo-to-wave/train-8117",
+      "name": "ufo-to-wave-train-8117",
+      "normal_attempts": 1,
+      "practice_attempts": 584,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077337.095,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077337.095,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:ufo-to-wave/train-9117",
+      "name": "ufo-to-wave-train-9117",
+      "normal_attempts": 1,
+      "practice_attempts": 505,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077433.885,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077433.885,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
       "level": "drill:ufo-to-wave/heldout-7117",
       "name": "ufo-to-wave/heldout-7117",
-      "normal_attempts": 24,
+      "normal_attempts": 35,
       "practice_attempts": 397,
-      "normal_clears": 4,
+      "normal_clears": 9,
       "practice_clear": false,
       "best_progress": 1.0,
-      "runs": 9,
+      "runs": 20,
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 2,
         "t": 1795056871.776,
         "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776,
+      "last_attempt_t": 1795128600.547,
       "input_timing": [
         "tick"
       ]
@@ -13922,16 +15283,81 @@
       ]
     },
     {
+      "level": "drill:wave-corridor/train-5103",
+      "name": "wave-corridor-train-5103",
+      "normal_attempts": 1,
+      "practice_attempts": 322,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077166.683,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077166.683,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:wave-corridor/train-8103",
+      "name": "wave-corridor-train-8103",
+      "normal_attempts": 1,
+      "practice_attempts": 322,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077266.054,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077266.054,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:wave-corridor/train-9103",
+      "name": "wave-corridor-train-9103",
+      "normal_attempts": 1,
+      "practice_attempts": 361,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077375.955,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077375.955,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
       "level": "drill:wave-corridor/heldout-7103",
       "name": "wave-corridor/heldout-7103",
-      "normal_attempts": 27,
+      "normal_attempts": 38,
       "practice_attempts": 435,
-      "normal_clears": 0,
+      "normal_clears": 5,
       "practice_clear": false,
-      "best_progress": 0.687,
-      "runs": 9,
-      "first_cleared_by": null,
-      "last_attempt_t": 1795056871.776,
+      "best_progress": 1.0,
+      "runs": 20,
+      "first_cleared_by": {
+        "run": "m6-anchor",
+        "attempt": 1,
+        "t": 1795119639.376,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795128600.547,
       "input_timing": [
         "tick"
       ]
@@ -13974,19 +15400,19 @@
     {
       "level": "drill:yellow-orb/heldout-2105",
       "name": "yellow-orb/heldout-2105",
-      "normal_attempts": 21,
+      "normal_attempts": 32,
       "practice_attempts": 131,
-      "normal_clears": 13,
+      "normal_clears": 15,
       "practice_clear": false,
       "best_progress": 1.0,
-      "runs": 15,
+      "runs": 26,
       "first_cleared_by": {
         "run": "m4-control",
         "attempt": 1,
         "t": 1795049259.589,
         "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776,
+      "last_attempt_t": 1795128600.547,
       "input_timing": [
         "tick"
       ]
@@ -14012,21 +15438,81 @@
       ]
     },
     {
+      "level": "drill:yellow-pad/train-5107",
+      "name": "yellow-pad-train-5107",
+      "normal_attempts": 1,
+      "practice_attempts": 74,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077179.042,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077179.042,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:yellow-pad/train-8107",
+      "name": "yellow-pad-train-8107",
+      "normal_attempts": 1,
+      "practice_attempts": 70,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077278.286,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077278.286,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
+      "level": "drill:yellow-pad/train-9107",
+      "name": "yellow-pad-train-9107",
+      "normal_attempts": 1,
+      "practice_attempts": 70,
+      "normal_clears": 1,
+      "practice_clear": true,
+      "best_progress": 1.0,
+      "runs": 1,
+      "first_cleared_by": {
+        "run": "m6-search",
+        "attempt": 1,
+        "t": 1795077388.324,
+        "input_timing": "tick"
+      },
+      "last_attempt_t": 1795077388.324,
+      "input_timing": [
+        "tick"
+      ]
+    },
+    {
       "level": "drill:yellow-pad/heldout-7107",
       "name": "yellow-pad/heldout-7107",
-      "normal_attempts": 11,
+      "normal_attempts": 22,
       "practice_attempts": 61,
-      "normal_clears": 9,
+      "normal_clears": 18,
       "practice_clear": false,
       "best_progress": 1.0,
-      "runs": 9,
+      "runs": 20,
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 1,
         "t": 1795056871.776,
         "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776,
+      "last_attempt_t": 1795128600.547,
       "input_timing": [
         "tick"
       ]
@@ -14068,25 +15554,11 @@
       "progress": "in progress: Codex static review and synthetic probe passed after waiting for menu; slope/orb/wave/ship/moving/dual fixtures pending; see handoffs/2026-11-19-claude-to-codex-m8-cbf.md"
     },
     {
-      "number": 56,
-      "task": "M9 bridge: step_seq/reset report state {going_left, world_hash, items_hash}, opt-in per-decision cells",
-      "owner": "Claude",
-      "status": "in progress",
-      "progress": "in progress: dual flag 0x3f3, player 2 in obs/replies, death attribution (player, object), going_left, CBF p2 split; part 2 (world_hash): offsets verified and handed to Claude"
-    },
-    {
       "number": 19,
       "task": "M6 search-teacher data at scale: ~60 online training levels + all drill variants solved in parallel slots; scaling curve (held-out vs # solved levels)",
       "owner": "Codex",
       "status": "paused",
       "progress": "paused by the user (2026-11-20): progress saved (Because I Loved Her, segment ~567); verified online: Stageix, Skill Gotten Gains. Resume: supervise.py --slot 2 --budget 9000 --launcher mod/build/pinned-m8a/gdbot-launch.exe --max-private-mb 1800 --min-avail-mb 700 + the two online jobs"
-    },
-    {
-      "number": 57,
-      "task": "M9 solver: archive (Go-Explore-style) exploration as the stall fallback, time-based progress, behind GDBOT_SOLVER_ARCHIVE=1; pass Because I Loved Her sections 1 and 2 without level-specific code",
-      "owner": "Codex",
-      "status": "paused",
-      "progress": "waiting: #56 world state and plan agreement"
     },
     {
       "number": 48,
@@ -14096,11 +15568,11 @@
       "progress": "queued: bridge part done (claude, a9a0a2c): frac/fracs, split update, vanilla CBS/COS forced off; queued for Codex: solver fractions at stalls + input_timing records (same handoff)"
     },
     {
-      "number": 52,
-      "task": "Native M8 review follow-up: reject premature level loads, fix watched frame input boundary and view file retries, validate fraction shape, review ship and dual behavior",
-      "owner": "Unassigned",
-      "status": "open",
-      "progress": "open"
+      "number": 57,
+      "task": "M9 solver: archive (Go-Explore-style) exploration as the stall fallback, time-based progress, behind GDBOT_SOLVER_ARCHIVE=1; pass Because I Loved Her sections 1 and 2 without level-specific code",
+      "owner": "Codex",
+      "status": "queued",
+      "progress": "queued: plan agreed (Claude accepted Codex round 1); #56 done. Build behind GDBOT_SOLVER_ARCHIVE=1 on top of V2; novelty here must come from both cubes' physical state (world/items never change on this stall)"
     },
     {
       "number": 1,
@@ -14432,11 +15904,25 @@
       "progress": "done, opt-in: 3,634 vs 105,502 ticks across 12 matched escape trials"
     },
     {
+      "number": 52,
+      "task": "Native M8 review follow-up: reject premature level loads, fix watched frame input boundary and view file retries, validate fraction shape, review ship and dual behavior",
+      "owner": "Claude",
+      "status": "done",
+      "progress": "done (claude, 6429000 + ece9954): load_level held until the menu is up, watch budget before input, view.json retry/write errors, strict frac shapes; dual mapped and player-2 CBF split; ship rotation = known cosmetic gap"
+    },
+    {
       "number": 55,
       "task": "M9 research (docs/m9/PROBLEM.md; level is a visual facade: dual mode + pickups; work from hitboxes/engine state, not art): both players, death attribution, groups/items toggled by pickups; GameObject m_isGroupDisabled/m_isActivated offsets, item counters; depth of the bad jump vs death; review the M9 plan",
       "owner": "Codex",
       "status": "done",
       "progress": "done: plan review, engine offsets and scoped live results recorded; P1 death has no object ID, item map stayed unchanged, 34 jump trials found no pass"
+    },
+    {
+      "number": 56,
+      "task": "M9 bridge: step_seq/reset report state {going_left, world_hash, items_hash}, opt-in per-decision cells",
+      "owner": "Claude",
+      "status": "done",
+      "progress": "done (claude): dual, player 2, death attribution (+object_null, caller_rva), world_hash/items_hash in replies, per-decision cells; see docs/PROTOCOL.md M9 sections"
     }
   ],
   "attempts_curve": [

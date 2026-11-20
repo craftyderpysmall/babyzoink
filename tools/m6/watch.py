@@ -23,6 +23,7 @@ sys.path.insert(0, str(ROOT / "tools/m6"))
 from gdbot.instances import BOT, discovery  # noqa: E402
 from gdbot.protocol import BridgeClient, NamedPipeTransport, RemoteError  # noqa: E402
 from stall_probe import POOL, spec_for  # noqa: E402
+from solver import decision_payload  # noqa: E402
 
 K = 4
 FRAME_TICKS = 4  # ticks per rendered frame at 1x (240 ticks/s / 60 frames/s)
@@ -58,7 +59,7 @@ def play_1x(client, ep, ticks, label, slot=None):
         set_watch(slot)
         start = time.perf_counter()
         try:
-            r = client.request("step_seq", episode=ep, actions=ticks, k=1)
+            r = client.request("step_seq", episode=ep, k=1, **decision_payload(ticks))
             wall_end = time.perf_counter()
         finally:
             set_watch(None)
@@ -66,7 +67,7 @@ def play_1x(client, ep, ticks, label, slot=None):
     else:
         client.request("set_mode", mode="normal")
         for i in range(0, len(ticks), FRAME_TICKS):
-            r = client.request("step_seq", episode=ep, actions=ticks[i:i + FRAME_TICKS], k=1)
+            r = client.request("step_seq", episode=ep, k=1, **decision_payload(ticks[i:i + FRAME_TICKS]))
             played = min(len(ticks), i + FRAME_TICKS)
             if r["terminal"]:
                 break
@@ -83,7 +84,7 @@ def show(client, prefix_ticks, start_tick, view_ticks, label, hold_s=1.5):
     client.request("set_mode", mode="dedicated")
     ep = client.request("reset", start={"kind": "zero"})["episode"]
     if start_tick:
-        r = client.request("step_seq", episode=ep, actions=prefix_ticks[:start_tick], k=1)
+        r = client.request("step_seq", episode=ep, k=1, **decision_payload(prefix_ticks[:start_tick]))
         if r["terminal"]:
             print(f"  {label}: died while fast-forwarding at x={r['player']['x']:.1f}", flush=True)
             return
@@ -109,6 +110,8 @@ def main():
     lead, after = int(a.lead_s * 240), int(a.after_s * 240)
     with BridgeClient(NamedPipeTransport(discovery(a.slot)["pipe"])) as client:
         hello = client.require_isolated()
+        if any(action > 1 for action in full) and not hello.get("capabilities", {}).get("cbf"):
+            raise ValueError("watching a fractional prefix requires the CBF bridge")
         global WATCH_SLOT
         WATCH_SLOT = a.slot if hello.get("capabilities", {}).get("watch_1x") else None
         try:

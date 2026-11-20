@@ -49,6 +49,7 @@ class GDEnv(gym.Env):
             self.level = level.copy()
         start = options.get("start", {"kind": "zero"})
         reply = self.client.request("reset", start=start)
+        self.input_timing = "cbf" if reply.get("input_timing", {}).get("cbf") is True else "tick"
         self.episode = reply["episode"]
         self.tick = reply["tick"]
         self.raw_observation = reply["obs"]
@@ -58,14 +59,17 @@ class GDEnv(gym.Env):
         self._ready = True
         return observation, self._info()
 
-    def step(self, action):
+    def step(self, action, *, frac=0):
         if not self._ready:
             raise gym.error.ResetNeeded("reset the episode before stepping")
         if not self.action_space.contains(action):
             raise ValueError("action must be 0 (release) or 1 (hold)")
         count = self.k if self.max_ticks is None else min(self.k, self.max_ticks - self.tick)
+        if frac and self.input_timing != "cbf":
+            raise ValueError("fractional steps require the CBF bridge")
+        timing = {"frac": frac} if frac else {}
         try:
-            reply = self.client.step(episode=self.episode, tick=self.tick, action=int(action), k=count)
+            reply = self.client.step(episode=self.episode, tick=self.tick, action=int(action), k=count, **timing)
         except (ProtocolError, OSError, EOFError):
             self._ready = False
             raise

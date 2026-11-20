@@ -36,15 +36,18 @@ def fixture_for(name: str):
     return OnlineLevel(0, name, selector=level_spec(name))
 
 
-def solution_demo(env, fixture, actions):
+def solution_demo(env, fixture, actions, *, fracs=None):
     """Replay a verified action list through the env, recording (observation, action) pairs."""
     env.select(fixture)
+    if fracs is not None and len(fracs) != len(actions):
+        raise ValueError("expected one input fraction per solution action")
     observation, _ = env.reset()
     observations, taken = [], []
-    for action in actions:
+    for index, action in enumerate(actions):
         observations.append(observation)
         taken.append(action)
-        observation, _, terminated, truncated, info = env.step(action)
+        timing = {"frac": fracs[index]} if fracs is not None and fracs[index] else {}
+        observation, _, terminated, truncated, info = env.step(action, **timing)
         if terminated or truncated:
             if info["terminal"] != "complete":
                 raise RuntimeError(f"solution for {fixture.variant} ended in {info['terminal']} during demo replay")
@@ -84,7 +87,7 @@ def main():
                 continue
             demo_path = out / "demos" / (name.replace(":", "_").replace("/", "_") + ".npz")
             if not demo_path.exists():
-                obs, act = solution_demo(env, fixture_for(name), sol["actions"])
+                obs, act = solution_demo(env, fixture_for(name), sol["actions"], fracs=sol.get("fracs"))
                 save_demonstration(demo_path, obs, act)
                 report["demos"][name] = {"decisions": len(act), "presses": int(sum(act))}
                 print(f"demo {name}: {len(act)} decisions", flush=True)
