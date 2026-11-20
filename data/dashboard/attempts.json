@@ -1,0 +1,1484 @@
+{
+ "rows": [
+  {
+   "level": "official:1",
+   "kind": "Official",
+   "name": "Stereo Madness",
+   "normal_attempts": 23,
+   "practice_attempts": 21133,
+   "normal_clears": 2,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5c-search (normal attempt 1)"
+  },
+  {
+   "level": "official:2",
+   "kind": "Official",
+   "name": "Back on Track",
+   "normal_attempts": 23,
+   "practice_attempts": 20112,
+   "normal_clears": 2,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5c-search (normal attempt 1)"
+  },
+  {
+   "level": "official:3",
+   "kind": "Official",
+   "name": "Polargeist",
+   "normal_attempts": 23,
+   "practice_attempts": 41502,
+   "normal_clears": 2,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5c-search (normal attempt 1)"
+  },
+  {
+   "level": "official:4",
+   "kind": "Official",
+   "name": "Dry Out",
+   "normal_attempts": 21,
+   "practice_attempts": 95277,
+   "normal_clears": 0,
+   "best_progress_pct": 3.5,
+   "first_cleared_by": ""
+  },
+  {
+   "level": "official:5",
+   "kind": "Official",
+   "name": "Base After Base",
+   "normal_attempts": 21,
+   "practice_attempts": 95317,
+   "normal_clears": 0,
+   "best_progress_pct": 5.2,
+   "first_cleared_by": ""
+  },
+  {
+   "level": "online:77117125",
+   "kind": "Online",
+   "name": "BNUN",
+   "normal_attempts": 0,
+   "practice_attempts": 9000,
+   "normal_clears": 0,
+   "best_progress_pct": 0.0,
+   "first_cleared_by": ""
+  },
+  {
+   "level": "online:26791333",
+   "kind": "Online",
+   "name": "Because I Loved Her",
+   "normal_attempts": 0,
+   "practice_attempts": 3947,
+   "normal_clears": 0,
+   "best_progress_pct": 0.0,
+   "first_cleared_by": ""
+  },
+  {
+   "level": "online:137883268",
+   "kind": "Online",
+   "name": "Chillwave",
+   "normal_attempts": 9,
+   "practice_attempts": 39,
+   "normal_clears": 0,
+   "best_progress_pct": 3.7,
+   "first_cleared_by": ""
+  },
+  {
+   "level": "online:74730213",
+   "kind": "Online",
+   "name": "Curfew",
+   "normal_attempts": 9,
+   "practice_attempts": 10,
+   "normal_clears": 0,
+   "best_progress_pct": 19.8,
+   "first_cleared_by": ""
+  },
+  {
+   "level": "online:11280109",
+   "kind": "Online",
+   "name": "Dark Paradise",
+   "normal_attempts": 0,
+   "practice_attempts": 9000,
+   "normal_clears": 0,
+   "best_progress_pct": 0.0,
+   "first_cleared_by": ""
+  },
+  {
+   "level": "online:215705",
+   "kind": "Online",
+   "name": "End Of Line",
+   "normal_attempts": 0,
+   "practice_attempts": 9000,
+   "normal_clears": 0,
+   "best_progress_pct": 0.0,
+   "first_cleared_by": ""
+  },
+  {
+   "level": "online:64398355",
+   "kind": "Online",
+   "name": "Forest of Fun",
+   "normal_attempts": 0,
+   "practice_attempts": 1781,
+   "normal_clears": 0,
+   "best_progress_pct": 0.0,
+   "first_cleared_by": ""
+  },
+  {
+   "level": "online:11940",
+   "kind": "Online",
+   "name": "Level Easy",
+   "normal_attempts": 9,
+   "practice_attempts": 26,
+   "normal_clears": 0,
+   "best_progress_pct": 4.0,
+   "first_cleared_by": ""
+  },
+  {
+   "level": "online:94887416",
+   "kind": "Online",
+   "name": "Magic Valley",
+   "normal_attempts": 9,
+   "practice_attempts": 26,
+   "normal_clears": 0,
+   "best_progress_pct": 13.3,
+   "first_cleared_by": ""
+  },
+  {
+   "level": "online:3945967",
+   "kind": "Online",
+   "name": "Moving Obstacles",
+   "normal_attempts": 0,
+   "practice_attempts": 9000,
+   "normal_clears": 0,
+   "best_progress_pct": 0.0,
+   "first_cleared_by": ""
+  },
+  {
+   "level": "online:11686946",
+   "kind": "Online",
+   "name": "Never Be Alone",
+   "normal_attempts": 0,
+   "practice_attempts": 9000,
+   "normal_clears": 0,
+   "best_progress_pct": 0.0,
+   "first_cleared_by": ""
+  },
+  {
+   "level": "online:149768815",
+   "kind": "Online",
+   "name": "Quiet Time",
+   "normal_attempts": 0,
+   "practice_attempts": 9000,
+   "normal_clears": 0,
+   "best_progress_pct": 0.0,
+   "first_cleared_by": ""
+  },
+  {
+   "level": "online:6508283",
+   "kind": "Online",
+   "name": "ReTraY",
+   "normal_attempts": 9,
+   "practice_attempts": 1606,
+   "normal_clears": 0,
+   "best_progress_pct": 18.8,
+   "first_cleared_by": ""
+  },
+  {
+   "level": "online:13124688",
+   "kind": "Online",
+   "name": "Reflected",
+   "normal_attempts": 0,
+   "practice_attempts": 9000,
+   "normal_clears": 0,
+   "best_progress_pct": 0.0,
+   "first_cleared_by": ""
+  },
+  {
+   "level": "online:146319148",
+   "kind": "Online",
+   "name": "Sigil",
+   "normal_attempts": 9,
+   "practice_attempts": 42,
+   "normal_clears": 0,
+   "best_progress_pct": 5.9,
+   "first_cleared_by": ""
+  },
+  {
+   "level": "online:148701354",
+   "kind": "Online",
+   "name": "Skill Gotten Gains",
+   "normal_attempts": 1,
+   "practice_attempts": 9000,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "online:4454123",
+   "kind": "Online",
+   "name": "Sonar",
+   "normal_attempts": 9,
+   "practice_attempts": 1606,
+   "normal_clears": 0,
+   "best_progress_pct": 7.8,
+   "first_cleared_by": ""
+  },
+  {
+   "level": "online:977287",
+   "kind": "Online",
+   "name": "Stageix",
+   "normal_attempts": 1,
+   "practice_attempts": 8036,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "online:25711231",
+   "kind": "Online",
+   "name": "Unknown seas",
+   "normal_attempts": 0,
+   "practice_attempts": 9000,
+   "normal_clears": 0,
+   "best_progress_pct": 0.0,
+   "first_cleared_by": ""
+  },
+  {
+   "level": "online:112109153",
+   "kind": "Online",
+   "name": "Vision",
+   "normal_attempts": 9,
+   "practice_attempts": 31,
+   "normal_clears": 0,
+   "best_progress_pct": 3.0,
+   "first_cleared_by": ""
+  },
+  {
+   "level": "online:75243812",
+   "kind": "Online",
+   "name": "boo",
+   "normal_attempts": 0,
+   "practice_attempts": 9000,
+   "normal_clears": 0,
+   "best_progress_pct": 0.0,
+   "first_cleared_by": ""
+  },
+  {
+   "level": "online:83923662",
+   "kind": "Online",
+   "name": "e4",
+   "normal_attempts": 9,
+   "practice_attempts": 8,
+   "normal_clears": 0,
+   "best_progress_pct": 5.0,
+   "first_cleared_by": ""
+  },
+  {
+   "level": "online:83653641",
+   "kind": "Online",
+   "name": "lil Horizon",
+   "normal_attempts": 9,
+   "practice_attempts": 64,
+   "normal_clears": 0,
+   "best_progress_pct": 2.4,
+   "first_cleared_by": ""
+  },
+  {
+   "level": "drill:ball-switches/train-5101",
+   "kind": "Drill",
+   "name": "ball-switches-train-5101",
+   "normal_attempts": 1,
+   "practice_attempts": 90,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:ball-switches/train-8101",
+   "kind": "Drill",
+   "name": "ball-switches-train-8101",
+   "normal_attempts": 1,
+   "practice_attempts": 214,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:ball-switches/train-9101",
+   "kind": "Drill",
+   "name": "ball-switches-train-9101",
+   "normal_attempts": 1,
+   "practice_attempts": 129,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:ball-switches/heldout-7101",
+   "kind": "Drill",
+   "name": "ball-switches/heldout-7101",
+   "normal_attempts": 28,
+   "practice_attempts": 516,
+   "normal_clears": 12,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g1-s1207 (normal attempt 1)"
+  },
+  {
+   "level": "drill:ball-switches/validation-6101",
+   "kind": "Drill",
+   "name": "ball-switches/validation-6101",
+   "normal_attempts": 16,
+   "practice_attempts": 0,
+   "normal_clears": 9,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g1-s1207 (normal attempt 1)"
+  },
+  {
+   "level": "drill:black-orb/train-5113",
+   "kind": "Drill",
+   "name": "black-orb-train-5113",
+   "normal_attempts": 1,
+   "practice_attempts": 78,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:black-orb/train-8113",
+   "kind": "Drill",
+   "name": "black-orb-train-8113",
+   "normal_attempts": 1,
+   "practice_attempts": 115,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:black-orb/train-9113",
+   "kind": "Drill",
+   "name": "black-orb-train-9113",
+   "normal_attempts": 1,
+   "practice_attempts": 80,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:black-orb/heldout-7113",
+   "kind": "Drill",
+   "name": "black-orb/heldout-7113",
+   "normal_attempts": 33,
+   "practice_attempts": 204,
+   "normal_clears": 8,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g1-s2357 (normal attempt 2)"
+  },
+  {
+   "level": "drill:black-orb/validation-6113",
+   "kind": "Drill",
+   "name": "black-orb/validation-6113",
+   "normal_attempts": 25,
+   "practice_attempts": 0,
+   "normal_clears": 6,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g1-s2357 (normal attempt 3)"
+  },
+  {
+   "level": "drill:block-steps/train-1103",
+   "kind": "Drill",
+   "name": "block-steps-train-1103",
+   "normal_attempts": 1,
+   "practice_attempts": 167,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:block-steps/heldout-2103",
+   "kind": "Drill",
+   "name": "block-steps/heldout-2103",
+   "normal_attempts": 43,
+   "practice_attempts": 283,
+   "normal_clears": 11,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m4-control (normal attempt 1)"
+  },
+  {
+   "level": "drill:block-steps/validation-4103",
+   "kind": "Drill",
+   "name": "block-steps/validation-4103",
+   "normal_attempts": 25,
+   "practice_attempts": 0,
+   "normal_clears": 4,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g1-s2357 (normal attempt 1)"
+  },
+  {
+   "level": "drill:blue-orb/train-5111",
+   "kind": "Drill",
+   "name": "blue-orb-train-5111",
+   "normal_attempts": 1,
+   "practice_attempts": 80,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:blue-orb/train-8111",
+   "kind": "Drill",
+   "name": "blue-orb-train-8111",
+   "normal_attempts": 1,
+   "practice_attempts": 78,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:blue-orb/train-9111",
+   "kind": "Drill",
+   "name": "blue-orb-train-9111",
+   "normal_attempts": 1,
+   "practice_attempts": 83,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:blue-orb/heldout-7111",
+   "kind": "Drill",
+   "name": "blue-orb/heldout-7111",
+   "normal_attempts": 28,
+   "practice_attempts": 27,
+   "normal_clears": 14,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g1-s1207 (normal attempt 2)"
+  },
+  {
+   "level": "drill:blue-orb/validation-6111",
+   "kind": "Drill",
+   "name": "blue-orb/validation-6111",
+   "normal_attempts": 29,
+   "practice_attempts": 0,
+   "normal_clears": 3,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g3-s2357 (normal attempt 1)"
+  },
+  {
+   "level": "drill:blue-pad/train-5109",
+   "kind": "Drill",
+   "name": "blue-pad-train-5109",
+   "normal_attempts": 1,
+   "practice_attempts": 31,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:blue-pad/train-8109",
+   "kind": "Drill",
+   "name": "blue-pad-train-8109",
+   "normal_attempts": 1,
+   "practice_attempts": 30,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:blue-pad/train-9109",
+   "kind": "Drill",
+   "name": "blue-pad-train-9109",
+   "normal_attempts": 1,
+   "practice_attempts": 30,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:blue-pad/heldout-7109",
+   "kind": "Drill",
+   "name": "blue-pad/heldout-7109",
+   "normal_attempts": 24,
+   "practice_attempts": 144,
+   "normal_clears": 24,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g1-s1207 (normal attempt 1)"
+  },
+  {
+   "level": "drill:blue-pad/validation-6109",
+   "kind": "Drill",
+   "name": "blue-pad/validation-6109",
+   "normal_attempts": 11,
+   "practice_attempts": 0,
+   "normal_clears": 11,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g1-s1207 (normal attempt 1)"
+  },
+  {
+   "level": "drill:dash-orb/train-5114",
+   "kind": "Drill",
+   "name": "dash-orb-train-5114",
+   "normal_attempts": 1,
+   "practice_attempts": 335,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:dash-orb/train-8114",
+   "kind": "Drill",
+   "name": "dash-orb-train-8114",
+   "normal_attempts": 1,
+   "practice_attempts": 336,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:dash-orb/train-9114",
+   "kind": "Drill",
+   "name": "dash-orb-train-9114",
+   "normal_attempts": 1,
+   "practice_attempts": 335,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:dash-orb/heldout-7114",
+   "kind": "Drill",
+   "name": "dash-orb/heldout-7114",
+   "normal_attempts": 38,
+   "practice_attempts": 452,
+   "normal_clears": 7,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-expert-1 (normal attempt 1)"
+  },
+  {
+   "level": "drill:dash-orb/validation-6114",
+   "kind": "Drill",
+   "name": "dash-orb/validation-6114",
+   "normal_attempts": 29,
+   "practice_attempts": 0,
+   "normal_clears": 2,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5b-base-validation (normal attempt 1)"
+  },
+  {
+   "level": "drill:double-spike/train-1101",
+   "kind": "Drill",
+   "name": "double-spike-train-1101",
+   "normal_attempts": 1,
+   "practice_attempts": 364,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:double-spike/heldout-2101",
+   "kind": "Drill",
+   "name": "double-spike/heldout-2101",
+   "normal_attempts": 28,
+   "practice_attempts": 45,
+   "normal_clears": 16,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m4-control (normal attempt 1)"
+  },
+  {
+   "level": "drill:double-spike/validation-4101",
+   "kind": "Drill",
+   "name": "double-spike/validation-4101",
+   "normal_attempts": 13,
+   "practice_attempts": 0,
+   "normal_clears": 10,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g1-s1207 (normal attempt 1)"
+  },
+  {
+   "level": "drill:gravity-portal/train-1106",
+   "kind": "Drill",
+   "name": "gravity-portal-train-1106",
+   "normal_attempts": 1,
+   "practice_attempts": 186,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:gravity-portal/heldout-2106",
+   "kind": "Drill",
+   "name": "gravity-portal/heldout-2106",
+   "normal_attempts": 42,
+   "practice_attempts": 201,
+   "normal_clears": 14,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m4-control (normal attempt 1)"
+  },
+  {
+   "level": "drill:gravity-portal/validation-4106",
+   "kind": "Drill",
+   "name": "gravity-portal/validation-4106",
+   "normal_attempts": 20,
+   "practice_attempts": 0,
+   "normal_clears": 8,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g1-s1207 (normal attempt 2)"
+  },
+  {
+   "level": "drill:green-orb/train-5112",
+   "kind": "Drill",
+   "name": "green-orb-train-5112",
+   "normal_attempts": 1,
+   "practice_attempts": 82,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:green-orb/train-8112",
+   "kind": "Drill",
+   "name": "green-orb-train-8112",
+   "normal_attempts": 1,
+   "practice_attempts": 114,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:green-orb/train-9112",
+   "kind": "Drill",
+   "name": "green-orb-train-9112",
+   "normal_attempts": 1,
+   "practice_attempts": 77,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:green-orb/heldout-7112",
+   "kind": "Drill",
+   "name": "green-orb/heldout-7112",
+   "normal_attempts": 29,
+   "practice_attempts": 27,
+   "normal_clears": 13,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g1-s1207 (normal attempt 2)"
+  },
+  {
+   "level": "drill:green-orb/validation-6112",
+   "kind": "Drill",
+   "name": "green-orb/validation-6112",
+   "normal_attempts": 29,
+   "practice_attempts": 0,
+   "normal_clears": 3,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g3-s2357 (normal attempt 2)"
+  },
+  {
+   "level": "drill:mini-cube/train-5115",
+   "kind": "Drill",
+   "name": "mini-cube-train-5115",
+   "normal_attempts": 1,
+   "practice_attempts": 220,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:mini-cube/train-8115",
+   "kind": "Drill",
+   "name": "mini-cube-train-8115",
+   "normal_attempts": 1,
+   "practice_attempts": 214,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:mini-cube/train-9115",
+   "kind": "Drill",
+   "name": "mini-cube-train-9115",
+   "normal_attempts": 1,
+   "practice_attempts": 220,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:mini-cube/heldout-7115",
+   "kind": "Drill",
+   "name": "mini-cube/heldout-7115",
+   "normal_attempts": 20,
+   "practice_attempts": 0,
+   "normal_clears": 16,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g1-s1207 (normal attempt 1)"
+  },
+  {
+   "level": "drill:mini-cube/validation-6115",
+   "kind": "Drill",
+   "name": "mini-cube/validation-6115",
+   "normal_attempts": 11,
+   "practice_attempts": 0,
+   "normal_clears": 11,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g1-s1207 (normal attempt 1)"
+  },
+  {
+   "level": "drill:moving-geometry/train-1108",
+   "kind": "Drill",
+   "name": "moving-geometry-train-1108",
+   "normal_attempts": 1,
+   "practice_attempts": 216,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:moving-geometry/heldout-2108",
+   "kind": "Drill",
+   "name": "moving-geometry/heldout-2108",
+   "normal_attempts": 26,
+   "practice_attempts": 0,
+   "normal_clears": 19,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m4-control (normal attempt 1)"
+  },
+  {
+   "level": "drill:moving-geometry/validation-4108",
+   "kind": "Drill",
+   "name": "moving-geometry/validation-4108",
+   "normal_attempts": 11,
+   "practice_attempts": 0,
+   "normal_clears": 11,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g1-s1207 (normal attempt 1)"
+  },
+  {
+   "level": "drill:pillar-gaps/train-1104",
+   "kind": "Drill",
+   "name": "pillar-gaps-train-1104",
+   "normal_attempts": 1,
+   "practice_attempts": 186,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:pillar-gaps/heldout-2104",
+   "kind": "Drill",
+   "name": "pillar-gaps/heldout-2104",
+   "normal_attempts": 43,
+   "practice_attempts": 529,
+   "normal_clears": 13,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m4-control (normal attempt 1)"
+  },
+  {
+   "level": "drill:pillar-gaps/validation-4104",
+   "kind": "Drill",
+   "name": "pillar-gaps/validation-4104",
+   "normal_attempts": 25,
+   "practice_attempts": 0,
+   "normal_clears": 4,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g2-s2357 (normal attempt 1)"
+  },
+  {
+   "level": "drill:pink-orb/train-5110",
+   "kind": "Drill",
+   "name": "pink-orb-train-5110",
+   "normal_attempts": 1,
+   "practice_attempts": 86,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:pink-orb/train-8110",
+   "kind": "Drill",
+   "name": "pink-orb-train-8110",
+   "normal_attempts": 1,
+   "practice_attempts": 83,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:pink-orb/train-9110",
+   "kind": "Drill",
+   "name": "pink-orb-train-9110",
+   "normal_attempts": 1,
+   "practice_attempts": 83,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:pink-orb/heldout-7110",
+   "kind": "Drill",
+   "name": "pink-orb/heldout-7110",
+   "normal_attempts": 27,
+   "practice_attempts": 45,
+   "normal_clears": 15,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g1-s1207 (normal attempt 2)"
+  },
+  {
+   "level": "drill:pink-orb/validation-6110",
+   "kind": "Drill",
+   "name": "pink-orb/validation-6110",
+   "normal_attempts": 24,
+   "practice_attempts": 0,
+   "normal_clears": 6,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g1-s1207 (normal attempt 2)"
+  },
+  {
+   "level": "drill:pink-pad/train-5108",
+   "kind": "Drill",
+   "name": "pink-pad-train-5108",
+   "normal_attempts": 1,
+   "practice_attempts": 67,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:pink-pad/train-8108",
+   "kind": "Drill",
+   "name": "pink-pad-train-8108",
+   "normal_attempts": 1,
+   "practice_attempts": 100,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:pink-pad/train-9108",
+   "kind": "Drill",
+   "name": "pink-pad-train-9108",
+   "normal_attempts": 1,
+   "practice_attempts": 74,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:pink-pad/heldout-7108",
+   "kind": "Drill",
+   "name": "pink-pad/heldout-7108",
+   "normal_attempts": 20,
+   "practice_attempts": 0,
+   "normal_clears": 18,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g1-s1207 (normal attempt 1)"
+  },
+  {
+   "level": "drill:pink-pad/validation-6108",
+   "kind": "Drill",
+   "name": "pink-pad/validation-6108",
+   "normal_attempts": 11,
+   "practice_attempts": 0,
+   "normal_clears": 11,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g1-s1207 (normal attempt 1)"
+  },
+  {
+   "level": "drill:robot-jumps/train-5104",
+   "kind": "Drill",
+   "name": "robot-jumps-train-5104",
+   "normal_attempts": 1,
+   "practice_attempts": 347,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:robot-jumps/train-8104",
+   "kind": "Drill",
+   "name": "robot-jumps-train-8104",
+   "normal_attempts": 1,
+   "practice_attempts": 366,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:robot-jumps/train-9104",
+   "kind": "Drill",
+   "name": "robot-jumps-train-9104",
+   "normal_attempts": 1,
+   "practice_attempts": 332,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:robot-jumps/heldout-7104",
+   "kind": "Drill",
+   "name": "robot-jumps/heldout-7104",
+   "normal_attempts": 36,
+   "practice_attempts": 271,
+   "normal_clears": 6,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g1-s3907 (normal attempt 2)"
+  },
+  {
+   "level": "drill:robot-jumps/validation-6104",
+   "kind": "Drill",
+   "name": "robot-jumps/validation-6104",
+   "normal_attempts": 29,
+   "practice_attempts": 0,
+   "normal_clears": 2,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5b-base-validation (normal attempt 1)"
+  },
+  {
+   "level": "drill:ship-corridor/train-5100",
+   "kind": "Drill",
+   "name": "ship-corridor-train-5100",
+   "normal_attempts": 0,
+   "practice_attempts": 6000,
+   "normal_clears": 0,
+   "best_progress_pct": 0.0,
+   "first_cleared_by": ""
+  },
+  {
+   "level": "drill:ship-corridor/train-8100",
+   "kind": "Drill",
+   "name": "ship-corridor-train-8100",
+   "normal_attempts": 1,
+   "practice_attempts": 2774,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:ship-corridor/train-9100",
+   "kind": "Drill",
+   "name": "ship-corridor-train-9100",
+   "normal_attempts": 0,
+   "practice_attempts": 6000,
+   "normal_clears": 0,
+   "best_progress_pct": 0.0,
+   "first_cleared_by": ""
+  },
+  {
+   "level": "drill:ship-corridor/heldout-7100",
+   "kind": "Drill",
+   "name": "ship-corridor/heldout-7100",
+   "normal_attempts": 29,
+   "practice_attempts": 64,
+   "normal_clears": 10,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g1-s1207 (normal attempt 1)"
+  },
+  {
+   "level": "drill:ship-corridor/validation-6100",
+   "kind": "Drill",
+   "name": "ship-corridor/validation-6100",
+   "normal_attempts": 33,
+   "practice_attempts": 0,
+   "normal_clears": 0,
+   "best_progress_pct": 61.1,
+   "first_cleared_by": ""
+  },
+  {
+   "level": "drill:ship-to-ball/train-5116",
+   "kind": "Drill",
+   "name": "ship-to-ball-train-5116",
+   "normal_attempts": 0,
+   "practice_attempts": 6000,
+   "normal_clears": 0,
+   "best_progress_pct": 0.0,
+   "first_cleared_by": ""
+  },
+  {
+   "level": "drill:ship-to-ball/train-8116",
+   "kind": "Drill",
+   "name": "ship-to-ball-train-8116",
+   "normal_attempts": 0,
+   "practice_attempts": 6000,
+   "normal_clears": 0,
+   "best_progress_pct": 0.0,
+   "first_cleared_by": ""
+  },
+  {
+   "level": "drill:ship-to-ball/train-9116",
+   "kind": "Drill",
+   "name": "ship-to-ball-train-9116",
+   "normal_attempts": 1,
+   "practice_attempts": 2978,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:ship-to-ball/heldout-7116",
+   "kind": "Drill",
+   "name": "ship-to-ball/heldout-7116",
+   "normal_attempts": 31,
+   "practice_attempts": 76,
+   "normal_clears": 4,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g1-s1207 (normal attempt 1)"
+  },
+  {
+   "level": "drill:ship-to-ball/validation-6116",
+   "kind": "Drill",
+   "name": "ship-to-ball/validation-6116",
+   "normal_attempts": 30,
+   "practice_attempts": 0,
+   "normal_clears": 2,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g3-s2357 (normal attempt 2)"
+  },
+  {
+   "level": "drill:single-spike/train-1100",
+   "kind": "Drill",
+   "name": "single-spike-train-1100",
+   "normal_attempts": 1,
+   "practice_attempts": 261,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:single-spike/heldout-2100",
+   "kind": "Drill",
+   "name": "single-spike/heldout-2100",
+   "normal_attempts": 26,
+   "practice_attempts": 0,
+   "normal_clears": 20,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m4-control (normal attempt 1)"
+  },
+  {
+   "level": "drill:single-spike/validation-4100",
+   "kind": "Drill",
+   "name": "single-spike/validation-4100",
+   "normal_attempts": 11,
+   "practice_attempts": 0,
+   "normal_clears": 11,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g1-s1207 (normal attempt 1)"
+  },
+  {
+   "level": "drill:speed-change/train-1107",
+   "kind": "Drill",
+   "name": "speed-change-train-1107",
+   "normal_attempts": 1,
+   "practice_attempts": 472,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:speed-change/heldout-2107",
+   "kind": "Drill",
+   "name": "speed-change/heldout-2107",
+   "normal_attempts": 26,
+   "practice_attempts": 0,
+   "normal_clears": 20,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m4-control (normal attempt 1)"
+  },
+  {
+   "level": "drill:speed-change/validation-4107",
+   "kind": "Drill",
+   "name": "speed-change/validation-4107",
+   "normal_attempts": 11,
+   "practice_attempts": 0,
+   "normal_clears": 11,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g1-s1207 (normal attempt 1)"
+  },
+  {
+   "level": "drill:spider-switches/train-5105",
+   "kind": "Drill",
+   "name": "spider-switches-train-5105",
+   "normal_attempts": 1,
+   "practice_attempts": 49,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:spider-switches/train-8105",
+   "kind": "Drill",
+   "name": "spider-switches-train-8105",
+   "normal_attempts": 1,
+   "practice_attempts": 89,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:spider-switches/train-9105",
+   "kind": "Drill",
+   "name": "spider-switches-train-9105",
+   "normal_attempts": 1,
+   "practice_attempts": 89,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:spider-switches/heldout-7105",
+   "kind": "Drill",
+   "name": "spider-switches/heldout-7105",
+   "normal_attempts": 31,
+   "practice_attempts": 111,
+   "normal_clears": 8,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g1-s1207 (normal attempt 2)"
+  },
+  {
+   "level": "drill:spider-switches/validation-6105",
+   "kind": "Drill",
+   "name": "spider-switches/validation-6105",
+   "normal_attempts": 20,
+   "practice_attempts": 0,
+   "normal_clears": 7,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g1-s1207 (normal attempt 1)"
+  },
+  {
+   "level": "drill:swing-corridor/train-5106",
+   "kind": "Drill",
+   "name": "swing-corridor-train-5106",
+   "normal_attempts": 1,
+   "practice_attempts": 206,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:swing-corridor/train-8106",
+   "kind": "Drill",
+   "name": "swing-corridor-train-8106",
+   "normal_attempts": 1,
+   "practice_attempts": 204,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:swing-corridor/train-9106",
+   "kind": "Drill",
+   "name": "swing-corridor-train-9106",
+   "normal_attempts": 1,
+   "practice_attempts": 206,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:swing-corridor/heldout-7106",
+   "kind": "Drill",
+   "name": "swing-corridor/heldout-7106",
+   "normal_attempts": 30,
+   "practice_attempts": 201,
+   "normal_clears": 7,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g1-s1207 (normal attempt 1)"
+  },
+  {
+   "level": "drill:swing-corridor/validation-6106",
+   "kind": "Drill",
+   "name": "swing-corridor/validation-6106",
+   "normal_attempts": 25,
+   "practice_attempts": 0,
+   "normal_clears": 5,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g1-s1207 (normal attempt 1)"
+  },
+  {
+   "level": "drill:triple-spike/heldout-2102",
+   "kind": "Drill",
+   "name": "triple-spike/heldout-2102",
+   "normal_attempts": 74,
+   "practice_attempts": 3546,
+   "normal_clears": 5,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g2-s3907 (normal attempt 1)"
+  },
+  {
+   "level": "drill:triple-spike/train-1102",
+   "kind": "Drill",
+   "name": "triple-spike/train-1102",
+   "normal_attempts": 3,
+   "practice_attempts": 1670,
+   "normal_clears": 3,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5c-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:triple-spike/train-1112",
+   "kind": "Drill",
+   "name": "triple-spike/train-1112",
+   "normal_attempts": 1,
+   "practice_attempts": 490,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5c-triple-training-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:triple-spike/train-1122",
+   "kind": "Drill",
+   "name": "triple-spike/train-1122",
+   "normal_attempts": 1,
+   "practice_attempts": 464,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5c-triple-training-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:triple-spike/validation-4102",
+   "kind": "Drill",
+   "name": "triple-spike/validation-4102",
+   "normal_attempts": 31,
+   "practice_attempts": 0,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g2-s3907 (normal attempt 1)"
+  },
+  {
+   "level": "drill:ufo-taps/train-5102",
+   "kind": "Drill",
+   "name": "ufo-taps-train-5102",
+   "normal_attempts": 1,
+   "practice_attempts": 392,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:ufo-taps/train-8102",
+   "kind": "Drill",
+   "name": "ufo-taps-train-8102",
+   "normal_attempts": 1,
+   "practice_attempts": 397,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:ufo-taps/train-9102",
+   "kind": "Drill",
+   "name": "ufo-taps-train-9102",
+   "normal_attempts": 1,
+   "practice_attempts": 393,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:ufo-taps/heldout-7102",
+   "kind": "Drill",
+   "name": "ufo-taps/heldout-7102",
+   "normal_attempts": 26,
+   "practice_attempts": 27,
+   "normal_clears": 16,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g1-s1207 (normal attempt 3)"
+  },
+  {
+   "level": "drill:ufo-taps/validation-6102",
+   "kind": "Drill",
+   "name": "ufo-taps/validation-6102",
+   "normal_attempts": 14,
+   "practice_attempts": 0,
+   "normal_clears": 11,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g1-s1207 (normal attempt 2)"
+  },
+  {
+   "level": "drill:ufo-to-wave/train-5117",
+   "kind": "Drill",
+   "name": "ufo-to-wave-train-5117",
+   "normal_attempts": 1,
+   "practice_attempts": 586,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:ufo-to-wave/train-8117",
+   "kind": "Drill",
+   "name": "ufo-to-wave-train-8117",
+   "normal_attempts": 1,
+   "practice_attempts": 584,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:ufo-to-wave/train-9117",
+   "kind": "Drill",
+   "name": "ufo-to-wave-train-9117",
+   "normal_attempts": 1,
+   "practice_attempts": 505,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:ufo-to-wave/heldout-7117",
+   "kind": "Drill",
+   "name": "ufo-to-wave/heldout-7117",
+   "normal_attempts": 35,
+   "practice_attempts": 397,
+   "normal_clears": 9,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g1-s1207 (normal attempt 2)"
+  },
+  {
+   "level": "drill:ufo-to-wave/validation-6117",
+   "kind": "Drill",
+   "name": "ufo-to-wave/validation-6117",
+   "normal_attempts": 29,
+   "practice_attempts": 0,
+   "normal_clears": 2,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5b-base-validation (normal attempt 1)"
+  },
+  {
+   "level": "drill:wave-corridor/train-5103",
+   "kind": "Drill",
+   "name": "wave-corridor-train-5103",
+   "normal_attempts": 1,
+   "practice_attempts": 322,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:wave-corridor/train-8103",
+   "kind": "Drill",
+   "name": "wave-corridor-train-8103",
+   "normal_attempts": 1,
+   "practice_attempts": 322,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:wave-corridor/train-9103",
+   "kind": "Drill",
+   "name": "wave-corridor-train-9103",
+   "normal_attempts": 1,
+   "practice_attempts": 361,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:wave-corridor/heldout-7103",
+   "kind": "Drill",
+   "name": "wave-corridor/heldout-7103",
+   "normal_attempts": 38,
+   "practice_attempts": 435,
+   "normal_clears": 5,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-anchor (normal attempt 1)"
+  },
+  {
+   "level": "drill:wave-corridor/validation-6103",
+   "kind": "Drill",
+   "name": "wave-corridor/validation-6103",
+   "normal_attempts": 33,
+   "practice_attempts": 0,
+   "normal_clears": 0,
+   "best_progress_pct": 61.2,
+   "first_cleared_by": ""
+  },
+  {
+   "level": "drill:yellow-orb/train-1105",
+   "kind": "Drill",
+   "name": "yellow-orb-train-1105",
+   "normal_attempts": 1,
+   "practice_attempts": 270,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:yellow-orb/heldout-2105",
+   "kind": "Drill",
+   "name": "yellow-orb/heldout-2105",
+   "normal_attempts": 32,
+   "practice_attempts": 131,
+   "normal_clears": 15,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m4-control (normal attempt 1)"
+  },
+  {
+   "level": "drill:yellow-orb/validation-4105",
+   "kind": "Drill",
+   "name": "yellow-orb/validation-4105",
+   "normal_attempts": 25,
+   "practice_attempts": 0,
+   "normal_clears": 4,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g2-s2357 (normal attempt 1)"
+  },
+  {
+   "level": "drill:yellow-pad/train-5107",
+   "kind": "Drill",
+   "name": "yellow-pad-train-5107",
+   "normal_attempts": 1,
+   "practice_attempts": 74,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:yellow-pad/train-8107",
+   "kind": "Drill",
+   "name": "yellow-pad-train-8107",
+   "normal_attempts": 1,
+   "practice_attempts": 70,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:yellow-pad/train-9107",
+   "kind": "Drill",
+   "name": "yellow-pad-train-9107",
+   "normal_attempts": 1,
+   "practice_attempts": 70,
+   "normal_clears": 1,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m6-search (normal attempt 1)"
+  },
+  {
+   "level": "drill:yellow-pad/heldout-7107",
+   "kind": "Drill",
+   "name": "yellow-pad/heldout-7107",
+   "normal_attempts": 22,
+   "practice_attempts": 61,
+   "normal_clears": 18,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g1-s1207 (normal attempt 1)"
+  },
+  {
+   "level": "drill:yellow-pad/validation-6107",
+   "kind": "Drill",
+   "name": "yellow-pad/validation-6107",
+   "normal_attempts": 13,
+   "practice_attempts": 0,
+   "normal_clears": 10,
+   "best_progress_pct": 100.0,
+   "first_cleared_by": "m5-g1-s1207 (normal attempt 1)"
+  }
+ ],
+ "meta": [
+  {
+   "label": "Normal attempt",
+   "value": "a full run from 0% with practice off"
+  },
+  {
+   "label": "Practice attempt",
+   "value": "a reset from a checkpoint: practice drilling, timing search, and each candidate the search teacher evaluates"
+  }
+ ]
+}

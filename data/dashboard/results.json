@@ -36,8 +36,8 @@
    "study": "M3 scaled (3 seeds, ~1M steps)",
    "agent": "PPO set encoder",
    "first_run_progress_pct": 27.7,
-   "clears_within_3": 3.0,
-   "first_try_clears": 1.0,
+   "clears_within_3": 3,
+   "first_try_clears": 1,
    "drills": 9
   },
   {
@@ -45,7 +45,7 @@
    "agent": "Behaviour cloning (top-K)",
    "first_run_progress_pct": 73.1,
    "clears_within_3": 6.3,
-   "first_try_clears": 6.0,
+   "first_try_clears": 6,
    "drills": 9
   },
   {
@@ -61,7 +61,7 @@
    "agent": "Cloning, no practice",
    "first_run_progress_pct": 73.1,
    "clears_within_3": 6.3,
-   "first_try_clears": 6.0,
+   "first_try_clears": 6,
    "drills": 9
   },
   {
@@ -69,14 +69,14 @@
    "agent": "Cloning + checkpoint practice",
    "first_run_progress_pct": 73.1,
    "clears_within_3": 7.7,
-   "first_try_clears": 6.0,
+   "first_try_clears": 6,
    "drills": 9
   },
   {
    "study": "M5 generations (3 seeds, 27 unseen drills)",
    "agent": "Generation 1",
    "first_run_progress_pct": 71.5,
-   "clears_within_3": 21.0,
+   "clears_within_3": 21,
    "first_try_clears": null,
    "drills": 27
   },
@@ -84,7 +84,7 @@
    "study": "M5 generations (3 seeds, 27 unseen drills)",
    "agent": "Generation 3",
    "first_run_progress_pct": 73.4,
-   "clears_within_3": 19.0,
+   "clears_within_3": 19,
    "first_try_clears": null,
    "drills": 27
   },
@@ -99,7 +99,7 @@
   {
    "study": "M5b encoder comparison (seed 2357, 27 validation drills)",
    "agent": "Original features",
-   "first_run_progress_pct": 78.0,
+   "first_run_progress_pct": 78,
    "clears_within_3": 19,
    "first_try_clears": null,
    "drills": 27
@@ -107,7 +107,7 @@
   {
    "study": "M5b encoder comparison (seed 2357, 27 validation drills)",
    "agent": "Collision 'route' features",
-   "first_run_progress_pct": 87.0,
+   "first_run_progress_pct": 87,
    "clears_within_3": 22,
    "first_try_clears": null,
    "drills": 27
@@ -119,6 +119,156 @@
    "clears_within_3": 0,
    "first_try_clears": 0,
    "drills": 10
+  },
+  {
+   "study": "M5c expert clone (10 frozen online levels)",
+   "agent": "Route features + three official search demos",
+   "first_run_progress_pct": 5.1,
+   "clears_within_3": null,
+   "first_try_clears": 0,
+   "drills": 10
+  },
+  {
+   "study": "M5c triple-spike follow-up (one unseen drill, seed 2357)",
+   "agent": "Expert clone",
+   "first_run_progress_pct": 10,
+   "clears_within_3": 0,
+   "first_try_clears": 0,
+   "drills": 1
+  },
+  {
+   "study": "M5c triple-spike follow-up (one unseen drill, seed 2357)",
+   "agent": "Expert clone + training search tape",
+   "first_run_progress_pct": 99.1,
+   "clears_within_3": 1,
+   "first_try_clears": 0,
+   "drills": 1
+  },
+  {
+   "study": "M6 DAgger (27 held-out drills)",
+   "agent": "Starting policy",
+   "first_run_progress_pct": 59.5,
+   "clears_within_3": null,
+   "first_try_clears": 8,
+   "drills": 27,
+   "input_timing": "tick"
+  },
+  {
+   "study": "M6 DAgger (10 held-out online levels)",
+   "agent": "Starting policy",
+   "first_run_progress_pct": 5.06,
+   "clears_within_3": null,
+   "first_try_clears": 0,
+   "drills": 10,
+   "input_timing": "tick"
+  },
+  {
+   "study": "M6 DAgger (27 held-out drills)",
+   "agent": "Expert-only, round 1",
+   "first_run_progress_pct": 65.98,
+   "clears_within_3": null,
+   "first_try_clears": 8,
+   "drills": 27,
+   "input_timing": "tick"
+  },
+  {
+   "study": "M6 DAgger (10 held-out online levels)",
+   "agent": "Expert-only, round 1",
+   "first_run_progress_pct": 4.78,
+   "clears_within_3": null,
+   "first_try_clears": 0,
+   "drills": 10,
+   "input_timing": "tick"
+  },
+  {
+   "study": "M6 DAgger (27 held-out drills)",
+   "agent": "Expert-only, round 2",
+   "first_run_progress_pct": 65.51,
+   "clears_within_3": null,
+   "first_try_clears": 10,
+   "drills": 27,
+   "input_timing": "tick"
+  },
+  {
+   "study": "M6 DAgger (10 held-out online levels)",
+   "agent": "Expert-only, round 2",
+   "first_run_progress_pct": 5.22,
+   "clears_within_3": null,
+   "first_try_clears": 0,
+   "drills": 10,
+   "input_timing": "tick"
+  },
+  {
+   "study": "M6 DAgger (27 held-out drills)",
+   "agent": "DAgger, round 1",
+   "first_run_progress_pct": 76.6,
+   "clears_within_3": null,
+   "first_try_clears": 16,
+   "drills": 27,
+   "input_timing": "tick"
+  },
+  {
+   "study": "M6 DAgger (10 held-out online levels)",
+   "agent": "DAgger, round 1",
+   "first_run_progress_pct": 5.66,
+   "clears_within_3": null,
+   "first_try_clears": 0,
+   "drills": 10,
+   "input_timing": "tick"
+  },
+  {
+   "study": "M6 DAgger (27 held-out drills)",
+   "agent": "DAgger, round 2",
+   "first_run_progress_pct": 67.66,
+   "clears_within_3": null,
+   "first_try_clears": 11,
+   "drills": 27,
+   "input_timing": "tick"
+  },
+  {
+   "study": "M6 DAgger (10 held-out online levels)",
+   "agent": "DAgger, round 2",
+   "first_run_progress_pct": 5.45,
+   "clears_within_3": null,
+   "first_try_clears": 0,
+   "drills": 10,
+   "input_timing": "tick"
+  },
+  {
+   "study": "M5c multi-tape triple spike (3 seeds)",
+   "agent": "One training tape",
+   "first_run_progress_pct": 20.14,
+   "clears_within_3": 0,
+   "first_try_clears": 0,
+   "drills": 3,
+   "input_timing": "tick"
+  },
+  {
+   "study": "M5c multi-tape regression (26 drills ? 3 seeds)",
+   "agent": "One training tape",
+   "first_run_progress_pct": 66.26,
+   "clears_within_3": null,
+   "first_try_clears": 29,
+   "drills": 78,
+   "input_timing": "tick"
+  },
+  {
+   "study": "M5c multi-tape triple spike (3 seeds)",
+   "agent": "Three training tapes",
+   "first_run_progress_pct": 21.88,
+   "clears_within_3": 0,
+   "first_try_clears": 0,
+   "drills": 3,
+   "input_timing": "tick"
+  },
+  {
+   "study": "M5c multi-tape regression (26 drills ? 3 seeds)",
+   "agent": "Three training tapes",
+   "first_run_progress_pct": 64.53,
+   "clears_within_3": null,
+   "first_try_clears": 25,
+   "drills": 78,
+   "input_timing": "tick"
   }
  ],
  "meta": [

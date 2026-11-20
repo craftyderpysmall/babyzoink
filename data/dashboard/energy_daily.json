@@ -2,12 +2,21 @@
  "rows": [
   {
    "date": "2026-11-18",
-   "gd_cpu_hours": 3.149,
-   "training_cpu_hours": 9.893,
-   "kwh": 0.02282,
-   "cost_usd": 0.00679,
-   "cumulative_kwh": 0.02282,
-   "cumulative_cost_usd": 0.00679
+   "gd_cpu_hours": 6.136,
+   "training_cpu_hours": 10.018,
+   "kwh": 0.02827,
+   "cost_usd": 0.00841,
+   "cumulative_kwh": 0.02827,
+   "cumulative_cost_usd": 0.00841
+  },
+  {
+   "date": "2026-11-19",
+   "gd_cpu_hours": 6.031,
+   "training_cpu_hours": 0.902,
+   "kwh": 0.01213,
+   "cost_usd": 0.00361,
+   "cumulative_kwh": 0.0404,
+   "cumulative_cost_usd": 0.01202
   }
  ],
  "meta": [
@@ -25,7 +34,7 @@
   },
   {
    "label": "Generated",
-   "value": "2026-11-18 20:03 PST"
+   "value": "2026-11-19 20:03 PST"
   }
  ]
 }
