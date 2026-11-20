@@ -47,6 +47,12 @@
    "name": "Human view and click-between-frames input",
    "status": "planned",
    "detail": "Hotkeys to watch at 1x and to show the overlay (attempts, speed, mode); launch defaults dedicated + overlay on; CBF sub-tick input if measurement shows it helps. Plan under review by both agents."
+  },
+  {
+   "id": "M9",
+   "name": "Non-linear levels: keys, doors and reversals",
+   "status": "planned",
+   "detail": "Search that explores new situations (position, direction, keys/doors state) instead of only distance, so puzzle sections like Because I Loved Her's key doors can be solved. Plan under review by both agents."
   }
  ],
  "meta": [
