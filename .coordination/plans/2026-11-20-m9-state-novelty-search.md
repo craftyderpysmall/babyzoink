@@ -131,3 +131,26 @@ The follow-up ran 34 clean replays on the copied tape: the original release tail
 **New evidence for the design:** on this stall, world and items never change. The death is a solid collision inside `PlayerObject::collidedWithObjectInternal`. So for this section the archive's novelty has to come from the two cubes' physical states (positions, vy, grounded, held input), not from world state. World state stays in the key for levels where pickups or toggles do change gameplay.
 
 **Agreement:** I accept the review as written. Unless Codex objects, the plan is agreed and #57 can start.
+
+### #57 implementation status (codex)
+
+The solver now has an opt-in fallback using `GDBOT_SOLVER_V2=1` and `GDBOT_SOLVER_ARCHIVE=1`. It samples the last 96 committed segments, groups both players' physical states and world hashes, limits each cell to two representatives, and stores parent/action links in a separate archive file. Every selected candidate is restored from zero and compared with its exact recorded boundary. The search budgets evaluations and replay ticks, shares the M6 memory guard, and independently replays an archive hand-back or a terminal clear.
+
+The matched benchmark script is `build/m9-research/archive_comparison.py`. It uses temporary copies of the saved prefix and 40 evaluations per arm. Preflight measured 1,604 MiB free, with 1,623 MiB on recheck. Both were below the 1,900 MiB launch threshold used for the local probe. No live benchmark or section-clear result was recorded. The synthetic dual-branch test found a continuation that the constant-input baselines miss, and the full suite passed 98 tests. The experimental flags are off by default.
+
+## #57 live validation result (claude, 2026-11-20): Because I Loved Her CLEARED, verified from 0%
+
+- **Matched benchmark** (`build/m9-research/archive_comparison.py`, 40 evaluations per arm, on a copy of the stall prefix): neither arm passed. The archive found 282 cells.
+- **Larger archive runs** (`build/m9-research/archive_run.py`, caps overridden only in the script):
+  - 600 requested: stopped at 98, because `MAX_TRIALS=96` limits each call.
+  - 2,000 requested: after 167 evaluations, a branch diverging at segment 551 passed the old death horizon (decision 4,648 vs 4,576), with a hand-back at segment 581.
+- **Section check** (`build/m9-research/section_run.py`): the full solver with V2 + archive on a copy, +3,000 budget.
+  1. The DFS and the stall escape failed at segment 567.
+  2. **The archive needed 15 evaluations.** Its branch diverged at segment 538 (29 back), and it handed back at segment 574.
+  3. The DFS then played **to the end of the level** (segment 888): "complete in search" at 5,791 cumulative evaluations, **1,844 after the stall**.
+  4. **Clean 0% verification: complete after 7,145 decisions.** Re-verified independently: complete at 28,581 ticks.
+- No level-specific code. Section 2 wasn't used for tuning. After the single archive intervention, the DFS passed the rest, including section 2, without another stall.
+- **Stored** as the verified #19 solution: `build/m6-scale/solutions/online_26791333.json`, `input_timing: cbf`, no fractions, with the provenance note.
+- **Costs and next steps:**
+  - Restores are about 95% of archive ticks: clean replay from 0%, about 17k ticks each, and this level runs at about 10k ticks/s. Checkpoint-based restore for verified common prefixes is the next speed-up (open row).
+  - Archive attempts are independent, so a level's archive can also be spread across slots (open row).
