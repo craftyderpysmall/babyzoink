@@ -31,6 +31,7 @@ std::atomic<bool> g_client_gone{false};
 bool g_close_after_reply = false;
 std::wstring g_pipe_name;
 void send_reply(const json& r);
+bool update_ready();
 
 // ---- session state (game thread only) ----
 enum class Mode { Normal, Dedicated, Background };
@@ -359,6 +360,7 @@ json op_hello(const json& req) {
                          {"objects", true}, {"level_string", true}, {"quit_level", true}, {"debug_peek", debug_enabled()}, {"isolation", true},
                          {"set_render", g_draw_skip_supported}, {"agent_colors", true},
                          {"watch_1x", true}, {"overlay", true}, {"session", true}, {"cbf", g_cbf_ok}};
+    r["ready"] = update_ready();  // false: load_level is held until the menu is up (no client sleep needed)
     r["mode"] = mode_str(g_mode);
     r["isolation"] = {{"saves_redirected", g_iso.saves_redirected && g_iso.file_guard},
                       {"http_blocked", g_iso.http_blocked}};
@@ -422,7 +424,39 @@ void begin_load(const json& req, void* level, json info) {
     g_load_reply["level"] = std::move(info);
 }
 
+// Game readiness (Codex review of #46): a load_level right after a fresh start crashed in PlayLayer::init while
+// GD was still on its loading screen. Ready = the running scene has changed from the first one seen (loading ->
+// menu) and stayed for 30 frames, or 10 s since the bridge started (fallback). Until then load_level is deferred.
+using GetScene_t = void*(__fastcall*)(void*);
+bool g_ready = false;
+json g_early_load;  // a load_level that arrived before the game was ready
+bool update_ready() {
+    if (g_ready) return true;
+    static void* s_first = nullptr;
+    static void* s_last = nullptr;
+    static int s_same = 0;
+    static ULONGLONG s_t0 = GetTickCount64();
+    static GetScene_t s_get = nullptr;
+    if (!s_get) {
+        HMODULE cc = GetModuleHandleW(L"libcocos2d.dll");
+        s_get = cc ? (GetScene_t)GetProcAddress(cc, "?getRunningScene@CCDirector@cocos2d@@QEAAPEAVCCScene@2@XZ") : nullptr;
+    }
+    void* scene = (s_get && f_sharedDirector) ? s_get(f_sharedDirector()) : nullptr;
+    if (scene && !s_first) s_first = scene;
+    if (scene == s_last) ++s_same; else { s_last = scene; s_same = 0; }
+    if ((scene && scene != s_first && s_same >= 30) || GetTickCount64() - s_t0 > 10000) {
+        g_ready = true;
+        GLOG("game ready for load_level (%s)", scene != s_first ? "menu scene up" : "10 s fallback");
+    }
+    return g_ready;
+}
+
 json op_load_level(const json& req) {
+    if (!update_ready()) {
+        GLOG("load_level before the game is ready: deferred until the menu is up");
+        g_early_load = req;
+        return json();
+    }
     const json& lv = req.value("level", json::object());
     std::string kind = lv.value("kind", "");
     if (g_layer) return err(req, "BAD_REQUEST", "already in a level; send quit_level first");
@@ -616,6 +650,9 @@ double g_pace_last_ms = 0.0, g_pace_carry = 0.0;
 bool exec_advance(Exec& e, long long max_ticks) {
     const long long start = g_tick;
     while (e.idx < e.actions.size() && !e.terminal && e.error.empty()) {
+        // Paced (watch) runs: never apply the next decision's input on a frame with no tick budget left;
+        // it is applied at the start of the frame that runs that decision's first tick, as on the fast path.
+        if (g_tick - start >= max_ticks) return false;
         if (!e.pressed) {
             bool down = e.actions[e.idx] == 1;
             double f = e.fracs.empty() ? 0.0 : e.fracs[e.idx];
@@ -725,10 +762,12 @@ void exec_pace_frame() {
 }
 
 // Optional CBF fractions: finite, in [0, 1). Returns an error message, or empty on success.
-std::string parse_fracs(const json& req, const char* key, size_t n, std::vector<double>* out) {
+std::string parse_fracs(const json& req, const char* key, size_t n, std::vector<double>* out, bool scalar) {
     if (!req.contains(key)) return "";
     const json& v = req[key];
     std::vector<double> f;
+    if (scalar && !v.is_number()) return std::string(key) + " must be a number";
+    if (!scalar && !v.is_array()) return std::string(key) + " must be an array with one number per action";
     if (v.is_number()) {
         f.push_back(v.get<double>());
     } else if (v.is_array()) {
@@ -759,7 +798,7 @@ json op_step(const json& req) {
     e.req = req;
     e.actions = {action};
     e.k = k;
-    if (std::string m = parse_fracs(req, "frac", 1, &e.fracs); !m.empty()) return err(req, "BAD_REQUEST", m);
+    if (std::string m = parse_fracs(req, "frac", 1, &e.fracs, true); !m.empty()) return err(req, "BAD_REQUEST", m);
     return exec_start(std::move(e));
 }
 
@@ -785,7 +824,7 @@ json op_step_seq(const json& req) {
         if (!a.is_number_integer() || (a.get<int>() != 0 && a.get<int>() != 1)) return err(req, "BAD_REQUEST", "actions must be 0/1");
         e.actions.push_back(a.get<int>());
     }
-    if (std::string m = parse_fracs(req, "fracs", e.actions.size(), &e.fracs); !m.empty()) return err(req, "BAD_REQUEST", m);
+    if (std::string m = parse_fracs(req, "fracs", e.actions.size(), &e.fracs, false); !m.empty()) return err(req, "BAD_REQUEST", m);
     return exec_start(std::move(e));
 }
 
@@ -1038,6 +1077,7 @@ void release_control(const char* why) {
     press(false);
     g_controlled = false;
     g_exec.active = false;  // a paced request whose client left: drop it (no one to reply to)
+    g_early_load = json();
     cbf_clear();
     view_release();
     g_trace = false;
@@ -1254,6 +1294,14 @@ void control_frame(float) {
     install_no_minimize();
     if (g_client_gone.exchange(false)) release_control("client disconnected");
     view_frame(mode_str(g_mode), g_layer ? progress() : 0.0f);
+    if (!g_early_load.is_null() && update_ready()) {
+        json req = std::move(g_early_load);
+        g_early_load = json();
+        json r = op_load_level(req);
+        if (!r.is_null()) send_reply(r);
+        return;
+    }
+    update_ready();
     if (g_exec.active) {      // a step/step_seq paced at 1x: nothing else is served until it replies
         exec_pace_frame();
         return;

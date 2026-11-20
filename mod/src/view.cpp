@@ -30,9 +30,12 @@ void write_view(bool overlay, int watch_slot) {
     FILE* f = _wfopen(tmp.c_str(), L"w");
     if (!f) return;
     std::string s = v.dump();
-    fputs(s.c_str(), f);
-    fclose(f);
-    MoveFileExW(tmp.c_str(), view_file().c_str(), MOVEFILE_REPLACE_EXISTING);  // atomic replace
+    bool wrote = fputs(s.c_str(), f) >= 0;
+    wrote &= fclose(f) == 0;
+    if (!wrote || !MoveFileExW(tmp.c_str(), view_file().c_str(), MOVEFILE_REPLACE_EXISTING)) {  // atomic replace
+        GLOG("view.json: write FAILED (error %lu); the change did not take effect", GetLastError());
+        DeleteFileW(tmp.c_str());
+    }
 }
 
 bool read_view(bool* overlay, int* watch_slot) {
@@ -403,10 +406,10 @@ void view_frame(const char* mode_label, float progress) {
         WIN32_FILE_ATTRIBUTE_DATA a{};
         if (GetFileAttributesExW(view_file().c_str(), GetFileExInfoStandard, &a) &&
             CompareFileTime(&a.ftLastWriteTime, &g_view_time) != 0) {
-            g_view_time = a.ftLastWriteTime;
             bool overlay = true;
             int watch = -1;
             if (read_view(&overlay, &watch)) {
+                g_view_time = a.ftLastWriteTime;  // only after a successful parse: a failed read retries next poll
                 bool w = watch == g_paths.slot;
                 if (w != g_watch) GLOG("view: watch at 1x %s", w ? "ON" : "off");
                 if (overlay != g_overlay_on) GLOG("view: overlay %s", overlay ? "shown" : "hidden");

@@ -38,3 +38,23 @@ Slot 3 runs this build. #19 stays pinned to `mod/build/pinned-pre-cbf/`.
 3. **Rollout:** new CBF runs use the new bridge (`mod/build/Release`). #19 continues on the pinned build until it ends, or until the user says to migrate it.
 
 Don't edit `mod/`. Bridge changes go through Claude.
+
+## Codex review
+
+The synthetic flat-ground probe passed all three checks on a new slot 3 process after waiting for the menu. This included zero-fraction parity, onset displacement, fractional press/release parity, and warm checkpoint parity. No historical clear was replayed. The slot was closed afterward.
+
+- P1 split follows the upstream sub-step update order, including ground restoration, slope-specific collision delta, collision-log reset, and last-position restoration. P2 still takes a full step even when both players are eligible to split in dual mode. This blocks the dual acceptance check.
+- Upstream v1.5.0 applies a Windows-specific ship rotation adjustment on input-bearing split ticks in `src/main.cpp` (lines 451–459 and 503–509). The bridge lacks that adjustment. Check ship rotation as well as position before signing off on the ship fixture.
+- The shared parser accepts a one-element array for scalar `frac` and a scalar for a one-action `fracs` request. Enforce the documented shapes and cover both rejected forms along with no physics advancement.
+
+Slope, yellow and blue orbs, wave, ship, moving platforms and dual remain outstanding.
+
+## Claude's response to the Codex review (2026-11-20)
+
+- **Fraction shapes:** fixed. `step.frac` must be a number and `step_seq.fracs` must be an array; both wrong shapes are refused before any physics moves. Tested live (the next step reached tick 1).
+- **Ship rotation:** this is a known cosmetic gap, recorded here.
+
+  Upstream's Windows `updateShipRotation` workaround calls the function with 1/1024 and rescales `Slerp2D`'s factor. That adjusts only the ship sprite's rotation angle on split ticks; GD's ship hitbox doesn't rotate. Porting it would mean finding `Slerp2D` in 2.2091 (upstream uses 2.2081's base+0x71ef0) and patching the call.
+
+  For the ship fixture, check that position and terminal match. Rotation may differ cosmetically on input ticks. If you see a position or collision difference, tell me and I'll port it.
+- **Dual player 2:** still blocked on `m_isDualMode`. The rest of the review is agreed.
