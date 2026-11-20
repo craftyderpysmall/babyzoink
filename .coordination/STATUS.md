@@ -73,9 +73,9 @@ One row per run. Don't take rows marked `waiting`. If a handoff conflicts with a
 | 49 | Dashboard export fails on the new `open` queue state. Support open rows and verify the real queue exports successfully. | reviews/2026-11-19-safety-review-codex.md | no | done: exports open jobs as unassigned; real queue and regression test passed |
 | 50 | Eliminate the remaining slot cleanup race by verifying and terminating through the same process handle. Follow-up to #34. | handoffs/2026-11-19-codex-to-claude-process-cleanup-review.md | no | done: verified Windows handle covers identity, termination and exit; offline tests passed |
 | 52 | Native M8 review follow-up: reject premature level loads, fix watched frame input boundary and view file retries, validate fraction shape, review ship and dual behavior | handoffs/2026-11-20-codex-to-claude-m8-review-findings.md | yes | open |
-| 55 | M9 research (docs/m9/PROBLEM.md; level is a visual facade: dual mode + pickups; work from hitboxes/engine state, not art): both players, death attribution, groups/items toggled by pickups; GameObject m_isGroupDisabled/m_isActivated offsets, item counters; depth of the bad jump vs death; review the M9 plan | handoffs/2026-11-20-claude-to-codex-m9-novelty.md | yes | queued |
-| 56 | (claude) M9 bridge: step_seq/reset report state {going_left, world_hash, items_hash}, opt-in per-decision cells | plans/2026-11-20-m9-state-novelty-search.md | yes | part 1 done (claude): dual flag 0x3f3, player 2 in obs/replies, death attribution (player, object), going_left, CBF p2 split; part 2 (world_hash) waiting: #55 offsets |
-| 57 | M9 solver: archive (Go-Explore-style) exploration as the stall fallback, time-based progress, behind GDBOT_SOLVER_ARCHIVE=1; pass Because I Loved Her sections 1 and 2 without level-specific code | plans/2026-11-20-m9-state-novelty-search.md | yes | waiting: #55, #56 |
+| 55 | M9 research (docs/m9/PROBLEM.md; level is a visual facade: dual mode + pickups; work from hitboxes/engine state, not art): both players, death attribution, groups/items toggled by pickups; GameObject m_isGroupDisabled/m_isActivated offsets, item counters; depth of the bad jump vs death; review the M9 plan | handoffs/2026-11-20-claude-to-codex-m9-novelty.md | yes | done: plan review, engine offsets and scoped live results recorded; P1 death has no object ID, item map stayed unchanged, 34 jump trials found no pass |
+| 56 | (claude) M9 bridge: step_seq/reset report state {going_left, world_hash, items_hash}, opt-in per-decision cells | plans/2026-11-20-m9-state-novelty-search.md | yes | done (claude): dual, player 2, death attribution (+object_null, caller_rva), world_hash/items_hash in replies, per-decision cells; see docs/PROTOCOL.md M9 sections |
+| 57 | M9 solver: archive (Go-Explore-style) exploration as the stall fallback, time-based progress, behind GDBOT_SOLVER_ARCHIVE=1; pass Because I Loved Her sections 1 and 2 without level-specific code | plans/2026-11-20-m9-state-novelty-search.md | yes | queued: plan agreed (Claude accepted Codex round 1); #56 done. Build behind GDBOT_SOLVER_ARCHIVE=1 on top of V2; novelty here must come from both cubes' physical state (world/items never change on this stall) |
 
 ## Where we stopped (2026-11-19, read this first)
 
@@ -139,6 +139,7 @@ One row per run. Don't take rows marked `waiting`. If a handoff conflicts with a
 | claude | Slot 1 used for both #20 and #21 | handoffs/2026-11-19-codex-to-claude-m6-policy-slot.md | pending |
 | claude | Native M8 review follow-up (#52) | handoffs/2026-11-20-codex-to-claude-m8-review-findings.md | pending |
 | claude | Review opt-in rollout for #38, #39 and #51 | handoffs/2026-11-20-codex-to-claude-solver-frontier.md | pending |
+| claude | M9 round-one plan review and confirmed #56 offsets | handoffs/2026-11-20-codex-to-claude-m9-review.md | pending |
 
 ## Decisions awaiting user
 

@@ -158,6 +158,10 @@ void __fastcall h_destroyPlayer(void* self, void* player, void* obj) {
     if (obj != g_anticheat_obj && !g_death.set) {  // M9: which player died, on what (first real death per episode)
         g_death.set = true;
         g_death.player = player && player == player2() ? 2 : 1;
+        g_death.object_null = obj == nullptr;
+        g_death.obj_disabled = obj && read_field<uint8_t>(obj, fields::kObjGroupDisabled) != 0;
+        uintptr_t ra = reinterpret_cast<uintptr_t>(_ReturnAddress());
+        g_death.caller_rva = ra >= g_exe_base && ra < g_exe_base + 0x2000000 ? ra - g_exe_base : 0;
         g_death.obj_id = obj ? read_field<int>(obj, fields::kObjID) : 0;
         g_death.obj_type = obj ? read_field<int>(obj, fields::kObjType) : 0;
         g_death.uid = obj ? read_field<int>(obj, fields::kObjUniqueID) : 0;

@@ -339,3 +339,29 @@ User rule: CBF on every level. It uses the core mechanism of Click Between Frame
 - **`debug_peek`:** `target` also accepts `player2` (still needs `GDBOT_DEBUG=1`).
 - **Verified:** cbf_smoke 7/7, view_smoke 6/6 and cbf_probe 3/3 on this build. The Because I Loved Her stall replay reports dual, player 2 and the death record as above.
 - **Still to do (#56 part 2):** the world-state hash, which needs the #55 offsets for GameObject group-disabled/activated and the item counters.
+
+## Implemented: M9 #56 part 2, world state, archive cells, richer death record (2026-11-20, claude)
+
+The offsets are from Codex #55 (disassembly):
+- `GameObject::m_isGroupDisabled` 0x28e;
+- `m_isActivated` 0x305 (diagnostic only: it is bulk-toggled when a group is enabled, so it isn't a pickup signal);
+- `GJBaseGameLayer::m_effectManager` 0x968;
+- the item map in GJEffectManager at +0x330 (list head +0x338, size +0x340, node key/value +0x10/+0x14).
+
+New fields:
+- **`state`** in `reset`, `step` and `step_seq` replies: `{dual, world_hash, items_hash, items}`.
+  - `world_hash` is FNV-64 over the stable unique ids of the **gameplay** objects in the bridge's cache (solids, hazards, pads, orbs, portals) that are currently group-disabled.
+  - `items_hash` hashes the effective item counts, sorted by id.
+  - Activation and draw-cache bytes are excluded.
+  - The `reset` reply gives the fixed baseline, so two branches with the same toggled groups and items compare equal.
+- **`step_seq` with `"cells": true`** returns `cells`: one entry after every completed decision.
+  - Each entry: `{t, held, p1: [x, y, vy, on_ground, mode, upside_down, going_left], p2: same or null, world, items}`. `p2` is filled only in dual mode.
+  - Deterministic: two replays of Because I Loved Her gave identical lists of 4,567 cells. Cost: about 2.2 s for that 18k-tick replay.
+- **`death`** now also has:
+  - `object_null`;
+  - `object_group_disabled`;
+  - `caller_rva`: the exe-relative return address of the `PlayLayer::destroyPlayer` call.
+
+**Findings on the Because I Loved Her stall:**
+- No gameplay object's group-disabled state and no item count changes in the whole run; `world_hash` stays at the empty-set value. The group-98 toggle Codex measured enables the key objects, which aren't gameplay objects. The keys and doors are decoration at the collision level, as the user saw with hitboxes. The section is a physical routing problem for two dual-mode cubes.
+- The death: player 1, `object_null: true`, `caller_rva 0x4f1a22`. That's inside `PlayerObject::collidedWithObjectInternal` (0x4efd50 in the bindings), so it **is a solid collision** (side or crush), not a scripted or boundary kill.

@@ -291,6 +291,70 @@ json objects_json(float px, bool* truncated) {
     return out;
 }
 
+unsigned long long fnv(unsigned long long h, const void* p, size_t n) {
+    const unsigned char* b = static_cast<const unsigned char*>(p);
+    for (size_t i = 0; i < n; ++i) { h ^= b[i]; h *= 1099511628211ull; }
+    return h;
+}
+
+// Effective item counts (id -> value), sorted by id; empty if unmapped. Bounded walk of the MSVC list.
+std::vector<std::pair<int, int>> item_counts() {
+    std::vector<std::pair<int, int>> out;
+    void* em = g_layer ? read_field<void*>(g_layer, fields::kLayerEffectManager) : nullptr;
+    if (!em) return out;
+    size_t n = read_field<size_t>(em, fields::kEffItemMapSize);
+    void* head = read_field<void*>(em, fields::kEffItemMapHead);
+    if (!head || n > 100000) return out;
+    void* node = read_field<void*>(head, 0);
+    for (size_t i = 0; node && node != head && i < n; ++i) {
+        out.push_back({read_field<int>(node, 0x10), read_field<int>(node, 0x14)});
+        node = read_field<void*>(node, 0);
+    }
+    std::sort(out.begin(), out.end());
+    return out;
+}
+
+// Gameplay world state: which cached gameplay objects (solids, hazards, pads, orbs, portals) are group-disabled,
+// by stable unique id, plus item counts. Two branches with the same toggled groups and items hash equal.
+unsigned long long world_hash() {
+    unsigned long long h = 1469598103934665603ull;
+    for (const CachedObj& c : g_objs) {
+        if (!read_field<uint8_t>(c.obj, fields::kObjGroupDisabled)) continue;
+        int uid = read_field<int>(c.obj, fields::kObjUniqueID);
+        h = fnv(h, &uid, sizeof uid);
+    }
+    return h;
+}
+unsigned long long items_hash(size_t* count) {
+    auto items = item_counts();
+    if (count) *count = items.size();
+    unsigned long long h = 1469598103934665603ull;
+    for (const auto& kv : items) { h = fnv(h, &kv.first, 4); h = fnv(h, &kv.second, 4); }
+    return h;
+}
+std::string hex64(unsigned long long v) { char b[20]; snprintf(b, sizeof b, "%016llx", v); return b; }
+
+json state_json() {
+    size_t n_items = 0;
+    unsigned long long ih = items_hash(&n_items);
+    json s = {{"dual", dual_mode()}, {"world_hash", hex64(world_hash())}, {"items_hash", hex64(ih)}, {"items", n_items}};
+    return s;
+}
+
+// One archive cell observation (M9): both players' coarse physical state, held input, world/items hashes.
+json cell_json(long long tick) {
+    auto pl = [](void* p) -> json {
+        if (!p) return nullptr;
+        using namespace fields;
+        return json::array({read_field<float>(p, kPosTickX), read_field<float>(p, kPosTickY),
+                            read_field<double>(p, kYVelocity), read_field<uint8_t>(p, kIsOnGround),
+                            mode_name(p), read_field<uint8_t>(p, kIsUpsideDown), read_field<uint8_t>(p, kIsGoingLeft)});
+    };
+    bool dual = dual_mode();
+    return {{"t", tick}, {"held", g_held}, {"p1", pl(player1())}, {"p2", dual ? pl(player2()) : json()},
+            {"world", hex64(world_hash())}, {"items", hex64(items_hash(nullptr))}};
+}
+
 json obs_json() {
     void* p = player1();
     bool truncated = false;
@@ -621,6 +685,7 @@ json op_reset(const json& req) {
     bool cbs = false, cos = false;
     cbf_click_flags(&cbs, &cos);
     r["input_timing"] = {{"cbf", g_cbf_ok}, {"click_between_steps", cbs}, {"click_on_steps", cos}};
+    r["state"] = state_json();
     r["obs"] = obs_json();
     return r;
 }
@@ -638,6 +703,8 @@ struct Exec {
     bool cbf_armed = false;
     int k = 1;                // ticks per decision
     bool want_xs = false;
+    bool want_cells = false;  // M9: a cell observation after every completed decision
+    json cells = json::array();
     size_t idx = 0;           // current decision
     long long in_dec = 0;     // ticks done in the current decision
     bool pressed = false;     // the current decision's press/release has been applied
@@ -706,6 +773,7 @@ bool exec_advance(Exec& e, long long max_ticks) {
         if (e.terminal) break;
         ++e.decisions;
         if (e.want_xs) e.xs.push_back(read_field<float>(player1(), fields::kPosTickX));
+        if (e.want_cells) e.cells.push_back(cell_json(g_tick));
         ++e.idx;
         e.in_dec = 0;
         e.pressed = false;
@@ -724,6 +792,7 @@ json exec_reply(Exec& e) {
         r["decisions"] = e.decisions;
         r["player"] = player_json(player1());
         if (e.want_xs) r["xs"] = e.xs;
+        if (e.want_cells) r["cells"] = e.cells;
     } else {
         r["obs"] = obs_json();
         r["events"] = e.events;
@@ -731,10 +800,12 @@ json exec_reply(Exec& e) {
     }
     r["mode"] = mode_str(g_mode);  // so the trainer can match its own CPU use (threads, priority)
     r["dual"] = dual_mode();
+    r["state"] = state_json();
     if (e.seq && r["dual"].get<bool>()) r["player2"] = player_json(player2());
     if (e.terminal && std::string(e.terminal) == "death" && g_death.set)
-        r["death"] = {{"player", g_death.player}, {"object_id", g_death.obj_id}, {"object_type", g_death.obj_type},
-                      {"uid", g_death.uid}, {"x", g_death.x}, {"y", g_death.y}, {"tick", g_death.tick}};
+        r["death"] = {{"player", g_death.player}, {"object_null", g_death.object_null}, {"object_id", g_death.obj_id},
+                      {"object_type", g_death.obj_type}, {"uid", g_death.uid}, {"object_group_disabled", g_death.obj_disabled},
+                      {"x", g_death.x}, {"y", g_death.y}, {"tick", g_death.tick}, {"caller_rva", g_death.caller_rva}};
     float pr = e.terminal && std::string(e.terminal) == "complete" ? 1.0f : progress();
     if (pr > g_vstats.best) g_vstats.best = pr;
     return r;
@@ -830,6 +901,7 @@ json op_step_seq(const json& req) {
     e.req = req;
     e.k = k;
     e.want_xs = req.value("xs", false);
+    e.want_cells = req.value("cells", false);
     e.actions.reserve(actions.size());
     for (const json& a : actions) {  // validate the whole request before any physics moves
         if (!a.is_number_integer() || (a.get<int>() != 0 && a.get<int>() != 1)) return err(req, "BAD_REQUEST", "actions must be 0/1");

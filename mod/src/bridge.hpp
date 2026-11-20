@@ -58,6 +58,14 @@ constexpr size_t kObjID = 0x40c;                 // int (object id, e.g. 8 = spi
 constexpr size_t kLayerPlayer2 = 0xdc0;
 constexpr size_t kLayerDualMode = 0x3f3;
 constexpr size_t kIsGoingLeft = 0x9ca;           // between m_isOnGround 0x9c9 and m_isSideways 0x9cb (bindings order)
+// M9 world state (Codex #55, disassembly of exe 4eee06d5c2e2213b): GJBaseGameLayer::toggleGroup writes
+// GameObject::m_isGroupDisabled; activateObject/deactivateObject write m_isActivated (bulk-toggled on group
+// enables, so NOT used as a pickup signal); GJEffectManager::countForItem reads the item map.
+constexpr size_t kObjGroupDisabled = 0x28e;      // bool
+constexpr size_t kObjActivated = 0x305;          // bool (diagnostic only)
+constexpr size_t kLayerEffectManager = 0x968;    // GJEffectManager*
+constexpr size_t kEffItemMapHead = 0x338;        // MSVC unordered_map<int,int> at +0x330: list head node*; node key/value +0x10/+0x14
+constexpr size_t kEffItemMapSize = 0x340;
 }  // namespace fields
 
 // ---- shared game-thread state (written by hooks.cpp, read by control.cpp) ----
@@ -136,7 +144,11 @@ inline void* rva_ptr(offsets::Fn fn) {
 }
 
 // M9 death attribution: set by the PlayLayer::destroyPlayer hook (excluding GD's hidden anticheat spike).
-struct DeathInfo { bool set = false; int player = 0; int obj_id = 0, obj_type = 0, uid = 0; float x = 0, y = 0; long long tick = 0; };
+struct DeathInfo {
+    bool set = false; int player = 0; bool object_null = true; int obj_id = 0, obj_type = 0, uid = 0;
+    bool obj_disabled = false; float x = 0, y = 0; long long tick = 0;
+    unsigned long long caller_rva = 0;  // destroyPlayer's caller (exe-relative), to tell collision from scripted/boundary kills
+};
 inline DeathInfo g_death;
 
 inline void* player1() {
