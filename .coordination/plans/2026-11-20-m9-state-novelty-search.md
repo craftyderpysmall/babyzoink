@@ -169,3 +169,25 @@ The matched benchmark script is `build/m9-research/archive_comparison.py`. It us
 
 **Next improvement:** when one worker hands back past a stall, the others should adopt its progress, synchronizing on the winner's prefix, instead of continuing on their own copies. That needs a shared progress handoff between workers, so it's left as follow-up.
 
+## #58 checkpoint-restored archive (claude, 2026-11-20; opt-in `GDBOT_ARCHIVE_CHECKPOINTS=1`, default off)
+
+**How it works** (`tools/m5c/archive.py`):
+- **Setup:** after the archive's clean seed trace, one native checkpoint is placed at the deepest released boundary at or before the archive base. It's one decision before the base, with the released warm-up replayed, as in the DFS.
+- **Verified once:** a restore must reproduce the clean trace's first covered seed-node cell exactly, on all fields, tick-shifted.
+- **Each trial:** restore from the checkpoint, warm up, replay only `tape[base:-1]`, compare the exact boundary cell, and fall back to clean replay on any mismatch.
+- **Ticks:** the bridge restarts its tick count at every reset, so cells reached through the checkpoint are shifted by `k * (base - 1)` ticks. A checkpoint rebuilt by a clean run isn't shifted.
+- **Rebuilds:** a clean 0% reset (fallbacks, baseline runs) drops the checkpoint, so it's rebuilt lazily.
+
+**Diagnosis on the way:** `build/m9-research/ckpt_probe.py` showed clean, practice-on, the creating path and the checkpoint restore are all **identical** cell by cell on Because I Loved Her. Two bugs of mine were found and fixed:
+- the verification point lay before the clean trace;
+- a wrong shift after rebuilds caused a fallback/rebuild loop.
+
+**Matched benchmark** (same Because I Loved Her prefix copy, same seed and caps; `build/m9-research/archive_run.py`):
+
+| Arm | Hand-back | Evaluations | Restore ticks | Wall |
+| --- | --- | --- | --- | --- |
+| clean replay (default) | segment 581, after shared 551 | 167 | 2,860,224 | 304.2 s |
+| checkpoint restores | segment 581, after shared 551 (identical) | 167 | 1,446,268 (-49%) | 167.7 s (1.81x faster) |
+
+On 40 trials: 39 checkpoint restores; 9 fell back. Those were nodes that don't reproduce either way and are disabled, as before.
+
