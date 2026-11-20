@@ -5,16 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Geometry Dash training progress, practice results, and per-mode performance.">
   <title>Babyzoink · Training Dashboard</title>
-  <link rel="stylesheet" href="styles.css?v=overview-performance">
-  <script src="app.js?v=job-queue" type="module"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=resend-layout">
+  <script src="app.js?v=resend-layout" type="module"></script>
 </head>
 <body>
   <header class="bar">
     <div class="wrap bar-content">
-      <a class="brand" href="#overview"><span class="mark" aria-hidden="true"><i></i><i></i><i></i></span> Babyzoink</a>
+      <a class="brand" href="#overview"><span class="mark" aria-hidden="true"></span> Babyzoink</a>
       <nav aria-label="Dashboard pages">
         <a href="#overview" id="nav-overview">Overview</a>
         <a href="#performance" id="nav-performance">Performance</a>
+        <a href="#studies" id="nav-studies">Studies</a>
+        <a href="#jobs" id="nav-jobs">Job queue</a>
       </nav>
       <span class="updated" id="updated"></span>
     </div>
@@ -23,14 +28,30 @@
   <main class="wrap">
     <p class="error" id="error" role="alert" hidden></p>
     <section id="overview" aria-labelledby="overview-title">
-      <div class="heading">
-        <h1 id="overview-title">Training overview</h1>
-        <p>Geometry Dash learning, from the first replay to full-level clears.</p>
+      <div class="hero">
+        <div class="heading hero-copy">
+          <h1 id="overview-title">Training <em>overview</em></h1>
+          <p>Track how the Geometry Dash bot learns, from its first run to verified full-level clears.</p>
+          <div class="hero-actions">
+            <a class="button primary" href="#performance">Explore performance</a>
+            <a class="button" href="#jobs">View job queue</a>
+          </div>
+        </div>
+        <div class="hero-visual" aria-hidden="true">
+          <div class="wire-floor"></div>
+          <div class="orbit orbit-outer"></div><div class="orbit orbit-inner"></div>
+          <div class="cube"><span class="cube-top"></span><span class="cube-left"></span><span class="cube-right"></span></div>
+        </div>
       </div>
       <p class="performance-headline" id="performance-headline">
         <span id="official-clears">Official levels cleared —</span>
         <span id="policy-best">Trained-policy best —</span>
       </p>
+      <div class="stats">
+        <article><h2>Milestones complete</h2><strong id="done">—</strong><small id="next"></small></article>
+        <article><h2>Estimated energy</h2><strong id="energy">—</strong><small id="tracking"></small></article>
+        <article><h2>Estimated electricity cost</h2><strong id="cost">—</strong><small id="price"></small></article>
+      </div>
       <section class="overview-performance" aria-labelledby="overview-performance-title">
         <div class="performance-heading">
           <h2 id="overview-performance-title">Mode performance</h2>
@@ -54,11 +75,6 @@
           </table></div>
         </div>
       </section>
-      <div class="stats">
-        <article><h2>Milestones complete</h2><strong id="done">—</strong><small id="next"></small></article>
-        <article><h2>Estimated energy</h2><strong id="energy">—</strong><small id="tracking"></small></article>
-        <article><h2>Estimated electricity cost</h2><strong id="cost">—</strong><small id="price"></small></article>
-      </div>
       <div class="overview-grid">
         <section class="panel" aria-labelledby="milestone-title">
           <div class="panel-head"><h2 id="milestone-title">Milestones</h2></div>
@@ -73,10 +89,17 @@
           </div></details>
         </section>
       </div>
+    </section>
+
+    <section id="studies" aria-labelledby="studies-title" hidden>
+      <div class="heading page-heading">
+        <h1 id="studies-title">Studies</h1>
+        <p>Compare training runs and inspect the attempts behind each clear.</p>
+      </div>
       <section class="panel results" aria-labelledby="results-title">
         <div class="panel-head"><h2 id="results-title">Study results</h2></div>
         <div class="table-scroll"><table>
-          <thead><tr><th>Study</th><th>Agent</th><th>First-run progress</th><th>Clears within 3</th><th>First-try clears</th></tr></thead>
+          <thead><tr><th>Study</th><th>Agent</th><th>Input timing</th><th>First-run progress</th><th>Clears within 3</th><th>First-try clears</th></tr></thead>
           <tbody id="results"></tbody>
         </table></div>
       </section>
@@ -92,13 +115,26 @@
         </div>
         <p class="note">Normal attempts are full runs from 0%. Practice attempts are resets from a checkpoint: practice drilling, timing search, and each candidate the search teacher tries.</p>
         <div class="table-scroll"><table>
-          <thead><tr><th>Level</th><th>Normal attempts</th><th>Practice attempts</th><th>Normal clears</th><th>Best progress</th><th>First cleared</th></tr></thead>
+          <thead><tr><th>Level</th><th>Input timing</th><th>Normal attempts</th><th>Practice attempts</th><th>Normal clears</th><th>Best progress</th><th>First cleared</th></tr></thead>
           <tbody id="attempt-rows"></tbody>
         </table></div>
       </section>
-      <section id="jobs" class="panel results" aria-labelledby="jobs-title">
-        <div class="panel-head"><h2 id="jobs-title">Job queue</h2></div>
-        <p class="note" id="jobs-summary"></p>
+    </section>
+
+    <section id="jobs" aria-labelledby="jobs-title" hidden>
+      <div class="heading page-heading">
+        <h1 id="jobs-title">Job queue</h1>
+        <p id="jobs-summary"></p>
+      </div>
+      <section class="panel results" aria-label="Queued and completed jobs">
+        <div class="panel-head queue-toolbar">
+          <label for="job-status">Status</label>
+          <select id="job-status">
+            <option value="all">All jobs</option>
+            <option value="active">Unfinished</option>
+            <option value="done">Done</option>
+          </select>
+        </div>
         <div class="table-scroll"><table>
           <thead><tr><th scope="col">#</th><th scope="col">Job</th><th scope="col">Owner</th><th scope="col">Status</th><th scope="col">Progress</th></tr></thead>
           <tbody id="jobs-rows"></tbody>
@@ -107,7 +143,7 @@
     </section>
 
     <section id="performance" aria-labelledby="performance-title" hidden>
-      <div class="heading">
+      <div class="heading page-heading">
         <h1 id="performance-title">Mode performance</h1>
         <p>Survival by gameplay mode, adjusted for level difficulty.</p>
       </div>

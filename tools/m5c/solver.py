@@ -11,6 +11,7 @@ Usage: python tools/m5c/solver.py --slot 0 --level main:1 [--level drill:triple-
 """
 import argparse
 import json
+import os
 import random
 import sys
 import time
@@ -78,15 +79,24 @@ class Solver:
         self.ticks = 0
         self.verification_attempts = 0
         self.progress = progress              # Path for resumable state (saved at every re-anchor)
+        self.persist_frontier = os.environ.get("GDBOT_SOLVER_V2") == "1"
+        self.rejected = [set()]
+        self.partial = None
+        self.next_save = time.monotonic() + 10
+        self.checkpoint_anchors = 0
 
     def save_progress(self):
         if self.progress:
             tmp = self.progress.with_suffix(".tmp")
-            tmp.write_text(json.dumps({"committed": self.committed, "seg_x": self.seg_x,
+            state = {"committed": self.committed, "seg_x": self.seg_x,
                                        "bad": sorted(self.bad), "evals": self.evals, "ticks": self.ticks,
-                                       "verification_attempts": self.verification_attempts}),
-                           encoding="utf-8")
+                                       "verification_attempts": self.verification_attempts}
+            if self.persist_frontier:
+                state.update(frontier_version=1, rejected=[sorted(row) for row in self.rejected],
+                             partial=self.partial, frontier_config=[self.seg, self.look])
+            tmp.write_text(json.dumps(state), encoding="utf-8")
             tmp.replace(self.progress)
+            self.next_save = time.monotonic() + 10
 
     def load_progress(self):
         if self.progress and self.progress.exists():
@@ -94,7 +104,20 @@ class Solver:
             self.committed, self.seg_x, self.bad = d["committed"], d["seg_x"], set(d["bad"])
             self.evals, self.ticks = d["evals"], d["ticks"]
             self.verification_attempts = d.get("verification_attempts", self.verification_attempts)
-            self.stack = [self.choices(0)] + [self.choices(s[-1]) for s in self.committed]
+            if self.persist_frontier:
+                version = d.get("frontier_version")
+                if version is not None and version != 1:
+                    raise ValueError(f"unsupported solver frontier version: {version}")
+                if version == 1 and d["frontier_config"] != [self.seg, self.look]:
+                    raise ValueError("resuming a saved frontier requires the same segment size and lookahead")
+                self.rejected = ([{tuple(cand) for cand in row} for row in d["rejected"]]
+                                 if version == 1 else [set() for _ in range(len(self.committed) + 1)])
+                if len(self.rejected) != len(self.committed) + 1:
+                    raise ValueError("solver frontier does not match committed prefix")
+                self.partial = d.get("partial") if version == 1 else None
+            self.stack = [self.remaining(0, 0)] + [
+                self.remaining(s[-1], depth) for depth, s in enumerate(self.committed, 1)
+            ]
             self.log(f"  resuming at segment {len(self.committed)} (x {self.seg_x[-1] if self.seg_x else 0:.0f}); "
                      f"the replay check re-verifies the saved prefix")
 
@@ -133,6 +156,31 @@ class Solver:
     def choices(self, previous):
         return candidates(self.seg, previous)
 
+    def remaining(self, previous, depth):
+        if not self.persist_frontier:
+            return self.choices(previous)
+        return self.untried(previous, depth)
+
+    def untried(self, previous, depth):
+        partial = self.partial if depth == len(self.committed) else None
+        if partial:
+            yield partial["candidate"]
+        for cand in self.choices(previous):
+            if tuple(cand) not in self.rejected[depth] and (not partial or cand != partial["candidate"]):
+                yield cand
+
+    def reset_frontier(self, depth):
+        if self.persist_frontier:
+            self.rejected[depth:] = [set()]
+            self.partial = None
+
+    def extend_frontier(self, seg):
+        depth = len(self.committed)
+        if self.persist_frontier:
+            self.rejected[-1].add(tuple(seg))
+            self.rejected.append(set())
+        self.stack.append(self.remaining(seg[-1], depth))
+
     def followups(self):
         """Simple continuations that test whether the state after a segment is still viable. The
         lookahead must outlast a jump's airtime, or "not yet" looks fine when it is already too late."""
@@ -159,9 +207,17 @@ class Solver:
         """Candidate viability, or None if the restore did not reproduce the current boundary."""
         pre = self.prefix()
         check_restore = self.cps[-1] > 0
-        best = -1
-        for follow in self.followups():
+        partial = self.partial if self.persist_frontier else None
+        if partial and partial["candidate"] == cand:
+            start, best = partial["next"], partial["best"]
+        else:
+            start, best = 0, -1
+        for index, follow in enumerate(self.followups()):
+            if index < start:
+                continue
             if self.evals >= self.budget:
+                if self.persist_frontier:
+                    return False, False, best
                 break
             self.restore()
             self.evals += 1
@@ -171,12 +227,23 @@ class Solver:
                 return None
             survived = r["decisions"] - len(pre)
             if r["terminal"] == "complete":
+                self.partial = None
                 return True, True, (cand + follow)[:survived + 1]
             if survived >= len(cand) + len(follow):
+                self.partial = None
                 return True, False, survived
             best = max(best, survived)
             if survived < len(cand):          # died inside the segment: no follow-up can help
                 break
+            if self.persist_frontier:
+                self.partial = {"candidate": cand, "next": index + 1, "best": best}
+                if time.monotonic() >= self.next_save:
+                    self.save_progress()
+        if self.persist_frontier:
+            self.partial = None
+            self.rejected[-1].add(tuple(cand))
+            if time.monotonic() >= self.next_save:
+                self.save_progress()
         return False, False, best
 
     def repair_boundary(self):
@@ -191,7 +258,8 @@ class Solver:
         older_failed = 0 < base < depth - self.KEEP_CHECKPOINTS
         self.rebuild(depth, allow_older_checkpoint=not older_failed)
         if len(self.committed) == depth:
-            self.stack[-1] = self.choices(self.committed[-1][-1] if depth else 0)
+            self.reset_frontier(depth)
+            self.stack[-1] = self.remaining(self.committed[-1][-1] if depth else 0, depth)
         self.save_progress()
 
     def run_segment(self, seg, depth_after, *, checkpoint):
@@ -215,23 +283,39 @@ class Solver:
         return out[:n]
 
     def escape(self):
-        """Random continuations from a few segments back, each checked by a clean replay from 0%.
+        """Random continuations from a few segments back.
         Returns True if the committed path was replaced by one that survives past the stall."""
         depth = len(self.committed)
         rng = random.Random(1000003 * depth + self.evals)
         self.escapes += 1
+        anchor = 0
+        if self.persist_frontier:
+            # Share one restore point across all offsets so trying a deeper rewind cannot
+            # discard a checkpoint needed by a later trial.
+            backs = [b for b in self.ESCAPE_BACKS if b <= depth]
+            if backs:
+                anchor = self.select_anchor(depth - max(backs))
         for b in self.ESCAPE_BACKS:
             if b > depth:
                 continue
             base = depth - b
-            prefix = [a for s in self.committed[:base] for a in s]
             n_seg = b + self.ESCAPE_AHEAD
             for _ in range(self.ESCAPE_TRIES):
                 if self.evals >= self.budget:
-                    self.rebuild(len(self.committed))
+                    self.rebuild_after_escape(depth, anchor)
                     return False
                 tail = self._random_tail(rng, n_seg * self.seg + self.look)
-                self.reset_zero()
+                if anchor:
+                    self.restore()
+                    prefix = [0] + [a for s in self.committed[anchor:base] for a in s]
+                    if not self.matches_boundary(self.run(prefix, xs=True), base):
+                        self.bad.add(anchor)
+                        anchor = 0
+                    else:
+                        prefix = []
+                if not anchor:
+                    self.reset_zero()
+                    prefix = [a for s in self.committed[:base] for a in s]
                 self.evals += 1
                 r = self.run(prefix + tail)
                 done = r["decisions"] - len(prefix)
@@ -240,19 +324,49 @@ class Solver:
                 keep = tail[:n_seg * self.seg]
                 self.log(f"  stall escape at segment {depth}: rewound {b}, adopted {n_seg} segments "
                          f"({r['terminal'] or 'survived'}; {self.evals} evals)")
-                self.drop_checkpoints()
-                self.cps = [0]
                 del self.committed[base:], self.seg_x[base:]
                 del self.stack[base + 1:]
-                self.rebuild(base)
+                if self.persist_frontier:
+                    self.reset_frontier(base)
+                    self.stack[base] = self.remaining(self.committed[-1][-1] if base else 0, base)
+                self.rebuild_after_escape(base, anchor)
                 for i in range(n_seg):
                     if not self.adopt(keep[i * self.seg:(i + 1) * self.seg]):
                         break
                 return True
         self.log(f"  stall escape at segment {depth}: no continuation from {self.ESCAPE_BACKS} segments back")
-        # trials reset to 0% with practice off, which drops every checkpoint: rebuild the restore points
-        self.rebuild(len(self.committed))
+        self.rebuild_after_escape(depth, anchor)
         return False
+
+    def select_anchor(self, ceiling):
+        anchor = next((depth for depth in reversed(self.cps) if depth <= ceiling and depth not in self.bad), 0)
+        if anchor:
+            while self.cps[-1] != anchor:
+                self.c.request("checkpoint_pop")
+                self.cps.pop()
+        return anchor
+
+    def matches_boundary(self, reply, depth):
+        xs = reply.get("xs")
+        return bool(not reply["terminal"] and xs and abs(xs[-1] - self.seg_x[depth - 1]) <= 1e-3)
+
+    def replay_from_checkpoint(self, anchor, target):
+        self.restore()
+        if not self.matches_boundary(self.run([0], xs=True), anchor):
+            self.bad.add(anchor)
+            return False
+        for depth in range(anchor + 1, target + 1):
+            reply = self.run_segment(self.committed[depth - 1], depth, checkpoint=self.can_checkpoint(depth))
+            if not self.matches_boundary(reply, depth):
+                self.bad.add(anchor)
+                return False
+        self.anchors += 1
+        self.checkpoint_anchors += 1
+        return True
+
+    def rebuild_after_escape(self, target, anchor):
+        if not anchor or not self.replay_from_checkpoint(anchor, target):
+            self.rebuild(target)
 
     def adopt(self, seg):
         """Commit a given segment on the live path (same steps as a searched commit)."""
@@ -271,13 +385,21 @@ class Solver:
                 self.cps.pop()
             return False
         self.seg_x.append(r["xs"][-1])
-        self.stack.append(self.choices(seg[-1]))
+        self.extend_frontier(seg)
         return True
 
     # -- re-anchoring (backstop) ------------------------------------------------------------------
     def rebuild(self, target, *, allow_older_checkpoint=True):
         """Replay from 0% and rebuild recent checkpoints, falling back to an older release if needed."""
+        while True:
+            reached = self.replay_anchor(target, allow_older_checkpoint=allow_older_checkpoint)
+            if reached == target:
+                return reached
+            target = reached
+
+    def replay_anchor(self, target, *, allow_older_checkpoint):
         self.anchors += 1
+        self.checkpoint_anchors = 0
         self.drop_checkpoints()
         self.cps = [0]
         self.reset_zero()
@@ -304,14 +426,16 @@ class Solver:
                          f"{sorted(b for b in self.bad if b > depth - 20)}")
                 del self.committed[depth:], self.seg_x[depth:]
                 del self.stack[depth + 1:]
-                self.stack[depth] = self.choices(self.committed[-1][-1] if self.committed else 0)
-                return self.rebuild(depth, allow_older_checkpoint=allow_older_checkpoint)
+                self.reset_frontier(depth)
+                self.stack[depth] = self.remaining(self.committed[-1][-1] if depth else 0, depth)
+                return depth
         return target
 
     def solve(self):
         self.c.load_level(self.level)
         self.committed, self.seg_x = [], []   # committed segments and the x recorded at each one's end
-        self.stack = [self.choices(0)]         # candidate iterators per depth (depth = len(committed))
+        self.rejected, self.partial = [set()], None
+        self.stack = [self.remaining(0, 0)]    # candidate iterators per depth (depth = len(committed))
         self.anchors = self.drifts = 0
         self.bad = set()                      # depths whose checkpoint proved inexact anyway
         self.cps = [0]                        # restore points (depths); 0 = clean reset, not a checkpoint
@@ -333,6 +457,8 @@ class Solver:
             stalled = False
             for cand in self.stack[-1]:
                 if depth <= best_depth and self.evals - best_at >= self.STALL_EVALS:
+                    if self.persist_frontier:
+                        self.stack[-1] = self.remaining(self.committed[-1][-1] if depth else 0, depth)
                     stalled = True            # one segment's candidates can cost ~2,500 evals: check inside too
                     break
                 trial = self.evaluate(cand)
@@ -363,6 +489,9 @@ class Solver:
                     self.c.request("checkpoint_pop")
                     self.cps.pop()
                 self.committed.pop(), self.seg_x.pop(), self.stack.pop()
+                if self.persist_frontier:
+                    self.rejected.pop()
+                    self.partial = None
                 continue
             if chosen is None:
                 continue                      # (also when stalled: the escape runs at the top of the loop)
@@ -383,11 +512,16 @@ class Solver:
                 self.rebuild(len(self.committed))
                 continue
             self.seg_x.append(r["xs"][-1])
-            self.stack.append(self.choices(chosen[-1]))
+            self.extend_frontier(chosen)
             since_anchor += 1
             if since_anchor >= self.ANCHOR_EVERY:
                 since_anchor = 0
-                self.rebuild(len(self.committed))
+                target = len(self.committed)
+                anchor = 0
+                # Keep a periodic full replay to detect drift shared by the in-memory checkpoints.
+                if self.persist_frontier and self.checkpoint_anchors < 15:
+                    anchor = self.select_anchor(target - self.ANCHOR_EVERY)
+                self.rebuild_after_escape(target, anchor)
                 self.save_progress()
             x = r["xs"][-1]
             if x > furthest + 300:

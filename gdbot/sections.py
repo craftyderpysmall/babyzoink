@@ -14,8 +14,11 @@ import bisect
 import json
 import os
 import time
+from collections.abc import Callable
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 
 MATCH_X = 60.0  # a boundary within 2 blocks of a known one is the same boundary
 
@@ -53,17 +56,49 @@ class SectionMaps:
 
     def __init__(self, path: Path):
         self.path = Path(path)
-        raw = json.loads(self.path.read_text(encoding="utf-8")) if self.path.exists() else {}
-        self.maps = {level: SectionMap(sorted(b)) for level, b in raw.items()}
+        self.lock_path = self.path.with_suffix(".lock")
+
+    @contextmanager
+    def _locked(self):
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        # Lock a separate file so the lock survives atomic replacement of the registry.
+        with self.lock_path.open("a+b") as lock:
+            lock.seek(0)
+            if os.name == "nt":
+                import msvcrt
+
+                msvcrt.locking(lock.fileno(), msvcrt.LK_LOCK, 1)
+            else:
+                import fcntl
+
+                fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+            yield
+
+    def _read(self) -> dict:
+        return json.loads(self.path.read_text(encoding="utf-8")) if self.path.exists() else {}
 
     def get(self, level: str) -> SectionMap:
-        return self.maps.setdefault(level, SectionMap())
+        with self._locked():
+            return SectionMap(sorted(self._read().get(level, [])))
 
-    def save(self) -> None:
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        tmp = self.path.with_suffix(".tmp")
-        tmp.write_text(json.dumps({k: v.boundaries for k, v in sorted(self.maps.items())}, indent=1), encoding="utf-8")
-        os.replace(tmp, self.path)
+    def match(self, level: str, x: float) -> float:
+        with self._locked():
+            maps = self._read()
+            section_map = SectionMap(sorted(maps.get(level, [])))
+            count = len(section_map.boundaries)
+            boundary = section_map.match(x)
+            if len(section_map.boundaries) != count:
+                maps[level] = section_map.boundaries
+                file = NamedTemporaryFile(mode="w", encoding="utf-8", dir=self.path.parent,
+                                          prefix=f"{self.path.stem}-", suffix=".tmp", delete=False)
+                staging = Path(file.name)
+                try:
+                    with file:
+                        json.dump(maps, file, indent=1, sort_keys=True)
+                    os.replace(staging, self.path)
+                finally:
+                    staging.unlink(missing_ok=True)
+            return boundary
 
 
 class SectionRecorder:
@@ -73,8 +108,9 @@ class SectionRecorder:
     timing is then exact to k ticks), end(terminal, tick) when the attempt stops.
     """
 
-    def __init__(self, section_map: SectionMap):
+    def __init__(self, section_map: SectionMap, match: Callable[[float], float] | None = None):
         self.map = section_map
+        self.match = match if match is not None else section_map.match
         self.rows = []
         self._open = None
         self._meta = None
@@ -95,7 +131,7 @@ class SectionRecorder:
             raise RuntimeError("observe before begin")
         state = _state(players[0]) + (len(players) > 1,)
         if state != self._open["_state"]:
-            boundary = self.map.match(float(players[0]["x"]))
+            boundary = self.match(float(players[0]["x"]))
             self._close(tick, players, died=False, cleared=True)
             self._enter(boundary, tick, players)
 
@@ -137,7 +173,7 @@ class TelemetryWriter:
         self.maps = SectionMaps(root / "section_maps.json")
 
     def recorder(self, level: str) -> SectionRecorder:
-        return SectionRecorder(self.maps.get(level))
+        return SectionRecorder(self.maps.get(level), lambda x: self.maps.match(level, x))
 
     def write(self, rows: list) -> None:
         if not rows:
@@ -146,7 +182,6 @@ class TelemetryWriter:
         with self.path.open("a", encoding="utf-8") as f:
             for row in rows:
                 f.write(json.dumps({"run": self.run, "t": stamp, **row}, separators=(",", ":")) + "\n")
-        self.maps.save()
 
 
 def attempt_meta(*, level: str, attempt: int, start: str, generation: int = 0, seed: int | None = None,

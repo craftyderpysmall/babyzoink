@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated_at": "2026-11-19T20:53:33+00:00",
+  "updated_at": "2026-11-20T02:09:26+00:00",
   "progress": {
     "updated": "2026-11-19",
     "milestones": [
@@ -44,13 +44,13 @@
         "id": "M6",
         "name": "Held-out evaluation and polish",
         "status": "in_progress",
-        "detail": "Search-teacher data at scale: 59 of 63 training drills verified; 0 online levels cleared so far (Skill Gotten Gains saved mid-search). Paused by the user on 19 Nov; DAgger and the attempts curve are queued."
+        "detail": "Search-teacher data at scale: 59 of 63 training drills verified; 0 online levels cleared so far (8 used the full search budget; solver stalls are #31). DAgger (#20) and the guided-search curve (#21) are done. Runs on parallel game slots with draw-skip and an automatic memory guard."
       },
       {
-        "id": "M7",
-        "name": "Stretch goals",
-        "status": "in_progress",
-        "detail": "Parallel game slots work (2x throughput). Draw-skip adds 7-9%. Low textures save about 100 MB per slot. A memory guard restarts slots automatically. Cloud GPU and platformer mode not started."
+        "id": "M8",
+        "name": "Human view and click-between-frames input",
+        "status": "planned",
+        "detail": "Hotkeys to watch at 1x and to show the overlay (attempts, speed, mode); launch defaults dedicated + overlay on; CBF sub-tick input if measurement shows it helps. Plan under review by both agents."
       }
     ],
     "results": [
@@ -60,7 +60,8 @@
         "first_run_progress_pct": 19.7,
         "clears_within_3": 0,
         "first_try_clears": 0,
-        "drills": 9
+        "drills": 9,
+        "input_timing": "tick"
       },
       {
         "study": "M3 first baseline",
@@ -68,7 +69,8 @@
         "first_run_progress_pct": 38.2,
         "clears_within_3": 4,
         "first_try_clears": 0,
-        "drills": 9
+        "drills": 9,
+        "input_timing": "tick"
       },
       {
         "study": "M3 first baseline",
@@ -76,7 +78,8 @@
         "first_run_progress_pct": 51.9,
         "clears_within_3": 4,
         "first_try_clears": 4,
-        "drills": 9
+        "drills": 9,
+        "input_timing": "tick"
       },
       {
         "study": "M3 scaled (3 seeds, ~1M steps)",
@@ -84,7 +87,8 @@
         "first_run_progress_pct": 44.3,
         "clears_within_3": 2.7,
         "first_try_clears": 2.3,
-        "drills": 9
+        "drills": 9,
+        "input_timing": "tick"
       },
       {
         "study": "M3 scaled (3 seeds, ~1M steps)",
@@ -92,7 +96,8 @@
         "first_run_progress_pct": 27.7,
         "clears_within_3": 3.0,
         "first_try_clears": 1.0,
-        "drills": 9
+        "drills": 9,
+        "input_timing": "tick"
       },
       {
         "study": "M3 imitation (3 seeds)",
@@ -100,7 +105,8 @@
         "first_run_progress_pct": 73.1,
         "clears_within_3": 6.3,
         "first_try_clears": 6.0,
-        "drills": 9
+        "drills": 9,
+        "input_timing": "tick"
       },
       {
         "study": "M3 imitation (3 seeds)",
@@ -108,7 +114,8 @@
         "first_run_progress_pct": 57.7,
         "clears_within_3": 4.3,
         "first_try_clears": 4.3,
-        "drills": 9
+        "drills": 9,
+        "input_timing": "tick"
       },
       {
         "study": "M4 practice (3 seeds)",
@@ -116,7 +123,8 @@
         "first_run_progress_pct": 73.1,
         "clears_within_3": 6.3,
         "first_try_clears": 6.0,
-        "drills": 9
+        "drills": 9,
+        "input_timing": "tick"
       },
       {
         "study": "M4 practice (3 seeds)",
@@ -124,7 +132,8 @@
         "first_run_progress_pct": 73.1,
         "clears_within_3": 7.7,
         "first_try_clears": 6.0,
-        "drills": 9
+        "drills": 9,
+        "input_timing": "tick"
       },
       {
         "study": "M5 generations (3 seeds, 27 unseen drills)",
@@ -132,7 +141,8 @@
         "first_run_progress_pct": 71.5,
         "clears_within_3": 21.0,
         "first_try_clears": null,
-        "drills": 27
+        "drills": 27,
+        "input_timing": "tick"
       },
       {
         "study": "M5 generations (3 seeds, 27 unseen drills)",
@@ -140,7 +150,8 @@
         "first_run_progress_pct": 73.4,
         "clears_within_3": 19.0,
         "first_try_clears": null,
-        "drills": 27
+        "drills": 27,
+        "input_timing": "tick"
       },
       {
         "study": "M5 official levels 1-5 (10 attempts each)",
@@ -148,7 +159,8 @@
         "first_run_progress_pct": 3.1,
         "clears_within_3": 0,
         "first_try_clears": 0,
-        "drills": 5
+        "drills": 5,
+        "input_timing": "tick"
       },
       {
         "study": "M5b encoder comparison (seed 2357, 27 validation drills)",
@@ -156,7 +168,8 @@
         "first_run_progress_pct": 78.0,
         "clears_within_3": 19,
         "first_try_clears": null,
-        "drills": 27
+        "drills": 27,
+        "input_timing": "tick"
       },
       {
         "study": "M5b encoder comparison (seed 2357, 27 validation drills)",
@@ -164,7 +177,8 @@
         "first_run_progress_pct": 87.0,
         "clears_within_3": 22,
         "first_try_clears": null,
-        "drills": 27
+        "drills": 27,
+        "input_timing": "tick"
       },
       {
         "study": "M5b online held-out (10 downloaded Easy-Hard levels)",
@@ -172,7 +186,8 @@
         "first_run_progress_pct": 4.8,
         "clears_within_3": 0,
         "first_try_clears": 0,
-        "drills": 10
+        "drills": 10,
+        "input_timing": "tick"
       },
       {
         "study": "M5c expert clone (10 frozen online levels)",
@@ -180,7 +195,8 @@
         "first_run_progress_pct": 5.1,
         "clears_within_3": null,
         "first_try_clears": 0,
-        "drills": 10
+        "drills": 10,
+        "input_timing": "tick"
       },
       {
         "study": "M5c triple-spike follow-up (one unseen drill, seed 2357)",
@@ -188,7 +204,8 @@
         "first_run_progress_pct": 10.0,
         "clears_within_3": 0,
         "first_try_clears": 0,
-        "drills": 1
+        "drills": 1,
+        "input_timing": "tick"
       },
       {
         "study": "M5c triple-spike follow-up (one unseen drill, seed 2357)",
@@ -196,7 +213,8 @@
         "first_run_progress_pct": 99.1,
         "clears_within_3": 1,
         "first_try_clears": 0,
-        "drills": 1
+        "drills": 1,
+        "input_timing": "tick"
       }
     ],
     "price": {
@@ -219,15 +237,15 @@
       },
       {
         "date": "2026-11-19",
-        "kwh": 0.002887,
-        "cumulative_kwh": 0.031157,
-        "cost_usd": 0.000859,
-        "cumulative_cost_usd": 0.009269
+        "kwh": 0.011366,
+        "cumulative_kwh": 0.039636,
+        "cost_usd": 0.003381,
+        "cumulative_cost_usd": 0.011792
       }
     ],
     "tracking_since": "2026-11-18T11:49:34-08:00",
-    "kwh": 0.031157,
-    "cost_usd": 0.009269
+    "kwh": 0.039636,
+    "cost_usd": 0.011792
   },
   "performance": {
     "zero_shot": {
@@ -12521,75 +12539,75 @@
     }
   },
   "level_names": {
-    "drill:black-orb/validation-6113": "black-orb/validation-6113",
-    "drill:block-steps/heldout-2103": "block-steps/heldout-2103",
-    "official:1": "Stereo Madness",
-    "drill:gravity-portal/heldout-2106": "gravity-portal/heldout-2106",
-    "drill:blue-pad/validation-6109": "blue-pad/validation-6109",
-    "drill:moving-geometry/heldout-2108": "moving-geometry/heldout-2108",
-    "drill:ball-switches/validation-6101": "ball-switches/validation-6101",
-    "drill:ball-switches/heldout-7101": "ball-switches/heldout-7101",
-    "official:2": "Back on Track",
-    "online:4454123": "Sonar",
-    "drill:triple-spike/validation-4102": "triple-spike/validation-4102",
-    "drill:yellow-orb/validation-4105": "yellow-orb/validation-4105",
-    "drill:ship-to-ball/validation-6116": "ship-to-ball/validation-6116",
-    "drill:wave-corridor/heldout-7103": "wave-corridor/heldout-7103",
-    "online:74730213": "Curfew",
-    "drill:double-spike/heldout-2101": "double-spike/heldout-2101",
-    "drill:ufo-to-wave/heldout-7117": "ufo-to-wave/heldout-7117",
-    "drill:double-spike/validation-4101": "double-spike/validation-4101",
-    "drill:robot-jumps/heldout-7104": "robot-jumps/heldout-7104",
-    "drill:pillar-gaps/heldout-2104": "pillar-gaps/heldout-2104",
-    "online:6508283": "ReTraY",
-    "drill:gravity-portal/validation-4106": "gravity-portal/validation-4106",
-    "drill:speed-change/validation-4107": "speed-change/validation-4107",
-    "drill:ship-corridor/validation-6100": "ship-corridor/validation-6100",
-    "drill:pink-pad/validation-6108": "pink-pad/validation-6108",
-    "online:83653641": "lil Horizon",
-    "drill:single-spike/validation-4100": "single-spike/validation-4100",
-    "drill:block-steps/validation-4103": "block-steps/validation-4103",
-    "drill:green-orb/heldout-7112": "green-orb/heldout-7112",
-    "official:5": "Base After Base",
-    "online:112109153": "Vision",
-    "drill:pink-orb/validation-6110": "pink-orb/validation-6110",
-    "drill:black-orb/heldout-7113": "black-orb/heldout-7113",
-    "drill:swing-corridor/heldout-7106": "swing-corridor/heldout-7106",
-    "drill:triple-spike/heldout-2102": "triple-spike/heldout-2102",
-    "drill:wave-corridor/validation-6103": "wave-corridor/validation-6103",
-    "drill:ship-corridor/heldout-7100": "ship-corridor/heldout-7100",
-    "drill:robot-jumps/validation-6104": "robot-jumps/validation-6104",
-    "drill:single-spike/heldout-2100": "single-spike/heldout-2100",
-    "official:4": "Dry Out",
-    "drill:mini-cube/validation-6115": "mini-cube/validation-6115",
-    "online:137883268": "Chillwave",
-    "drill:spider-switches/heldout-7105": "spider-switches/heldout-7105",
-    "drill:ufo-taps/heldout-7102": "ufo-taps/heldout-7102",
-    "drill:moving-geometry/validation-4108": "moving-geometry/validation-4108",
     "drill:pink-orb/heldout-7110": "pink-orb/heldout-7110",
-    "official:3": "Polargeist",
+    "online:74730213": "Curfew",
+    "drill:speed-change/validation-4107": "speed-change/validation-4107",
     "drill:spider-switches/validation-6105": "spider-switches/validation-6105",
-    "drill:blue-orb/validation-6111": "blue-orb/validation-6111",
-    "drill:green-orb/validation-6112": "green-orb/validation-6112",
-    "drill:yellow-pad/heldout-7107": "yellow-pad/heldout-7107",
-    "drill:mini-cube/heldout-7115": "mini-cube/heldout-7115",
-    "online:94887416": "Magic Valley",
-    "drill:dash-orb/validation-6114": "dash-orb/validation-6114",
     "drill:swing-corridor/validation-6106": "swing-corridor/validation-6106",
-    "online:146319148": "Sigil",
-    "drill:ufo-to-wave/validation-6117": "ufo-to-wave/validation-6117",
-    "drill:ship-to-ball/heldout-7116": "ship-to-ball/heldout-7116",
-    "drill:yellow-orb/heldout-2105": "yellow-orb/heldout-2105",
-    "drill:speed-change/heldout-2107": "speed-change/heldout-2107",
-    "drill:pillar-gaps/validation-4104": "pillar-gaps/validation-4104",
+    "drill:green-orb/validation-6112": "green-orb/validation-6112",
+    "drill:double-spike/validation-4101": "double-spike/validation-4101",
+    "drill:pink-pad/validation-6108": "pink-pad/validation-6108",
+    "drill:double-spike/heldout-2101": "double-spike/heldout-2101",
+    "drill:mini-cube/heldout-7115": "mini-cube/heldout-7115",
+    "online:6508283": "ReTraY",
+    "drill:wave-corridor/validation-6103": "wave-corridor/validation-6103",
+    "online:83653641": "lil Horizon",
+    "drill:yellow-pad/heldout-7107": "yellow-pad/heldout-7107",
     "online:11940": "Level Easy",
-    "drill:ufo-taps/validation-6102": "ufo-taps/validation-6102",
+    "official:2": "Back on Track",
+    "drill:yellow-orb/heldout-2105": "yellow-orb/heldout-2105",
+    "drill:mini-cube/validation-6115": "mini-cube/validation-6115",
+    "online:94887416": "Magic Valley",
     "drill:pink-pad/heldout-7108": "pink-pad/heldout-7108",
-    "drill:yellow-pad/validation-6107": "yellow-pad/validation-6107",
-    "online:83923662": "e4",
+    "drill:block-steps/heldout-2103": "block-steps/heldout-2103",
+    "drill:speed-change/heldout-2107": "speed-change/heldout-2107",
     "drill:blue-pad/heldout-7109": "blue-pad/heldout-7109",
+    "drill:pillar-gaps/validation-4104": "pillar-gaps/validation-4104",
+    "drill:swing-corridor/heldout-7106": "swing-corridor/heldout-7106",
+    "drill:yellow-orb/validation-4105": "yellow-orb/validation-4105",
+    "drill:gravity-portal/heldout-2106": "gravity-portal/heldout-2106",
+    "drill:pink-orb/validation-6110": "pink-orb/validation-6110",
+    "drill:gravity-portal/validation-4106": "gravity-portal/validation-4106",
+    "drill:black-orb/validation-6113": "black-orb/validation-6113",
+    "drill:pillar-gaps/heldout-2104": "pillar-gaps/heldout-2104",
+    "drill:moving-geometry/validation-4108": "moving-geometry/validation-4108",
+    "drill:black-orb/heldout-7113": "black-orb/heldout-7113",
+    "official:3": "Polargeist",
+    "official:4": "Dry Out",
+    "drill:dash-orb/validation-6114": "dash-orb/validation-6114",
+    "online:146319148": "Sigil",
+    "drill:triple-spike/validation-4102": "triple-spike/validation-4102",
+    "drill:block-steps/validation-4103": "block-steps/validation-4103",
+    "drill:ship-to-ball/validation-6116": "ship-to-ball/validation-6116",
+    "drill:green-orb/heldout-7112": "green-orb/heldout-7112",
+    "online:137883268": "Chillwave",
+    "drill:single-spike/validation-4100": "single-spike/validation-4100",
+    "drill:ball-switches/heldout-7101": "ball-switches/heldout-7101",
+    "drill:wave-corridor/heldout-7103": "wave-corridor/heldout-7103",
+    "drill:ufo-taps/validation-6102": "ufo-taps/validation-6102",
+    "drill:blue-orb/validation-6111": "blue-orb/validation-6111",
+    "drill:ship-corridor/heldout-7100": "ship-corridor/heldout-7100",
+    "official:1": "Stereo Madness",
+    "drill:ball-switches/validation-6101": "ball-switches/validation-6101",
+    "drill:blue-orb/heldout-7111": "blue-orb/heldout-7111",
+    "drill:moving-geometry/heldout-2108": "moving-geometry/heldout-2108",
+    "online:83923662": "e4",
+    "online:112109153": "Vision",
+    "drill:ufo-to-wave/heldout-7117": "ufo-to-wave/heldout-7117",
+    "online:4454123": "Sonar",
+    "drill:triple-spike/heldout-2102": "triple-spike/heldout-2102",
+    "drill:robot-jumps/validation-6104": "robot-jumps/validation-6104",
+    "drill:robot-jumps/heldout-7104": "robot-jumps/heldout-7104",
+    "drill:single-spike/heldout-2100": "single-spike/heldout-2100",
+    "drill:ufo-taps/heldout-7102": "ufo-taps/heldout-7102",
+    "drill:ship-to-ball/heldout-7116": "ship-to-ball/heldout-7116",
+    "drill:ship-corridor/validation-6100": "ship-corridor/validation-6100",
     "drill:dash-orb/heldout-7114": "dash-orb/heldout-7114",
-    "drill:blue-orb/heldout-7111": "blue-orb/heldout-7111"
+    "drill:yellow-pad/validation-6107": "yellow-pad/validation-6107",
+    "official:5": "Base After Base",
+    "drill:blue-pad/validation-6109": "blue-pad/validation-6109",
+    "drill:ufo-to-wave/validation-6117": "ufo-to-wave/validation-6117",
+    "drill:spider-switches/heldout-7105": "spider-switches/heldout-7105"
   },
   "levels": [
     {
@@ -12604,9 +12622,13 @@
       "first_cleared_by": {
         "run": "m5c-search",
         "attempt": 1,
-        "t": 1795060807.272
+        "t": 1795060807.272,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795067650.596
+      "last_attempt_t": 1795067650.596,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "official:2",
@@ -12620,9 +12642,13 @@
       "first_cleared_by": {
         "run": "m5c-search",
         "attempt": 1,
-        "t": 1795067120.183
+        "t": 1795067120.183,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795067650.596
+      "last_attempt_t": 1795067650.596,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "official:3",
@@ -12636,9 +12662,13 @@
       "first_cleared_by": {
         "run": "m5c-search",
         "attempt": 1,
-        "t": 1795063038.604
+        "t": 1795063038.604,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795067650.596
+      "last_attempt_t": 1795067650.596,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "official:4",
@@ -12650,7 +12680,10 @@
       "best_progress": 0.0355,
       "runs": 4,
       "first_cleared_by": null,
-      "last_attempt_t": 1795071153.953
+      "last_attempt_t": 1795071153.953,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "official:5",
@@ -12662,7 +12695,10 @@
       "best_progress": 0.0524,
       "runs": 4,
       "first_cleared_by": null,
-      "last_attempt_t": 1795071153.964
+      "last_attempt_t": 1795071153.964,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "online:137883268",
@@ -12674,7 +12710,10 @@
       "best_progress": 0.0368,
       "runs": 2,
       "first_cleared_by": null,
-      "last_attempt_t": 1795067650.596
+      "last_attempt_t": 1795067650.596,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "online:74730213",
@@ -12686,7 +12725,10 @@
       "best_progress": 0.1979,
       "runs": 2,
       "first_cleared_by": null,
-      "last_attempt_t": 1795067650.596
+      "last_attempt_t": 1795067650.596,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "online:11940",
@@ -12698,7 +12740,10 @@
       "best_progress": 0.0404,
       "runs": 2,
       "first_cleared_by": null,
-      "last_attempt_t": 1795067650.596
+      "last_attempt_t": 1795067650.596,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "online:94887416",
@@ -12710,7 +12755,10 @@
       "best_progress": 0.06,
       "runs": 2,
       "first_cleared_by": null,
-      "last_attempt_t": 1795067650.596
+      "last_attempt_t": 1795067650.596,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "online:6508283",
@@ -12722,7 +12770,10 @@
       "best_progress": 0.1876,
       "runs": 6,
       "first_cleared_by": null,
-      "last_attempt_t": 1795120733.457
+      "last_attempt_t": 1795120733.457,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "online:146319148",
@@ -12734,7 +12785,10 @@
       "best_progress": 0.0585,
       "runs": 2,
       "first_cleared_by": null,
-      "last_attempt_t": 1795067650.596
+      "last_attempt_t": 1795067650.596,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "online:4454123",
@@ -12746,7 +12800,10 @@
       "best_progress": 0.0785,
       "runs": 6,
       "first_cleared_by": null,
-      "last_attempt_t": 1795120733.457
+      "last_attempt_t": 1795120733.457,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "online:977287",
@@ -12758,7 +12815,10 @@
       "best_progress": 0.0,
       "runs": 1,
       "first_cleared_by": null,
-      "last_attempt_t": 1795070512.614
+      "last_attempt_t": 1795070512.614,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "online:112109153",
@@ -12770,7 +12830,10 @@
       "best_progress": 0.0303,
       "runs": 2,
       "first_cleared_by": null,
-      "last_attempt_t": 1795067650.596
+      "last_attempt_t": 1795067650.596,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "online:83923662",
@@ -12782,7 +12845,10 @@
       "best_progress": 0.0503,
       "runs": 2,
       "first_cleared_by": null,
-      "last_attempt_t": 1795067650.596
+      "last_attempt_t": 1795067650.596,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "online:83653641",
@@ -12794,7 +12860,10 @@
       "best_progress": 0.0214,
       "runs": 2,
       "first_cleared_by": null,
-      "last_attempt_t": 1795067650.596
+      "last_attempt_t": 1795067650.596,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:ball-switches/heldout-7101",
@@ -12808,9 +12877,13 @@
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 1,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795120733.457
+      "last_attempt_t": 1795120733.457,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:ball-switches/validation-6101",
@@ -12824,9 +12897,13 @@
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 1,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795059758.964
+      "last_attempt_t": 1795059758.964,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:black-orb/heldout-7113",
@@ -12840,9 +12917,13 @@
       "first_cleared_by": {
         "run": "m5-g1-s2357",
         "attempt": 2,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776
+      "last_attempt_t": 1795056871.776,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:black-orb/validation-6113",
@@ -12856,9 +12937,13 @@
       "first_cleared_by": {
         "run": "m5-g1-s2357",
         "attempt": 3,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795059758.964
+      "last_attempt_t": 1795059758.964,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:block-steps/train-1103",
@@ -12872,9 +12957,13 @@
       "first_cleared_by": {
         "run": "m6-search",
         "attempt": 1,
-        "t": 1795070478.235
+        "t": 1795070478.235,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795070478.235
+      "last_attempt_t": 1795070478.235,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:block-steps/heldout-2103",
@@ -12888,9 +12977,13 @@
       "first_cleared_by": {
         "run": "m4-control",
         "attempt": 1,
-        "t": 1795049259.589
+        "t": 1795049259.589,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776
+      "last_attempt_t": 1795056871.776,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:block-steps/validation-4103",
@@ -12904,9 +12997,13 @@
       "first_cleared_by": {
         "run": "m5-g1-s2357",
         "attempt": 1,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795059758.964
+      "last_attempt_t": 1795059758.964,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:blue-orb/heldout-7111",
@@ -12920,9 +13017,13 @@
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 2,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776
+      "last_attempt_t": 1795056871.776,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:blue-orb/validation-6111",
@@ -12936,9 +13037,13 @@
       "first_cleared_by": {
         "run": "m5-g3-s2357",
         "attempt": 1,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795059758.964
+      "last_attempt_t": 1795059758.964,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:blue-pad/heldout-7109",
@@ -12952,9 +13057,13 @@
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 1,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795120733.457
+      "last_attempt_t": 1795120733.457,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:blue-pad/validation-6109",
@@ -12968,9 +13077,13 @@
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 1,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795059758.964
+      "last_attempt_t": 1795059758.964,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:dash-orb/heldout-7114",
@@ -12982,7 +13095,10 @@
       "best_progress": 0.5114,
       "runs": 9,
       "first_cleared_by": null,
-      "last_attempt_t": 1795056871.776
+      "last_attempt_t": 1795056871.776,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:dash-orb/validation-6114",
@@ -12996,9 +13112,13 @@
       "first_cleared_by": {
         "run": "m5b-base-validation",
         "attempt": 1,
-        "t": 1795059758.964
+        "t": 1795059758.964,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795059758.964
+      "last_attempt_t": 1795059758.964,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:double-spike/train-1101",
@@ -13012,9 +13132,13 @@
       "first_cleared_by": {
         "run": "m6-search",
         "attempt": 1,
-        "t": 1795070454.663
+        "t": 1795070454.663,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795070454.663
+      "last_attempt_t": 1795070454.663,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:double-spike/heldout-2101",
@@ -13028,9 +13152,13 @@
       "first_cleared_by": {
         "run": "m4-control",
         "attempt": 1,
-        "t": 1795049259.589
+        "t": 1795049259.589,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776
+      "last_attempt_t": 1795056871.776,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:double-spike/validation-4101",
@@ -13044,9 +13172,13 @@
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 1,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795059758.964
+      "last_attempt_t": 1795059758.964,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:gravity-portal/heldout-2106",
@@ -13060,9 +13192,13 @@
       "first_cleared_by": {
         "run": "m4-control",
         "attempt": 1,
-        "t": 1795049259.589
+        "t": 1795049259.589,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795060512.084
+      "last_attempt_t": 1795060512.084,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:gravity-portal/validation-4106",
@@ -13076,9 +13212,13 @@
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 2,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795059758.964
+      "last_attempt_t": 1795059758.964,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:green-orb/heldout-7112",
@@ -13092,9 +13232,13 @@
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 2,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776
+      "last_attempt_t": 1795056871.776,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:green-orb/validation-6112",
@@ -13108,9 +13252,13 @@
       "first_cleared_by": {
         "run": "m5-g3-s2357",
         "attempt": 2,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795059758.964
+      "last_attempt_t": 1795059758.964,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:mini-cube/heldout-7115",
@@ -13124,9 +13272,13 @@
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 1,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776
+      "last_attempt_t": 1795056871.776,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:mini-cube/validation-6115",
@@ -13140,9 +13292,13 @@
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 1,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795059758.964
+      "last_attempt_t": 1795059758.964,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:moving-geometry/heldout-2108",
@@ -13156,9 +13312,13 @@
       "first_cleared_by": {
         "run": "m4-control",
         "attempt": 1,
-        "t": 1795049259.589
+        "t": 1795049259.589,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776
+      "last_attempt_t": 1795056871.776,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:moving-geometry/validation-4108",
@@ -13172,9 +13332,13 @@
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 1,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795059758.964
+      "last_attempt_t": 1795059758.964,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:pillar-gaps/train-1104",
@@ -13188,9 +13352,13 @@
       "first_cleared_by": {
         "run": "m6-search",
         "attempt": 1,
-        "t": 1795070488.126
+        "t": 1795070488.126,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795070488.126
+      "last_attempt_t": 1795070488.126,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:pillar-gaps/heldout-2104",
@@ -13204,9 +13372,13 @@
       "first_cleared_by": {
         "run": "m4-control",
         "attempt": 1,
-        "t": 1795049259.589
+        "t": 1795049259.589,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795060509.248
+      "last_attempt_t": 1795060509.248,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:pillar-gaps/validation-4104",
@@ -13220,9 +13392,13 @@
       "first_cleared_by": {
         "run": "m5-g2-s2357",
         "attempt": 1,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795059758.964
+      "last_attempt_t": 1795059758.964,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:pink-orb/heldout-7110",
@@ -13236,9 +13412,13 @@
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 2,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776
+      "last_attempt_t": 1795056871.776,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:pink-orb/validation-6110",
@@ -13252,9 +13432,13 @@
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 2,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795059758.964
+      "last_attempt_t": 1795059758.964,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:pink-pad/heldout-7108",
@@ -13268,9 +13452,13 @@
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 1,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776
+      "last_attempt_t": 1795056871.776,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:pink-pad/validation-6108",
@@ -13284,9 +13472,13 @@
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 1,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795059758.964
+      "last_attempt_t": 1795059758.964,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:robot-jumps/heldout-7104",
@@ -13300,9 +13492,13 @@
       "first_cleared_by": {
         "run": "m5-g1-s3907",
         "attempt": 2,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776
+      "last_attempt_t": 1795056871.776,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:robot-jumps/validation-6104",
@@ -13316,9 +13512,13 @@
       "first_cleared_by": {
         "run": "m5b-base-validation",
         "attempt": 1,
-        "t": 1795059758.964
+        "t": 1795059758.964,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795059758.964
+      "last_attempt_t": 1795059758.964,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:ship-corridor/heldout-7100",
@@ -13332,9 +13532,13 @@
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 1,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776
+      "last_attempt_t": 1795056871.776,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:ship-corridor/validation-6100",
@@ -13346,7 +13550,10 @@
       "best_progress": 0.6108,
       "runs": 11,
       "first_cleared_by": null,
-      "last_attempt_t": 1795059758.964
+      "last_attempt_t": 1795059758.964,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:ship-to-ball/heldout-7116",
@@ -13360,9 +13567,13 @@
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 1,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776
+      "last_attempt_t": 1795056871.776,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:ship-to-ball/validation-6116",
@@ -13376,9 +13587,13 @@
       "first_cleared_by": {
         "run": "m5-g3-s2357",
         "attempt": 2,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795059758.964
+      "last_attempt_t": 1795059758.964,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:single-spike/train-1100",
@@ -13392,9 +13607,13 @@
       "first_cleared_by": {
         "run": "m6-search",
         "attempt": 1,
-        "t": 1795070443.787
+        "t": 1795070443.787,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795070443.787
+      "last_attempt_t": 1795070443.787,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:single-spike/heldout-2100",
@@ -13408,9 +13627,13 @@
       "first_cleared_by": {
         "run": "m4-control",
         "attempt": 1,
-        "t": 1795049259.589
+        "t": 1795049259.589,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776
+      "last_attempt_t": 1795056871.776,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:single-spike/validation-4100",
@@ -13424,9 +13647,13 @@
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 1,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795059758.964
+      "last_attempt_t": 1795059758.964,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:speed-change/heldout-2107",
@@ -13440,9 +13667,13 @@
       "first_cleared_by": {
         "run": "m4-control",
         "attempt": 1,
-        "t": 1795049259.589
+        "t": 1795049259.589,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776
+      "last_attempt_t": 1795056871.776,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:speed-change/validation-4107",
@@ -13456,9 +13687,13 @@
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 1,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795059758.964
+      "last_attempt_t": 1795059758.964,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:spider-switches/heldout-7105",
@@ -13472,9 +13707,13 @@
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 2,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776
+      "last_attempt_t": 1795056871.776,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:spider-switches/validation-6105",
@@ -13488,9 +13727,13 @@
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 1,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795059758.964
+      "last_attempt_t": 1795059758.964,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:swing-corridor/heldout-7106",
@@ -13504,9 +13747,13 @@
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 1,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776
+      "last_attempt_t": 1795056871.776,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:swing-corridor/validation-6106",
@@ -13520,9 +13767,13 @@
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 1,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795059758.964
+      "last_attempt_t": 1795059758.964,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:triple-spike/heldout-2102",
@@ -13536,9 +13787,13 @@
       "first_cleared_by": {
         "run": "m5-g2-s3907",
         "attempt": 1,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795120733.457
+      "last_attempt_t": 1795120733.457,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:triple-spike/train-1102",
@@ -13552,9 +13807,13 @@
       "first_cleared_by": {
         "run": "m5c-search",
         "attempt": 1,
-        "t": 1795060499.3
+        "t": 1795060499.3,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795070466.413
+      "last_attempt_t": 1795070466.413,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:triple-spike/validation-4102",
@@ -13568,9 +13827,13 @@
       "first_cleared_by": {
         "run": "m5-g2-s3907",
         "attempt": 1,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795059758.964
+      "last_attempt_t": 1795059758.964,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:ufo-taps/heldout-7102",
@@ -13584,9 +13847,13 @@
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 3,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776
+      "last_attempt_t": 1795056871.776,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:ufo-taps/validation-6102",
@@ -13600,9 +13867,13 @@
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 2,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795059758.964
+      "last_attempt_t": 1795059758.964,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:ufo-to-wave/heldout-7117",
@@ -13616,9 +13887,13 @@
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 2,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776
+      "last_attempt_t": 1795056871.776,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:ufo-to-wave/validation-6117",
@@ -13632,9 +13907,13 @@
       "first_cleared_by": {
         "run": "m5b-base-validation",
         "attempt": 1,
-        "t": 1795059758.964
+        "t": 1795059758.964,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795059758.964
+      "last_attempt_t": 1795059758.964,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:wave-corridor/heldout-7103",
@@ -13646,7 +13925,10 @@
       "best_progress": 0.687,
       "runs": 9,
       "first_cleared_by": null,
-      "last_attempt_t": 1795056871.776
+      "last_attempt_t": 1795056871.776,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:wave-corridor/validation-6103",
@@ -13658,7 +13940,10 @@
       "best_progress": 0.6124,
       "runs": 11,
       "first_cleared_by": null,
-      "last_attempt_t": 1795059758.964
+      "last_attempt_t": 1795059758.964,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:yellow-orb/train-1105",
@@ -13672,9 +13957,13 @@
       "first_cleared_by": {
         "run": "m6-search",
         "attempt": 1,
-        "t": 1795070497.982
+        "t": 1795070497.982,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795070497.982
+      "last_attempt_t": 1795070497.982,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:yellow-orb/heldout-2105",
@@ -13688,9 +13977,13 @@
       "first_cleared_by": {
         "run": "m4-control",
         "attempt": 1,
-        "t": 1795049259.589
+        "t": 1795049259.589,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776
+      "last_attempt_t": 1795056871.776,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:yellow-orb/validation-4105",
@@ -13704,9 +13997,13 @@
       "first_cleared_by": {
         "run": "m5-g2-s2357",
         "attempt": 1,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795059758.964
+      "last_attempt_t": 1795059758.964,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:yellow-pad/heldout-7107",
@@ -13720,9 +14017,13 @@
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 1,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795056871.776
+      "last_attempt_t": 1795056871.776,
+      "input_timing": [
+        "tick"
+      ]
     },
     {
       "level": "drill:yellow-pad/validation-6107",
@@ -13736,39 +14037,50 @@
       "first_cleared_by": {
         "run": "m5-g1-s1207",
         "attempt": 1,
-        "t": 1795056871.776
+        "t": 1795056871.776,
+        "input_timing": "tick"
       },
-      "last_attempt_t": 1795059758.964
+      "last_attempt_t": 1795059758.964,
+      "input_timing": [
+        "tick"
+      ]
     }
   ],
   "jobs": [
-    {
-      "number": 11,
-      "task": "Triple spike: why no agent clears it; trainer throughput in background mode",
-      "owner": "Claude",
-      "status": "in progress",
-      "progress": "in progress (claude/m6-resume-02): reopened by the user; runs after #19 frees the slot"
-    },
     {
       "number": 19,
       "task": "M6 search-teacher data at scale: ~60 online training levels + all drill variants solved in parallel slots; scaling curve (held-out vs # solved levels)",
       "owner": "Claude",
       "status": "in progress",
-      "progress": "in progress (claude/m6-resume-02): resumed on slot 1 by the user; one slot only (RAM ~1.7 GB free)"
+      "progress": "in progress (claude/m6-resume-07): resumed 2026-11-20 on pinned-m8a, --max-private-mb 1800; verified online: Stageix, Skill Gotten Gains"
     },
     {
-      "number": 27,
-      "task": "Independent safety review (pass 1 alone, then cross-check vs #28): memory/storage leaks, unsafe or dangerous code, whole repo",
+      "number": 46,
+      "task": "M8 bridge + overlay UI (front end is Claude's per user): hotkeys Ctrl+Alt+V (1x watch) / Ctrl+Alt+O (overlay), view.json, launch defaults (dedicated, overlay on), overlay node, resumable step/step_seq, set_overlay op",
+      "owner": "Claude",
+      "status": "in progress",
+      "progress": "implemented (claude, c02f929): 1x watch, overlay UI, V/O hotkeys + hand-over, view.json, --session fresh|keep, set_overlay; smoke 6/6; Codex static review and keep-join check recorded; remaining live checks and native fixes in handoffs/2026-11-20-codex-to-claude-m8-review-findings.md"
+    },
+    {
+      "number": 47,
+      "task": "M8 CBF review + tests (codex): review Claude's bridge CBF (same core mechanism as upstream CBF v1.5.0), f=0 and onset-shift tests, input_timing labels on the Site (past results = without CBF)",
       "owner": "Codex",
-      "status": "paused",
-      "progress": "waiting: Codex first pass complete (13 findings, 3 high); cross-check awaits #28"
+      "status": "in progress",
+      "progress": "in progress: Codex static review and synthetic probe passed after waiting for menu; slope/orb/wave/ship/moving/dual fixtures pending; see handoffs/2026-11-19-claude-to-codex-m8-cbf.md"
     },
     {
-      "number": 28,
-      "task": "Independent safety review, same handoff as #27 (pass 1 alone, then cross-check)",
+      "number": 48,
+      "task": "M8 CBF always on (user rule; CBF's core mechanism, not an exact port): bridge split-step + fracs (claude); solver sub-step fractions at stalls (codex); past results labelled without CBF, not re-verified",
       "owner": "Claude",
       "status": "queued",
-      "progress": "queued (claude) - saved for later by the user"
+      "progress": "queued: bridge part done (claude, a9a0a2c): frac/fracs, split update, vanilla CBS/COS forced off; queued for Codex: solver fractions at stalls + input_timing records (same handoff)"
+    },
+    {
+      "number": 52,
+      "task": "Native M8 review follow-up: reject premature level loads, fix watched frame input boundary and view file retries, validate fraction shape, review ship and dual behavior",
+      "owner": "Unassigned",
+      "status": "open",
+      "progress": "open"
     },
     {
       "number": 1,
@@ -13839,6 +14151,13 @@
       "owner": "Codex",
       "status": "done",
       "progress": "done: all 54 drills verified, three generations and five official levels scored"
+    },
+    {
+      "number": 11,
+      "task": "Triple spike: why no agent clears it; trainer throughput in background mode",
+      "owner": "Claude",
+      "status": "done",
+      "progress": "done (claude): search tape does not generalize (0/3 at seeds 1207, 3907); background keeps 77% clone speed at 1/3 CPU; see tasks/11-triple-spike-followup.md"
     },
     {
       "number": 12,
@@ -13939,6 +14258,20 @@
       "progress": "done (claude): Codex's #18/#19 work committed (bee0d77)"
     },
     {
+      "number": 27,
+      "task": "Independent safety review (pass 1 alone, then cross-check vs #28): memory/storage leaks, unsafe or dangerous code, whole repo",
+      "owner": "Codex",
+      "status": "done",
+      "progress": "done: 13 first-pass findings and Claude cross-check recorded; targeted regression suites 12/12"
+    },
+    {
+      "number": 28,
+      "task": "Independent safety review, same handoff as #27 (pass 1 alone, then cross-check)",
+      "owner": "Claude",
+      "status": "done",
+      "progress": "done (claude): review + cross-check written; fixes are open rows #33-#44"
+    },
+    {
       "number": 29,
       "task": "M6 slot-memory mitigation in `tools/m6/solve_pool.py`: save + relaunch the slot above about 1.6 GB private or below 1.5 GB free system RAM, one fresh launch per level; then resume #19",
       "owner": "Claude",
@@ -13951,6 +14284,132 @@
       "owner": "Codex",
       "status": "done",
       "progress": "done: all 30 jobs rendered; private Site deployed; nightly export reads STATUS.md"
+    },
+    {
+      "number": 31,
+      "task": "M6 online solver stalls: why online searches use the whole 6,000-evaluation budget (Dark Paradise, Stageix stuck at one point; others backtrack), fix solver",
+      "owner": "Claude",
+      "status": "done",
+      "progress": "done (claude/stalls-04): stalls are 2+ segments deep (Dark Paradise) or need finer timing (Stageix); solver stall escape added: Dark Paradise x 1,642 -> 9,369, Stageix verified clear; tools/m6/stall_probe.py + watch.py (1x)"
+    },
+    {
+      "number": 32,
+      "task": "Triple spike with 3-5 search tapes across 3 clone seeds (follow-up to #11)",
+      "owner": "Codex",
+      "status": "done",
+      "progress": "done: three verified tapes; 0/9 triple clears in both arms; other drills 25/78 multi-tape vs 29/78 control"
+    },
+    {
+      "number": 33,
+      "task": "Memory guard checks every N evaluations / 30 s (not only on `x=` lines) in solve_pool + guided; regression case where x never advances (review #27/#28, high)",
+      "owner": "Claude",
+      "status": "done",
+      "progress": "done (claude/coord-03): solve_pool.guard_evaluations checks memory at least every 15 s of evaluations (solve_pool + guided); tests/test_memory_guard.py; live on #19"
+    },
+    {
+      "number": 34,
+      "task": "Verified process kills: supervise.py / instances_test.py / fresh_slot check exe path + creation time + slot before taskkill, verify exit; mute_gd.ps1 matches only the bot exe (review #27/#28, high)",
+      "owner": "Claude",
+      "status": "done",
+      "progress": "done (claude/coord-03): gdbot.instances.owned_pid/stop_slot verify exe path + creation time before taskkill and confirm the exit; supervise, instances_test and mute_gd.ps1 use them; tests/test_instances_owned.py"
+    },
+    {
+      "number": 35,
+      "task": "Network isolation fails closed: launcher verifies the GDBot firewall rule for the actual exe path, or the bridge blocks curl_multi_perform too (bridge: Claude reviews) (review #27/#28, medium)",
+      "owner": "Claude",
+      "status": "done",
+      "progress": "done (claude): gdbot-launch refuses to start unless an enabled outbound Windows Firewall block rule names this exact exe (INetFwPolicy2); --allow-no-firewall yes for dev; tested both ways"
+    },
+    {
+      "number": 36,
+      "task": "Pipe robustness: heartbeat watchdog in supervise (no log bytes ~10 min + idle GD -> restart slot), per-user pipe DACL, debug_peek behind a flag, request-id-safe error path (bridge: Claude reviews) (review #27/#28, medium)",
+      "owner": "Codex",
+      "status": "done",
+      "progress": "done (claude bridge part + earlier supervisor watchdog): request ids can't throw (req_id), debug_peek only with GDBOT_DEBUG=1, pipe DACL = this user + SYSTEM; malformed-id test replies id 0 and GD stays up"
+    },
+    {
+      "number": 37,
+      "task": "gdbot/sections.py: parallel writers lose each other's boundaries; serialize read-merge-write, unique temp names, test with two writers (review #27/#28, medium)",
+      "owner": "Codex",
+      "status": "done",
+      "progress": "done: writes use a shared file lock and atomic replacement; concurrent writers share stable section IDs"
+    },
+    {
+      "number": 38,
+      "task": "Solver resume: persist candidate frontier (don't repeat rejected candidates); make rebuild a loop not recursion (coordinate with #31) (review #27/#28, medium) Evidence 2026-11-19: boo resumed at segment 151 / 1,406 evals, ran 18 min, and after a restart resumed at 151 / 1,410 evals: stall work between anchors is not saved, so every restart throws it away.",
+      "owner": "Codex",
+      "status": "done",
+      "progress": "done, opt-in: frontier and partial lookahead survive restart; iterative replay and deterministic resume tested"
+    },
+    {
+      "number": 39,
+      "task": "Solver efficiency: replace full 0% replay every 16 commits (O(n^2), 35M ticks on Skill Gotten Gains) with checkpoint-based anchoring; measure ticks/segment (coordinate with #31) (review #27/#28, medium)",
+      "owner": "Codex",
+      "status": "done",
+      "progress": "done, opt-in: 548 vs 8,096 ticks to re-anchor at depth 253; all boundaries matched"
+    },
+    {
+      "number": 40,
+      "task": "Size limits on level downloads, decompression and cached level data before native load (gdbot/levels/online.py, tools/m6/pool.py, tools/site/gddl.py) (review #27/#28, low)",
+      "owner": "Codex",
+      "status": "done",
+      "progress": "done: bounded HTTP and level decoding; Python bridge rejects oversized inputs; all 71 cached levels verified"
+    },
+    {
+      "number": 41,
+      "task": "tools/gd_save.py: atomic write + .bak + refuse while the slot's GD runs; bridge init checks save dir creation (bridge: Claude reviews) (review #27/#28, low)",
+      "owner": "Codex",
+      "status": "done",
+      "progress": "done: Codex Python save editor + Claude bridge init (save dirs must exist, be real directories, not reparse points, not under the real save; fail closed)"
+    },
+    {
+      "number": 42,
+      "task": "Retention: rotate bridge.log (>5 MB -> .prev), supervisor logs and power samples; nightly_refresh.ps1 checks every git command, unique index path, allowlisted diff (review #27/#28, low)",
+      "owner": "Claude",
+      "status": "done",
+      "progress": "done: bridge.log rotates to bridge.prev.log above 5 MB (claude); nightly git checks + supervisor rotation (codex); power samples kept until a retention plan preserves daily totals"
+    },
+    {
+      "number": 43,
+      "task": "Skill Gotten Gains: confirm cause of stationary committed segments and add a no-progress detector (review #27/#28, low) UPDATE 2026-11-19 23:10: from segment 5,571 to 7,554 x stayed at exactly 24,819.39 (player not moving at all). First check whether the player reached the level end and the bridge missed the completion (g_end_reached via playEndAnimationToPos may not fire for this level type); watch it with tools/m6/watch.py.",
+      "owner": "Claude",
+      "status": "done",
+      "progress": "done (claude/sgg-06): Skill Gotten Gains was BEATEN at segment ~444; it ends by an end trigger (levelComplete inside the step, no end animation) and the bridge dropped it as stale. Fixed in mod/src/hooks.cpp (in-step levelComplete = completion); verified clean 0% run complete at tick 14,225; no other search affected"
+    },
+    {
+      "number": 44,
+      "task": "Pin native dependency hashes in mod/CMakeLists.txt; trusted-checkpoint policy for study CLIs (review #27/#28, low)",
+      "owner": "Codex",
+      "status": "done",
+      "progress": "done: MinHook and nlohmann_json SHA256 pinned; study checkpoint trust policy in docs/STUDY-CHECKPOINTS.md"
+    },
+    {
+      "number": 45,
+      "task": "Review the M8 plan (human view: 1x watch + overlay hotkeys + launch defaults; CBF sub-tick input), rounds 1 and 2",
+      "owner": "Codex",
+      "status": "done",
+      "progress": "done: both agents agreed; implementation acceptance checks recorded"
+    },
+    {
+      "number": 49,
+      "task": "Dashboard export fails on the new `open` queue state. Support open rows and verify the real queue exports successfully.",
+      "owner": "Codex",
+      "status": "done",
+      "progress": "done: exports open jobs as unassigned; real queue and regression test passed"
+    },
+    {
+      "number": 50,
+      "task": "Eliminate the remaining slot cleanup race by verifying and terminating through the same process handle. Follow-up to #34.",
+      "owner": "Codex",
+      "status": "done",
+      "progress": "done: verified Windows handle covers identity, termination and exit; offline tests passed"
+    },
+    {
+      "number": 51,
+      "task": "Solver stall escape: each failed escape rebuilds from 0% (a full prefix replay) and each try replays the prefix from 0%; on very long levels (Skill Gotten Gains, 5,234 segments) use the newest checkpoint at or below depth-b instead",
+      "owner": "Codex",
+      "status": "done",
+      "progress": "done, opt-in: 3,634 vs 105,502 ticks across 12 matched escape trials"
     }
   ],
   "attempts_curve": [

@@ -10,13 +10,15 @@ Usage:  python -m gdbot.levels.online 128 10565740      (download / refresh-skip
 import argparse
 import base64
 import gzip
+import io
 import json
 import sys
 import time
 import urllib.parse
 import urllib.request
-import zlib
 from pathlib import Path
+
+from .levelstring import MAX_ENCODED_LEVEL, decode_level_bytes
 
 ROOT = Path(__file__).resolve().parents[2]
 CACHE = ROOT / "levels" / "online"
@@ -25,6 +27,7 @@ FROZEN_M5B_ONLINE_IDS = (6508283, 4454123, 74730213, 11940, 146319148, 94887416,
 ENDPOINT = "https://www.boomlings.com/database/downloadGJLevel22.php"
 SECRET = "Wmfd2893gb7"  # GD's public, client-embedded request secret (identical for every player)
 MIN_INTERVAL_S = 2.0  # be gentle with RobTop's servers
+MAX_RESPONSE_BYTES = 32 * 1024 * 1024
 _last_request = 0.0
 
 # downloadGJLevel22 field numbers (https://wyliemaster.github.io/gddocs/#/resources/server/level)
@@ -45,23 +48,21 @@ def parse_response(text: str) -> dict:
 
 def normalize_data(data: str) -> str:
     """Return level data as padded URL-safe base64 gzip (the form drills and the bridge use)."""
-    data = data.strip()
-    raw = None
-    try:
-        blob = base64.b64decode(data + "=" * (-len(data) % 4), altchars=b"-_")
-        try:
-            raw = gzip.decompress(blob)
-        except OSError:
-            raw = zlib.decompress(blob)
-    except (ValueError, zlib.error):
-        if data.startswith("k") or ";" in data:  # very old levels store the inner string uncompressed
-            raw = data.encode("utf-8")
-    if raw is None:
-        raise ValueError("unrecognised level data encoding")
-    out = __import__("io").BytesIO()
-    with gzip.GzipFile(fileobj=out, mode="wb", mtime=0) as archive:
+    raw = decode_level_bytes(data.strip(), legacy=True)
+    output = io.BytesIO()
+    with gzip.GzipFile(fileobj=output, mode="wb", mtime=0) as archive:
         archive.write(raw)
-    return base64.urlsafe_b64encode(out.getvalue()).decode("ascii")
+    encoded = base64.urlsafe_b64encode(output.getvalue()).decode("ascii")
+    if len(encoded) > MAX_ENCODED_LEVEL:
+        raise ValueError("normalized level exceeds the encoded size limit")
+    return encoded
+
+
+def read_limited(stream, limit=MAX_RESPONSE_BYTES):
+    data = stream.read(limit + 1)
+    if len(data) > limit:
+        raise ValueError("level response or cache entry exceeds the byte limit")
+    return data
 
 
 def metadata(fields: dict) -> dict:
@@ -88,7 +89,7 @@ def _post(level_id: int, timeout: float) -> str:
     req = urllib.request.Request(ENDPOINT, data=body, headers={"User-Agent": "", "Content-Type": "application/x-www-form-urlencoded"})
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:
-            return resp.read().decode("utf-8", errors="replace")
+            return read_limited(resp, MAX_RESPONSE_BYTES).decode("utf-8", errors="replace")
     finally:
         _last_request = time.monotonic()
 
@@ -99,7 +100,12 @@ def download(level_id: int, *, cache: Path = CACHE, refresh: bool = False, timeo
         raise ValueError("level id must be a positive int")
     path = cache / f"{level_id}.json"
     if path.exists() and not refresh:
-        return json.loads(path.read_text(encoding="utf-8"))
+        with path.open("rb") as stored:
+            record = json.loads(read_limited(stored, MAX_RESPONSE_BYTES))
+        if not isinstance(record, dict) or record.get("id") != level_id:
+            raise ValueError("cached level ID did not match")
+        decode_level_bytes(record.get("data"))
+        return record
     fields = parse_response(_post(level_id, timeout))
     record = {**metadata(fields), "data": normalize_data(fields[F_DATA]),
               "fetched_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "source": ENDPOINT}

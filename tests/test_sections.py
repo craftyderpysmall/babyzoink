@@ -1,4 +1,6 @@
 import json
+from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier
 
 import pytest
 
@@ -76,3 +78,26 @@ def test_rows_load_in_the_site_rating_model(tmp_path):
     w.write(rec.end("death", 150, P(190, "wave")))
     for line in (tmp_path / "unit.jsonl").read_text().splitlines():
         Section.from_row(json.loads(line))
+
+
+def test_parallel_writers_keep_disjoint_boundaries_and_agree_on_shared_transition(tmp_path):
+    barrier = Barrier(2)
+
+    def write(run_id, position, later):
+        writer = TelemetryWriter(run_id, root=tmp_path)
+        recorder = writer.recorder("drill:t/x")
+        barrier.wait(timeout=5)
+        rows = run(recorder, [(0, P(0)), (100, P(position, "wave")),
+                              (200, P(later, "ship")), (220, P(later + 10, "ship"))], "death")
+        writer.write(rows)
+        return rows[1]["section"], rows[2]["section"]
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        a = pool.submit(write, "a", 130, 450)
+        b = pool.submit(write, "b", 140, 650)
+        shared_a, later_a = a.result()
+        shared_b, later_b = b.result()
+
+    assert shared_a == shared_b and shared_a in (130, 140)
+    assert (later_a, later_b) == (450, 650)
+    assert TelemetryWriter("observer", root=tmp_path).maps.get("drill:t/x").boundaries == [shared_a, 450, 650]

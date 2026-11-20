@@ -19,4 +19,13 @@ def test_summarize_totals_across_runs_and_orders_groups(tmp_path):
     assert [x["level"] for x in s] == ["official:2", "online:5", "drill:x/y"]
     off = s[0]
     assert (off["normal_attempts"], off["practice_attempts"], off["normal_clears"], off["runs"]) == (3, 50, 1, 2)
-    assert off["first_cleared_by"] == {"run": "b", "attempt": 2, "t": 2}
+    assert off["first_cleared_by"] == {"run": "b", "attempt": 2, "t": 2, "input_timing": "tick"}
+
+
+def test_mixed_timing_keeps_the_original_clear_provenance():
+    historic = row("historic", "official:1", normal_attempts=1, normal_clears=1, first_clear_attempt=1, t=1)
+    historic.pop("input_timing")
+    cbf = from_result("new", "official:1", {"input_timing": "cbf", "attempts": [{"terminal": "death"}]}, t=2)
+    result, = summarize([cbf, historic])
+    assert result["input_timing"] == ["tick", "cbf"]
+    assert result["first_cleared_by"]["input_timing"] == "tick"

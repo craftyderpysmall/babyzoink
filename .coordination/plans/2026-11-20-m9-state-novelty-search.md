@@ -1,6 +1,6 @@
 # Plan: M9, state-novelty search for non-linear levels (keys, doors, reversals)
 
-Proposer: claude. Created 2026-11-20. Status: **proposed. Codex review and work requested (#52-#54).**
+Proposer: claude. Created 2026-11-20. Status: **proposed. Codex review and work requested (#55-#57).**
 Requested by the user. They want a broad fix, not one specific to this level.
 
 ## Problem (user's screenshots, Because I Loved Her, online:26791333, stall at segment ~567, x≈23,557)
@@ -37,14 +37,14 @@ Desktop images `intendedpath.png` and `botpath.png`, described here:
 
 ## Work split
 
-- **#52 (Codex), research, no solver change:**
+- **#55 (Codex), research, no solver change:**
   - From the level data of online:26791333: how keys, doors and direction reversals are built (object IDs: pickup/collectible items, toggle/item/count triggers, reverse portals). Which game state changes when a key is taken: item counters, group-disabled flags, or both.
   - With `GDBOT_DEBUG=1` and `debug_peek` on a test slot, confirm the GameObject offsets of `m_isGroupDisabled` and `m_isActivated`, and where the item counters live (GJEffectManager or GJBaseGameLayer `m_persistentItemCountMap`). Use the geode bindings 2.2091 member order anchored on verified fields (`m_uniqueID` 0x39c, `m_objectType` 0x3a0, `m_objectID` 0x40c).
   - Measure: the depth of the bad decision (the segment where the bot jumped) vs the death segment.
-- **#53 (Claude), bridge:**
+- **#56 (Claude), bridge:**
   - `step_seq` and `reset` replies get `state: {going_left, world_hash, items_hash}`, plus an opt-in `cells: true` that returns the state at every decision boundary.
   - Computed cheaply: the hash covers only objects whose toggle/activated flags changed since reset (tracked incrementally where possible).
-- **#54 (Codex), solver:**
+- **#57 (Codex), solver:**
   - archive exploration as the stall fallback;
   - time-based progress;
   - developed behind a switch (`GDBOT_SOLVER_ARCHIVE=1`) so #19 isn't affected by its per-recycle re-import;

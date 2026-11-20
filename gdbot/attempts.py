@@ -2,7 +2,7 @@
 
 One JSONL row per (run, level) in build/attempts/<run>.jsonl:
   {run, level, name, t, normal_attempts, practice_attempts, normal_clears, practice_clear,
-   best_progress, first_clear_attempt}
+   best_progress, first_clear_attempt, input_timing}
 - normal attempt  = a full run from 0% (practice off). first_clear_attempt is the 1-based index of
   the first normal attempt that completed (None if none did).
 - practice attempt = a reset from a checkpoint or start position (practice drilling, local timing
@@ -16,13 +16,17 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_DIR = ROOT / "build" / "attempts"
 OFFICIAL = ("Stereo Madness", "Back on Track", "Polargeist", "Dry Out", "Base After Base")
+INPUT_TIMINGS = ("tick", "cbf")
 
 
 def row(run, level, *, name=None, normal_attempts=0, practice_attempts=0, normal_clears=0,
-        practice_clear=False, best_progress=0.0, first_clear_attempt=None, t=None):
+        practice_clear=False, best_progress=0.0, first_clear_attempt=None, input_timing="tick", t=None):
     if not level or ":" not in level:
         raise ValueError("level keys look like drill:<family>/<variant>, official:<n> or online:<id>")
+    if input_timing not in INPUT_TIMINGS:
+        raise ValueError("input_timing must be tick or cbf")
     return {"run": run, "level": level, "name": name or level.split(":", 1)[1], "t": t or round(time.time(), 3),
+            "input_timing": input_timing,
             "normal_attempts": int(normal_attempts), "practice_attempts": int(practice_attempts),
             "normal_clears": int(normal_clears), "practice_clear": bool(practice_clear),
             "best_progress": round(float(best_progress), 4), "first_clear_attempt": first_clear_attempt}
@@ -33,7 +37,7 @@ def from_result(run, level, result, *, name=None, t=None):
     attempts = result.get("attempts", [])
     first = next((i for i, a in enumerate(attempts, 1) if a.get("terminal") == "complete"), None)
     practice = result.get("practice") or []
-    return row(run, level, name=name, t=t,
+    return row(run, level, name=name, t=t, input_timing=result.get("input_timing", "tick"),
                normal_attempts=len(attempts),
                practice_attempts=sum(p.get("resets", 0) for p in practice),
                normal_clears=sum(a.get("terminal") == "complete" for a in attempts),
@@ -66,10 +70,16 @@ def summarize(rows):
     """Totals per level across runs, sorted official -> online -> drills."""
     levels = {}
     for r in rows:
+        timing = r.get("input_timing", "tick")
+        if timing not in INPUT_TIMINGS:
+            raise ValueError("input_timing must be tick or cbf")
         s = levels.setdefault(r["level"], {"level": r["level"], "name": r["name"], "normal_attempts": 0,
                                            "practice_attempts": 0, "normal_clears": 0, "practice_clear": False,
                                            "best_progress": 0.0, "runs": 0, "first_cleared_by": None,
-                                           "last_attempt_t": 0})
+                                           "last_attempt_t": 0, "input_timing": []})
+        if timing not in s["input_timing"]:
+            s["input_timing"].append(timing)
+            s["input_timing"].sort(reverse=True)  # tick before cbf
         s["normal_attempts"] += r["normal_attempts"]
         s["practice_attempts"] += r["practice_attempts"]
         s["normal_clears"] += r["normal_clears"]
@@ -77,7 +87,8 @@ def summarize(rows):
         s["best_progress"] = max(s["best_progress"], r["best_progress"])
         s["runs"] += 1
         if r["normal_clears"] and (s["first_cleared_by"] is None or r["t"] < s["first_cleared_by"]["t"]):
-            s["first_cleared_by"] = {"run": r["run"], "attempt": r["first_clear_attempt"], "t": r["t"]}
+            s["first_cleared_by"] = {"run": r["run"], "attempt": r["first_clear_attempt"], "t": r["t"],
+                                     "input_timing": timing}
         s["last_attempt_t"] = max(s["last_attempt_t"], r["t"])
     order = {"official": 0, "online": 1, "drill": 2}
 

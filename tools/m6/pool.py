@@ -1,8 +1,6 @@
 """Build a reproducible M6 training pool from public classic levels and seeded drills."""
 
 import argparse
-import base64
-import gzip
 import hashlib
 import json
 import sys
@@ -16,8 +14,9 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 from gdbot.levels.drills import M5_NOTES, MODE_PORTALS, build_m5_drill, iter_drills, iter_m5_drills  # noqa: E402
+from gdbot.levels.levelstring import decode_level_bytes  # noqa: E402
 from gdbot.levels.online import CACHE, FROZEN_M5B_ONLINE_IDS, MIN_INTERVAL_S, SECRET  # noqa: E402
-from gdbot.levels.online import download, metadata, parse_response  # noqa: E402
+from gdbot.levels.online import download, metadata, parse_response, read_limited  # noqa: E402
 
 
 SEARCH = "https://www.boomlings.com/database/getGJLevels21.php"
@@ -37,7 +36,8 @@ def search_page(directory, difficulty, length, tab, page=0):
     suffix = f"-{page}" if page else ""
     path = directory / f"{difficulty}-{length}-{tab}{suffix}.json"
     if path.exists():
-        return json.loads(path.read_text(encoding="utf-8"))
+        with path.open("rb") as cached:
+            return json.loads(read_limited(cached))
     params = {
         "type": tab, "str": "", "diff": difficulty, "len": length, "star": 1,
         "page": page, "gameVersion": 22, "binaryVersion": 47, "secret": SECRET,
@@ -48,7 +48,7 @@ def search_page(directory, difficulty, length, tab, page=0):
     )
     try:
         with urllib.request.urlopen(request, timeout=15) as response:
-            result = response.read().decode("utf-8", errors="replace")
+            result = read_limited(response).decode("utf-8", errors="replace")
     finally:
         time.sleep(MIN_INTERVAL_S)
     rows = [
@@ -63,7 +63,7 @@ def search_page(directory, difficulty, length, tab, page=0):
 
 
 def portal_modes(data):
-    _, _, objects = gzip.decompress(base64.urlsafe_b64decode(data)).decode("utf-8").partition(";")
+    _, _, objects = decode_level_bytes(data).decode("utf-8").partition(";")
     ids = set()
     for record in objects.split(";"):
         tokens = record.split(",")

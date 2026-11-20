@@ -29,7 +29,12 @@ function renderRows(id, rows, empty, columns) {
   }
   for (const line of rows) {
     const row = el("tr");
-    for (const item of line) row.append(el("td", item));
+    for (const item of line) {
+      const cell = el("td");
+      if (item instanceof HTMLElement) cell.append(item);
+      else cell.textContent = item;
+      row.append(cell);
+    }
     body.append(row);
   }
 }
@@ -38,28 +43,38 @@ const runLabels = {
   "m5c-search": "search teacher", "m4-practice": "M4 practice", "m4-control": "M4 control",
 };
 
+const timingLabel = (timing) => timing === "cbf" ? "CBF" : "Without CBF";
+
 function attempts() {
+  if (!snapshot) return;
   const kind = byId("attempt-kind").value;
   const rows = (snapshot.levels || []).filter((level) => kind === "all" || level.level.startsWith(`${kind}:`));
   renderRows("attempt-rows", rows.map((level) => {
     const first = level.first_cleared_by;
-    const by = first ? `${runLabels[first.run] || first.run}, attempt ${first.attempt}` : "not yet";
+    const by = first ? `${runLabels[first.run] || first.run}, attempt ${first.attempt} · ${timingLabel(first.input_timing)}` : "not yet";
     return [
-      level.name, format(level.normal_attempts, 0), format(level.practice_attempts, 0),
+      level.name, (level.input_timing ?? ["tick"]).map(timingLabel).join(" / "),
+      format(level.normal_attempts, 0), format(level.practice_attempts, 0),
       format(level.normal_clears, 0), `${format(100 * level.best_progress)}%`, by,
     ];
-  }), "No attempts recorded for this group yet.", 6);
+  }), "No attempts recorded for this group yet.", 7);
 }
 
 function jobQueue() {
+  if (!snapshot) return;
   const jobs = snapshot.jobs ?? [];
   const open = jobs.filter((job) => job.status !== "done");
-  const openNumbers = open.map((job) => `#${job.number}`).join(", ");
   byId("jobs-summary").textContent = jobs.length
-    ? `${jobs.length - open.length} of ${jobs.length} jobs are done.${open.length ? ` ${open.length} still open (${openNumbers}).` : ""}`
-    : "";
-  renderRows("jobs-rows", jobs.map((job) => [job.number, job.task, job.owner, job.status, job.progress]),
-    "No job queue data is available.", 5);
+    ? `${open.length} unfinished · ${jobs.length - open.length} completed`
+    : "No job queue data is available.";
+  const filter = byId("job-status").value;
+  const visible = filter === "active" ? open : filter === "done" ? jobs.filter((job) => job.status === "done") : jobs;
+  const rows = visible.map((job) => {
+    const badge = el("span", job.status, "job-state");
+    badge.dataset.status = job.status;
+    return [`#${job.number}`, job.task, job.owner, badge, job.progress];
+  });
+  renderRows("jobs-rows", rows, "No jobs match this filter.", 5);
 }
 
 const generationLabel = (generation) => generation < 0 ? "Unguided" : `Gen ${generation}`;
@@ -137,10 +152,11 @@ function overview() {
   });
   byId("milestones").replaceChildren(...items);
   renderRows("results", progress.results.map((row) => [
-    row.study, row.agent, Number.isFinite(row.first_run_progress_pct) ? `${format(row.first_run_progress_pct)}%` : "—",
+    row.study, row.agent, timingLabel(row.input_timing),
+    Number.isFinite(row.first_run_progress_pct) ? `${format(row.first_run_progress_pct)}%` : "—",
     Number.isFinite(row.clears_within_3) ? `${format(row.clears_within_3)} / ${row.drills}` : "—",
     Number.isFinite(row.first_try_clears) ? `${format(row.first_try_clears)} / ${row.drills}` : "—",
-  ]), "No study results are available.", 5);
+  ]), "No study results are available.", 6);
   overviewPerformance();
   attempts();
   jobQueue();
@@ -158,8 +174,8 @@ function chart(id, entries, { baseline = null, empty, digits = 1 }) {
   canvas.height = Math.round(height * density);
   const ctx = canvas.getContext("2d");
   ctx.scale(density, density);
-  ctx.font = "13px system-ui";
-  ctx.fillStyle = "#adbccc";
+  ctx.font = "12px 'Geist Mono', ui-monospace, monospace";
+  ctx.fillStyle = "#a1a4a5";
   const defined = entries.filter((item) => item.value !== null);
   if (!defined.length) {
     ctx.textAlign = "center";
@@ -184,7 +200,7 @@ function chart(id, entries, { baseline = null, empty, digits = 1 }) {
   for (let i = 0; i <= 4; i++) {
     const value = low + i * (high - low) / 4;
     const heightAt = y(value);
-    ctx.strokeStyle = "#2b394d";
+    ctx.strokeStyle = "#232328";
     ctx.beginPath();
     ctx.moveTo(left, heightAt);
     ctx.lineTo(right, heightAt);
@@ -193,7 +209,7 @@ function chart(id, entries, { baseline = null, empty, digits = 1 }) {
   }
   ctx.textAlign = "center";
   ctx.textBaseline = "alphabetic";
-  ctx.strokeStyle = "#a6edc6";
+  ctx.strokeStyle = "#a8ceff";
   ctx.lineWidth = 2;
   ctx.beginPath();
   let previous = false;
@@ -214,14 +230,14 @@ function chart(id, entries, { baseline = null, empty, digits = 1 }) {
   entries.forEach((item, index) => {
     if (item.value === null) return;
     if (item.interval) {
-      ctx.strokeStyle = "#72a991";
+      ctx.strokeStyle = "#657fa3";
       ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.moveTo(x(index), y(item.interval[0]));
       ctx.lineTo(x(index), y(item.interval[1]));
       ctx.stroke();
     }
-    ctx.fillStyle = "#a6edc6";
+    ctx.fillStyle = "#dceaff";
     ctx.beginPath();
     ctx.arc(x(index), y(item.value), 4, 0, Math.PI * 2);
     ctx.fill();
@@ -294,7 +310,8 @@ function performance() {
 
 function route() {
   const [page, requestedMode] = location.hash.slice(1).split("/");
-  const active = page === "performance" ? "performance" : "overview";
+  const pages = ["overview", "performance", "studies", "jobs"];
+  const active = pages.includes(page) ? page : "overview";
   if (active === "performance" && modes.some((name) => name.toLowerCase() === requestedMode)) {
     mode = requestedMode;
     if (snapshot) {
@@ -304,7 +321,7 @@ function route() {
       if (record) byId("generation").value = record.generation;
     }
   }
-  for (const name of ["overview", "performance"]) {
+  for (const name of pages) {
     byId(name).hidden = active !== name;
     if (name === active) byId(`nav-${name}`).setAttribute("aria-current", "page");
     else byId(`nav-${name}`).removeAttribute("aria-current");
@@ -314,9 +331,9 @@ function route() {
 
 function draw() {
   if (!snapshot) return;
-  if (byId("overview").hidden) {
+  if (!byId("performance").hidden) {
     performance();
-  } else {
+  } else if (!byId("overview").hidden) {
     attemptsTrend();
     const entries = snapshot.energy.rows.map((row) => ({ label: row.date.slice(5), value: row.cumulative_kwh }));
     chart("energy-chart", entries, { baseline: 0, digits: 3, empty: "No energy samples recorded." });
@@ -349,6 +366,7 @@ async function init() {
   byId("scope").addEventListener("change", () => { refreshGenerations(); draw(); });
   byId("generation").addEventListener("change", draw);
   byId("attempt-kind").addEventListener("change", attempts);
+  byId("job-status").addEventListener("change", jobQueue);
   addEventListener("hashchange", route);
   addEventListener("resize", draw);
   route();

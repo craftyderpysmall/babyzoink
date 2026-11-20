@@ -118,8 +118,9 @@ def queue_jobs(path):
     table = False
     jobs = []
     statuses = {"in progress": "in progress", "paused": "paused", "waiting": "paused", "blocked": "blocked",
-                "queued": "queued", "done": "done", "deployed": "done", "completed": "done"}
-    order = {"in progress": 0, "paused": 1, "blocked": 1, "queued": 2, "done": 3}
+                "queued": "queued", "open": "open", "done": "done", "deployed": "done", "completed": "done",
+                "implemented": "in progress"}
+    order = {"in progress": 0, "paused": 1, "blocked": 1, "queued": 2, "open": 3, "done": 4}
     for line in path.read_text(encoding="utf-8").splitlines():
         if line.startswith("## "):
             if table:
@@ -135,6 +136,8 @@ def queue_jobs(path):
                        if re.match(rf"{prefix}\b", state.casefold())), None)
         if status is None:
             raise ValueError(f"Unknown state for job #{number}: {state}")
+        if status == "open":
+            owner = "Unassigned"
         jobs.append({"number": int(number), "task": task, "owner": owner, "status": status,
                      "progress": state.replace(r"\|", "|")})
     return sorted(jobs, key=lambda job: (order[job["status"]], job["number"]))
@@ -165,6 +168,8 @@ def main():
     parser.add_argument("--replace-anchors", action="store_true", help="refresh existing cached ratings too")
     options = parser.parse_args()
     progress = json.loads((ROOT / "docs/progress.json").read_text(encoding="utf-8"))
+    for result in progress["results"]:
+        result.setdefault("input_timing", "tick")
     rows = telemetry(options.telemetry)
     metadata = online_metadata(ROOT / "levels/online")
     cache_path = ROOT / "levels/difficulty/gddl_cache.json"

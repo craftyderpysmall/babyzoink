@@ -8,6 +8,8 @@ from collections.abc import Callable
 from enum import StrEnum
 from typing import BinaryIO, Protocol
 
+from .levels.levelstring import decode_level_bytes
+
 VERSION = 0
 PHYSICS_HZ = 240
 _LENGTH = struct.Struct("<I")
@@ -143,6 +145,10 @@ class BridgeClient:
             raise ProtocolError("bridge client is closed")
         if "id" in fields:
             raise ValueError("request IDs are assigned by the client")
+        if op == "load_level":
+            level = fields.get("level")
+            if isinstance(level, dict) and level.get("kind") == "level_string":
+                decode_level_bytes(level.get("data"))
         request_id = self._next_id
         self._next_id += 1
         frame = pack_frame({"op": op, "id": request_id, **fields})

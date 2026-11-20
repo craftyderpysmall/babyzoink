@@ -1,11 +1,13 @@
 import base64
 import gzip
+import io
 import json
 
 import pytest
 
-from gdbot.levels import online
+from gdbot.levels import levelstring, online
 from gdbot.levels.levelstring import LevelString
+from gdbot.protocol import BridgeClient, InProcessTransport
 
 
 def _gz(inner):
@@ -47,3 +49,19 @@ def test_download_uses_cache_without_network(tmp_path, monkeypatch):
     monkeypatch.setattr(online, "_post", lambda i, t: f"1:{i}:2:P:4:{_gz(INNER)}:15:5")
     with pytest.raises(ValueError):
         online.download(56, cache=tmp_path)
+
+
+def test_size_limit_applies_before_bridge_transport(monkeypatch):
+    monkeypatch.setattr(levelstring, "MAX_INNER_LEVEL", len(INNER) - 1)
+    client = BridgeClient(InProcessTransport(lambda _: pytest.fail("unexpected transport call")))
+    with pytest.raises(ValueError, match="decoded size limit"):
+        client.load_level({"kind": "level_string", "name": "fixture", "data": _gz(INNER)})
+
+
+def test_decompression_and_cache_reads_respect_independent_limits(monkeypatch):
+    assert online.read_limited(io.BytesIO(b"journal"), limit=7) == b"journal"
+    with pytest.raises(ValueError, match="byte limit"):
+        online.read_limited(io.BytesIO(b"journal"), limit=6)
+    monkeypatch.setattr(levelstring, "MAX_LEVEL_RECORDS", 1)
+    with pytest.raises(ValueError, match="record limit"):
+        online.normalize_data(_gz(INNER))

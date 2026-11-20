@@ -9,14 +9,19 @@ Usage: python tools/gd_save.py <slot> get                 (list valueKeeper gv_ 
 """
 import base64
 import gzip
+import os
 import re
 import sys
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 
-BOT = Path(__file__).resolve().parents[1] / "game" / "2.2091" / "gdbot"
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from gdbot.instances import BOT, owned_pid
 
 
 def path(slot: int) -> Path:
+    if type(slot) is not int or not 0 <= slot <= 63:
+        raise ValueError("slot must be an int in 0..63")
     return (BOT if slot == 0 else BOT / f"inst{slot}") / "save" / "CCGameManager.dat"
 
 
@@ -25,9 +30,34 @@ def load(p: Path) -> str:
     return gzip.decompress(base64.urlsafe_b64decode(x + b"=" * (-len(x) % 4))).decode("utf-8")
 
 
-def save(p: Path, xml: str) -> None:
+def editable_path(slot: int) -> Path:
+    p = path(slot)
+    if p.resolve(strict=True) != p:
+        raise RuntimeError(f"refusing a redirected save path for slot {slot}")
+    if owned_pid(slot) is not None:
+        raise RuntimeError(f"close the bot game in slot {slot} before editing its save")
+    return p
+
+
+def _atomic_write(target: Path, contents: bytes) -> None:
+    file = NamedTemporaryFile(dir=target.parent, prefix=f"{target.name}-", suffix=".tmp", delete=False)
+    staging = Path(file.name)
+    try:
+        with file:
+            file.write(contents)
+            file.flush()
+            os.fsync(file.fileno())
+        os.replace(staging, target)
+    finally:
+        staging.unlink(missing_ok=True)
+
+
+def save(slot: int, xml: str) -> None:
+    p = editable_path(slot)
     enc = base64.urlsafe_b64encode(gzip.compress(xml.encode("utf-8")))
-    p.write_bytes(bytes(b ^ 11 for b in enc))
+    _atomic_write(p.with_suffix(".dat.bak"), p.read_bytes())
+    editable_path(slot)
+    _atomic_write(p, bytes(b ^ 11 for b in enc))
 
 
 def set_gv(xml: str, key: str, value: str) -> str:
@@ -51,20 +81,24 @@ def slots() -> list:
 if __name__ == "__main__":
     slot, cmd, *rest = sys.argv[1:]
     if cmd == "root":
-        for n in (slots() if slot == "all" else [int(slot)]):
-            p = path(n)
+        targets = slots() if slot == "all" else [int(slot)]
+        for n in targets:
+            editable_path(n)
+        for n in targets:
+            p = editable_path(n)
             xml = set_root_int(load(p), rest[0], int(rest[1]))
-            save(p, xml)
+            save(n, xml)
             assert load(p) == xml
             print("saved", p, rest[0], "=", rest[1])
         sys.exit(0)
-    p = path(int(slot))
+    n = int(slot)
+    p = editable_path(n) if cmd == "set" else path(n)
     xml = load(p)
     if cmd == "get":
         print(re.findall(r"<k>(gv_\d+)</k><s>([^<]*)</s>", xml))
     elif cmd == "set":
         for key, value in zip(rest[::2], rest[1::2]):
             xml = set_gv(xml, key, value)
-        save(p, xml)
+        save(n, xml)
         assert load(p) == xml
         print("saved", p)

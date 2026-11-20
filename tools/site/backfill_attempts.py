@@ -175,6 +175,7 @@ def m6_search():
         normal = report["normal_attempts"]
         rows.append(row("m6-search", report["level"], name=report["name"], t=mtime(p),
                         normal_attempts=normal, practice_attempts=report["practice_attempts"],
+                        input_timing=report.get("input_timing", "tick"),
                         normal_clears=int(verified), practice_clear=verified,
                         best_progress=1.0 if verified else 0.0,
                         first_clear_attempt=normal if verified else None))
@@ -217,6 +218,7 @@ def m6_guided():
             normal = result["normal_attempts"]
             rows.append(row(label, key, name=result["name"], t=mtime(path), normal_attempts=normal,
                             practice_attempts=result["practice_attempts"], normal_clears=int(verified),
+                            input_timing=result.get("input_timing", "tick"),
                             best_progress=float(verified), first_clear_attempt=normal if verified else None))
     if rows:
         write("m6-guided", rows)

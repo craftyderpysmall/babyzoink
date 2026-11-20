@@ -8,6 +8,21 @@ sys.path.insert(0, str(ROOT / "tools/m6"))
 import supervise  # noqa: E402
 
 
+def test_rotation_keeps_only_the_previous_oversized_log(tmp_path):
+    log = tmp_path / "slot.log"
+    previous = tmp_path / "slot.log.prev"
+    supervise.rotate_log(log, limit=4)
+    log.write_bytes(b"1234")
+    supervise.rotate_log(log, limit=4)
+    assert log.exists() and not previous.exists()
+    log.write_bytes(b"12345")
+    supervise.rotate_log(log, limit=4)
+    assert not log.exists() and previous.read_bytes() == b"12345"
+    log.write_bytes(b"67890")
+    supervise.rotate_log(log, limit=4)
+    assert not log.exists() and previous.read_bytes() == b"67890"
+
+
 def drive(dog, minutes, log_grows, cpu_per_min):
     size, cpu = 0, 0.0
     for m in range(minutes * 2):  # 30 s polls

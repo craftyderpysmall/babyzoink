@@ -8,7 +8,38 @@ import base64
 import gzip
 import io
 import math
+import zlib
 from dataclasses import dataclass, field
+
+MAX_ENCODED_LEVEL = 16 * 1024 * 1024
+MAX_INNER_LEVEL = 64 * 1024 * 1024
+MAX_LEVEL_RECORDS = 500_000
+
+
+def decode_level_bytes(data: str, *, legacy: bool = False) -> bytes:
+    """Expand a level within byte and record limits. Legacy download formats opt in."""
+    if not isinstance(data, str) or not data or len(data) > MAX_ENCODED_LEVEL:
+        raise ValueError("level data exceeds the encoded size limit or is empty or invalid")
+    if legacy and (data.startswith("k") or ";" in data):
+        raw = data.encode("utf-8")
+    else:
+        try:
+            compressed = base64.b64decode(data + "=" * (-len(data) % 4), altchars=b"-_", validate=True)
+            if legacy and not compressed.startswith(b"\x1f\x8b"):
+                decoder = zlib.decompressobj()
+                raw = decoder.decompress(compressed, MAX_INNER_LEVEL + 1)
+                if len(raw) <= MAX_INNER_LEVEL and not decoder.eof:
+                    raise ValueError("incomplete zlib level data")
+            else:
+                with gzip.GzipFile(fileobj=io.BytesIO(compressed)) as archive:
+                    raw = archive.read(MAX_INNER_LEVEL + 1)
+        except (OSError, EOFError, zlib.error) as error:
+            raise ValueError("invalid compressed level data") from error
+    if len(raw) > MAX_INNER_LEVEL:
+        raise ValueError("level data exceeds the decoded size limit")
+    if raw.count(b";") > MAX_LEVEL_RECORDS:
+        raise ValueError("level data exceeds the record limit")
+    return raw
 
 
 # No explicit color channels: use the game's defaults.
@@ -90,8 +121,7 @@ class LevelString:
 
     @classmethod
     def decode(cls, data: str):
-        compressed = base64.b64decode(data, altchars=b"-_", validate=True)
-        return cls.parse(gzip.decompress(compressed).decode("utf-8"))
+        return cls.parse(decode_level_bytes(data).decode("utf-8"))
 
 
 START_POSITION = 31

@@ -121,7 +121,8 @@ def fresh_slot(slot, log, launcher=None):
             time.sleep(60)
             continue
         try:
-            found = launch(slot, **({"launcher": launcher} if launcher else {}))
+            # every supervisor launch is a recycle: keep the user's Ctrl+Alt+B / overlay / watch choices (M8)
+            found = launch(slot, session="keep", **({"launcher": launcher} if launcher else {}))
         except (RuntimeError, OSError, subprocess.TimeoutExpired) as error:
             # e.g. the closed GD still holds the slot's bridge DLL copy for a moment after exiting
             log(f"slot {slot} launch failed (attempt {attempt}): {error}; retrying")

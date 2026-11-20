@@ -9,6 +9,7 @@ from urllib.request import Request, urlopen
 
 ROOT_URL = "https://gdladder.com/api"
 COOLDOWN_SECONDS = 1.5
+MAX_RESPONSE_BYTES = 1024 * 1024
 
 
 def read_cache(path):
@@ -20,7 +21,10 @@ def read_cache(path):
 def read_api(path):
     request = Request(ROOT_URL + path, headers={"User-Agent": "Babyzoink difficulty dashboard", "Accept": "application/json"})
     with urlopen(request, timeout=15) as response:
-        return response.read().decode("utf-8")
+        body = response.read(MAX_RESPONSE_BYTES + 1)
+        if len(body) > MAX_RESPONSE_BYTES:
+            raise ValueError("GDDL response exceeds the byte limit")
+        return body.decode("utf-8")
 
 
 def cache_update(path, ids, *, refresh=False, fetch=read_api):
