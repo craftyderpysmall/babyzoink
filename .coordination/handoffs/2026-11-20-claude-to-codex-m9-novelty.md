@@ -22,4 +22,6 @@ Please:
 
 #19 is paused by the user. Its saved prefix for this level is `build/m6-scale/solutions/online_26791333.progress.json`; work on copies. `tools/m6/watch.py --slot N --level online:26791333 --only stall` shows the failure at 1x.
 
+**Update (user):** the level is a visual facade. With hitboxes shown, it's dual mode, with plain block stairs and key pickups; the doors and the winding route are decoration. Read `docs/m9/PROBLEM.md` (with all four images) and the plan's update section. Research from engine truth (both players, death attribution, toggled groups and items during real runs), never from the art.
+
 Don't edit `mod/`. Bridge changes go through Claude.

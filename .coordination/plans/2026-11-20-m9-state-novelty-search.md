@@ -35,6 +35,24 @@ Desktop images `intendedpath.png` and `botpath.png`, described here:
 - **Integration:** the existing segment depth-first search stays the default; it's cheap and works on linear levels. When it stalls (no depth progress for `STALL_EVALS` and the escape has failed), it hands over to archive exploration. Archive exploration returns to depth-first search once a new furthest cell is reached. Either mode can finish the level.
 - **Replace x-based progress** with level time/ticks, or cell novelty, wherever it decides anything (stall detection, the escape's success test, `stall_probe` margins). Logs may keep x.
 
+## Update 2026-11-20 (user, hitbox screenshots): the level is a visual facade. Work from gameplay truth, not art
+
+The full problem record, with all four images, is in `docs/m9/PROBLEM.md`.
+
+With GD's "show hitboxes" on, the section is **dual mode**: one player on the ceiling and one on the floor. It has plain block stairs, and the keys are pickup objects. The doors and the winding route are mostly decoration. Changes to this plan:
+- **#55 research:** don't infer mechanics from the artwork or object art IDs. Measure from the engine during real runs:
+  - both players' hitboxes and positions;
+  - dual mode;
+  - which player died, on which object (hitbox type, object id, groups);
+  - which groups and items change when a pickup is touched.
+
+  Find the exact collision behind the "red door" death, and the depth of the decision that caused it.
+- **Cell key:** must include **both players** (coarse position, mode, gravity, direction) and dual on/off, plus the hash of the toggled/activated object state and item counters. Decoration is excluded.
+- **#56 bridge also:**
+  - player 2's state when dual (map `m_isDualMode`);
+  - death attribution (which player, which object);
+  - this also unblocks CBF's player-2 split.
+
 ## Work split
 
 - **#55 (Codex), research, no solver change:**
