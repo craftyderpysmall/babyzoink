@@ -78,17 +78,42 @@ One row per run. Don't take rows marked `waiting`. If a handoff conflicts with a
 | 57 | (claude) M9 solver live validation: archive (Go-Explore-style) exploration as the stall fallback, time-based progress, behind GDBOT_SOLVER_ARCHIVE=1; pass Because I Loved Her sections 1 and 2 without level-specific code | plans/2026-11-20-m9-state-novelty-search.md | yes | done (claude validation): Because I Loved Her CLEARED and verified from 0% (7,145 decisions) - archive needed 15 evals at the stall, then DFS reached the end (1,844 evals after the stall); see plan '#57 live validation result' |
 | 58 | (claude) M9 archive speed-up: restore archive cells from native checkpoints on verified common prefixes instead of clean replay from 0% (restores were ~95% of archive ticks on Because I Loved Her) | plans/2026-11-20-m9-state-novelty-search.md | yes | done (claude, opt-in GDBOT_ARCHIVE_CHECKPOINTS=1): identical hand-back, restore ticks -49%, 1.81x faster on Because I Loved Her; default off (#19 unaffected until enabled) |
 | 59 | Parallel-slot archive: spread one level's archive attempts across several game slots (attempts are independent); needed to use more cores or a cloud machine on one level | plans/2026-11-20-m9-state-novelty-search.md | yes | done (claude): tools/m9/parallel_archive.py; Reflected 2 slots: one worker's archive passed the stall (176 -> 262), the other found nothing in 602 evals -> parallel seeds help; follow-up: workers adopt the winner's prefix (open row) |
-| 60 | Migrate #19 to V2 + archive on the CBF bridge after the tick->cbf migration rule lands (#48); then resume the online pool | handoffs/2026-11-20-claude-to-codex-timing-migration.md | yes | in progress (claude): first run cleared Moving Obstacles (verified), then deadlocked in quit_level (GD restarted the completed level by itself); bridge fixed (re-quit + 20 s timeout), re-pinned as pinned-m9b, #19 restarted |
+| 60 | Migrate #19 to V2 + archive on the CBF bridge after the tick->cbf migration rule lands (#48); then resume the online pool | handoffs/2026-11-20-claude-to-codex-timing-migration.md | yes | paused for the user (2026-11-20 ~06:45): #19 on V2 + archive + checkpoints, pinned-m9b; Moving Obstacles cleared; resume command in 'Where we stopped' |
 | 61 | Parallel archive sync: when one worker hands back past a stall, the other workers adopt its prefix (shared progress handoff) instead of searching on their own copies | plans/2026-11-20-m9-state-novelty-search.md | yes | in progress (codex): run-local prefix exchange implemented; 108 tests passed; two-slot live validation waits for RAM |
 | 62 | Supervisor watchdog misses bridge deadlocks: a frozen GD still burns CPU (skipped-update loop), so 'GD idle' never triggers. Use the bridge's pending-request age (e.g. a heartbeat/age field in bridge.json or a status op) instead of GD CPU | tools/m6/supervise.py | yes | open |
 
-## Where we stopped (2026-11-19, read this first)
+## Where we stopped (2026-11-20 ~06:45 UTC, claude, paused for the user's /clear; read this first)
 
-- **Headline:** the M5c search teacher clears official levels with no human input, each verified by a clean 0% run. Stereo Madness, Back on Track and Polargeist are solved (`build/m5c/main_1.json` through `main_3.json`). Dry Out and Base After Base: see `build/m5c/main_{2,4,5}.json` and `*.progress.json`. The solver resumes and skips solved levels.
-- **The trained policy still can't play real levels** (best 7.6% on official, 0/10 online). Expert cloning gave 0/5 official and 0/10 online clears; adding a training search tape cleared the unseen triple-spike drill on attempt 3.
-- **Handoff #17 is complete for Codex items 1, 3, 4 and 5.** The #17 response records the dashboard URL and experiment results. The subsequent #18 diagnostics advanced the remaining two official searches and saved resumable prefixes.
-- **Dashboards:** the Claude artifact (https://claude.ai/artifact/KRrQvsq6WkTcYJ4kmvp7ak) is refreshed by the 8:20 pm cloud routine trig_01YAtCETwr76snKBFJWJ9VyE. The ChatGPT Site is in `site/`, fed by `main/data/dashboard/site-dashboard.json`. The Windows task "babyzoink dashboard data" commits the data to `main` nightly at 8:03 pm. The repo has a single branch (`main`).
-- **Game:** GD 2.2091 bot copy in `game/2.2091` (gitignored). Launch with `mod/build/Release/gdbot-launch.exe [--instance N]`; one client per slot.
+- **Everything is paused.** No game slots or solver workers are running. All of Claude's claims are released.
+- **Verified clears.**
+  - Official: Stereo Madness, Back on Track, Polargeist.
+  - Online (#19 pool): Because I Loved Her, Moving Obstacles, Skill Gotten Gains, Stageix.
+  - Because I Loved Her was the M9 key/door/dual puzzle level. It was cleared by the archive search (`docs/m9/PROBLEM.md`).
+  - Moving Obstacles was cleared on the new solver.
+- **#19 / #60 (online training pool).** Paused mid-run on Dark Paradise, segment ~260, progress saved. It now runs the new solver. To resume:
+  ```
+  GDBOT_SOLVER_V2=1 GDBOT_SOLVER_ARCHIVE=1 GDBOT_MIGRATE_TICK_PREFIX=1 GDBOT_ARCHIVE_CHECKPOINTS=1 \
+    build/gdbot-venv/Scripts/python.exe -u tools/m6/supervise.py --slot 2 --budget 15000 \
+    --launcher mod/build/pinned-m9b/gdbot-launch.exe --job "--split online --shards 2 --shard 0" \
+    --job "--split online --shards 2 --shard 1" --max-private-mb 1800 --min-avail-mb 700
+  ```
+  Check RAM first: one big level needs about 2 GB free. Then re-arm a log monitor on `build/m6-scale/supervise-slot2.log`.
+- **Bridge build pinned for #19:** `mod/build/pinned-m9b` (b2e7f8c). It includes:
+  - M8 (overlay, 1x watch, hotkeys, CBF with the dual split);
+  - M9 (player 2, death attribution, `world_hash`, cells);
+  - safety hardening;
+  - end-trigger completions;
+  - the `quit_level` deadlock fix.
+- **Done this session (details in the plans and handoffs):**
+  - M8 #46/#47 signed off (13 modes plus dual);
+  - M9 #56 bridge, #57 validation (Because I Loved Her cleared), #58 checkpoint archive (opt-in, 1.81x faster), #59 parallel archive tool;
+  - committed Codex's #48 (fractions, timing provenance, tick-to-CBF migration);
+  - safety rows #35/#36/#41/#42/#44.
+- **Open / next:**
+  - #61: Codex is implementing the parallel-archive prefix sync. Claude reviewed and approved it with 6 points.
+  - Open row: a bridge-aware watchdog. A frozen GD still burns CPU, so the supervisor's watchdog missed the quit deadlock.
+  - The user is considering a cloud Windows VM (Azure or Google Cloud, 64 GB RAM) to run more slots. #59/#61 parallel archive is what makes that pay off.
+- **`DESIGN.md`** (an analysis of Resend's site design, from Codex) is left uncommitted. Ask the user whether to keep or delete it.
 
 ## Active work
 
