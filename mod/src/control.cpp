@@ -129,6 +129,7 @@ json player_json(void* p) {
         {"buffered", read_field<uint8_t>(p, kJumpBuffered) != 0},
         {"dashing", read_field<uint8_t>(p, kIsDashing) != 0},
         {"dead", read_field<uint8_t>(p, kIsDead) != 0},
+        {"going_left", read_field<uint8_t>(p, kIsGoingLeft) != 0},
     };
 }
 
@@ -296,8 +297,11 @@ json obs_json() {
     json objs = objects_json(read_field<float>(p, fields::kPosTickX), &truncated);
     json unsupported = json::array({"on_ceiling", "button_queue", "object_active", "moving_objects_partial"});
     if (!g_objects_ok) unsupported.push_back("objects");
+    json players = json::array({player_json(p)});
+    if (dual_mode()) players.push_back(player_json(player2()));
     json o = {
-        {"players", json::array({player_json(p)})},
+        {"players", players},
+        {"dual", dual_mode()},
         {"objects", objs},
         {"progress", progress()},
         {"window", {{"ahead_x", kAheadX}, {"behind_x", kBehindX}, {"max_objects", kMaxObjects}, {"truncated", truncated}}},
@@ -602,6 +606,7 @@ json op_reset(const json& req) {
     reinterpret_cast<Void0_t>(rva_ptr(PlayLayer__resetLevel))(g_layer);  // goes through our hook
     g_bot_reset = false;
     ++g_episode;
+    g_death = DeathInfo{};
     cbf_clear();
     cbf_force_vanilla_click_off();
     if (kind == "zero") ++g_vstats.runs; else ++g_vstats.practice;
@@ -683,7 +688,8 @@ bool exec_advance(Exec& e, long long max_ticks) {
             float x = read_field<float>(p, fields::kPosTickX);
             g_tick_vx = (x - g_tick_x) / float(g_tick - before);
             g_tick_x = x;
-            if (read_field<uint8_t>(p, fields::kIsDead)) {
+            void* p2 = dual_mode() ? player2() : nullptr;
+            if (read_field<uint8_t>(p, fields::kIsDead) || (p2 && read_field<uint8_t>(p2, fields::kIsDead)) || g_death.set) {
                 e.terminal = "death";
                 if (!e.seq) e.events.push_back({{"type", "death"}, {"tick", g_tick}});
             } else if (g_end_reached) {  // tick-driven; GD's levelComplete itself arrives later on a wall-clock timer
@@ -724,6 +730,11 @@ json exec_reply(Exec& e) {
         if (g_trace) r["trace"] = e.trace;
     }
     r["mode"] = mode_str(g_mode);  // so the trainer can match its own CPU use (threads, priority)
+    r["dual"] = dual_mode();
+    if (e.seq && r["dual"].get<bool>()) r["player2"] = player_json(player2());
+    if (e.terminal && std::string(e.terminal) == "death" && g_death.set)
+        r["death"] = {{"player", g_death.player}, {"object_id", g_death.obj_id}, {"object_type", g_death.obj_type},
+                      {"uid", g_death.uid}, {"x", g_death.x}, {"y", g_death.y}, {"tick", g_death.tick}};
     float pr = e.terminal && std::string(e.terminal) == "complete" ? 1.0f : progress();
     if (pr > g_vstats.best) g_vstats.best = pr;
     return r;
@@ -843,13 +854,14 @@ json op_set_overlay(const json& req) {
     return r;
 }
 
-// Dev-only: raw memory read for field mapping. target: "player1" | "layer"; len <= 4096.
+// Dev-only: raw memory read for field mapping. target: "player1" | "player2" | "layer"; len <= 4096.
 json op_debug_peek(const json& req) {
     if (!debug_enabled()) return err(req, "UNSUPPORTED", "debug_peek is off; launch with GDBOT_DEBUG=1 for field mapping");
     std::string target = req.value("target", "player1");
     long long off = req.value("off", -1), len = req.value("len", 0);
     if (off < 0 || len <= 0 || len > 4096 || off > 0x10000) return err(req, "BAD_REQUEST", "off/len out of range");
-    void* base = target == "layer" ? g_layer : target == "player1" ? player1() : nullptr;
+    void* p2 = player2();
+    void* base = target == "layer" ? g_layer : target == "player1" ? player1() : target == "player2" ? p2 : nullptr;
     if (!base) return err(req, "NOT_IN_LEVEL", "target not available");
     std::string bytes(size_t(len), ' ');
     if (!safe_copy(bytes.data(), static_cast<char*>(base) + off, size_t(len))) return err(req, "INTERNAL", "read faulted");

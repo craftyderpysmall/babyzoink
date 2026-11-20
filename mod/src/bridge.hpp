@@ -53,6 +53,11 @@ constexpr size_t kLayerObjects = 0xdd0;          // CCArray*
 constexpr size_t kObjUniqueID = 0x39c;           // int
 constexpr size_t kObjType = 0x3a0;               // GameObjectType (int)
 constexpr size_t kObjID = 0x40c;                 // int (object id, e.g. 8 = spike)
+// M9 (2026-11-20, live on Because I Loved Her): GJBaseGameLayer::m_player2 = m_player1 + 8; m_gameState.m_isDualMode
+// flips 0 -> 1 exactly when player 2 starts moving independently of player 1 (decision ~4224 of that level).
+constexpr size_t kLayerPlayer2 = 0xdc0;
+constexpr size_t kLayerDualMode = 0x3f3;
+constexpr size_t kIsGoingLeft = 0x9ca;           // between m_isOnGround 0x9c9 and m_isSideways 0x9cb (bindings order)
 }  // namespace fields
 
 // ---- shared game-thread state (written by hooks.cpp, read by control.cpp) ----
@@ -130,6 +135,10 @@ inline void* rva_ptr(offsets::Fn fn) {
     return r ? reinterpret_cast<void*>(g_exe_base + r) : nullptr;
 }
 
+// M9 death attribution: set by the PlayLayer::destroyPlayer hook (excluding GD's hidden anticheat spike).
+struct DeathInfo { bool set = false; int player = 0; int obj_id = 0, obj_type = 0, uid = 0; float x = 0, y = 0; long long tick = 0; };
+inline DeathInfo g_death;
+
 inline void* player1() {
     if (!g_layer) return nullptr;
     void* p = nullptr;
@@ -142,5 +151,8 @@ inline T read_field(void* base, size_t off, T fallback = T{}) {
     T v{};
     return (base && safe_copy(&v, static_cast<char*>(base) + off, sizeof(T))) ? v : fallback;
 }
+
+inline void* player2() { return g_layer ? read_field<void*>(g_layer, fields::kLayerPlayer2) : nullptr; }
+inline bool dual_mode() { return g_layer && read_field<uint8_t>(g_layer, fields::kLayerDualMode) != 0; }
 
 }  // namespace gdbot

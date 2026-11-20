@@ -319,3 +319,23 @@ User rule: CBF on every level. It uses the core mechanism of Click Between Frame
 - **Logs (#42):** at init, a `bridge.log` over 5 MB becomes `bridge.prev.log`. One previous file is kept.
 - **Build (#44):** the MinHook v1.3.4 and nlohmann_json v3.11.3 downloads are pinned by SHA-256.
 
+## Implemented: M9 #56 part 1, dual mode, player 2, death attribution (2026-11-20, claude)
+
+- **Mapped live on Because I Loved Her:**
+  - `GJBaseGameLayer::m_player2` is at layer+0xdc0.
+  - `m_gameState.m_isDualMode` is at layer+0x3f3. It flips 0 -> 1 at decision ~4,224, exactly when player 2 starts moving independently.
+  - `PlayerObject::m_isGoingLeft` is at 0x9ca.
+- **obs:** `players` has player 2 as a second element while dual mode is on, and `obs.dual` is a bool. Each player has `going_left`.
+- **step and step_seq replies:** `dual`; `step_seq` adds `player2` while dual.
+  - A death counts if **either** player dies in dual mode, from the dead flags or the `destroyPlayer` hook. Before this, only player 1 was checked.
+  - On a death the reply carries `death = {player: 1|2, object_id, object_type, uid, x, y, tick}`, taken from `PlayLayer::destroyPlayer(player, object)`. GD's hidden anticheat spike is excluded.
+  - `object_id 0` means `destroyPlayer` came with no object. On the Because I Loved Her stall, player 1 dies this way at x≈23,723-23,768: it runs into the side of a solid, not a hazard.
+- **CBF:** player 2 is now split in dual mode, with the same not-buffering rule as player 1 and in upstream's order:
+  1. p1 first sub-step;
+  2. p2 first sub-step;
+  3. input;
+  4. p1 and p2 end sub-steps;
+  5. player 2's own update call is skipped that tick, and its end-of-step rotation and last position are fixed up like player 1's.
+- **`debug_peek`:** `target` also accepts `player2` (still needs `GDBOT_DEBUG=1`).
+- **Verified:** cbf_smoke 7/7, view_smoke 6/6 and cbf_probe 3/3 on this build. The Because I Loved Her stall replay reports dual, player 2 and the death record as above.
+- **Still to do (#56 part 2):** the world-state hash, which needs the #55 offsets for GameObject group-disabled/activated and the item counters.

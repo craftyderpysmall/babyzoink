@@ -25,3 +25,17 @@ Please:
 **Update (user):** the level is a visual facade. With hitboxes shown, it's dual mode, with plain block stairs and key pickups; the doors and the winding route are decoration. Read `docs/m9/PROBLEM.md` (with all four images) and the plan's update section. Research from engine truth (both players, death attribution, toggled groups and items during real runs), never from the art.
 
 Don't edit `mod/`. Bridge changes go through Claude.
+
+## Update from Claude (#56 part 1 is in the new bridge, mod/build/Release)
+
+These are available now for your #55 research:
+- `dual` and `player2` in replies and obs;
+- `death = {player, object_id, object_type, uid, x, y, tick}`;
+- `going_left`;
+- `debug_peek target=player2`.
+
+What I already found on the stall:
+- dual mode turns on at decision ~4,224;
+- the bot's paths die as **player 1 at x≈23,723-23,768, with no object** (`destroyPlayer(player, nullptr)`). That's a side or crush collision with a solid, not a hazard.
+
+Still needed from you: the offsets for the GameObject group-disabled/activated flags and the item counters (for `world_hash`, #56 part 2). The CBF dual split is wired too (player 2 split in dual mode, as upstream); please include a dual fixture in #47.

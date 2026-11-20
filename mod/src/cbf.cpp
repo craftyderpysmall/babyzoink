@@ -9,8 +9,8 @@
 // and the vanilla end-of-step updateRotation applies the remaining rotation (dt*(1-f)) and restores
 // m_lastPosition to the pre-step position. A buffering player (airborne without ring/dash/ship/bird/dart/
 // swing) is not split: the input is applied before a full-step update, as click-on-steps would. Player 2 is
-// split only in dual mode (the bridge has no dual control; m_isDualMode is not mapped yet, so player 2 is never
-// split and, as in CBF, gets its full-step update inside player 1's split with its own call skipped that tick).
+// split only in dual mode (m_isDualMode, layer+0x3f3, mapped 2026-11-20) with the same rule; either way it advances
+// inside player 1's update and its own call is skipped that tick, as in CBF.
 //
 // Offsets (exe 4eee06d5c2e2213b, GD 2.2091), from geode-sdk/bindings 2.2091 member order anchored on verified
 // fields, then checked live (tools/m8/cbf_offsets notes in docs/PROTOCOL.md):
@@ -25,7 +25,6 @@ namespace {
 
 constexpr uintptr_t kRvaUpdateRotation = 0x4ef390;   // PlayerObject::updateRotation(float)  (bindings 2.2091)
 constexpr uintptr_t kRvaCheckCollisions = 0x31aae0;  // GJBaseGameLayer::checkCollisions(PlayerObject*, float, bool)
-constexpr size_t kLayerPlayer2 = 0xdc0;              // GJBaseGameLayer::m_player2 (m_player1 0xdb8 + 8; m_objects 0xdd0)
 constexpr size_t kLayerClickBetweenSteps = 0x38f1;   // m_anticheatSpike 0x38e0, m_timestamp 0x38e8, m_isBetweenSteps 0x38f0
 constexpr size_t kLayerClickOnSteps = 0x38f2;
 constexpr size_t kIsOnSlope = 0x9b8;                 // m_yVelocity 0x9a8, m_fallSpeed 0x9b0, m_isOnSlope, m_wasOnSlope 0x9b9
@@ -56,8 +55,6 @@ float g_p1_pos[2] = {0, 0}, g_p2_pos[2] = {0, 0};
 long long g_splits = 0, g_buffered = 0;
 
 template <class T> void write_field(void* base, size_t off, T v) { if (base) *reinterpret_cast<T*>(static_cast<char*>(base) + off) = v; }
-
-void* player2() { return g_layer ? read_field<void*>(g_layer, kLayerPlayer2) : nullptr; }
 
 void reset_collision_log(void* p) {  // PlayerObject::resetCollisionLog, inlined on Windows (CBF's decomp)
     for (int i = 0; i < 4; ++i)
@@ -94,33 +91,36 @@ void __fastcall h_playerUpdate(void* self, float dt) {
         return;
     }
     void* p2 = player2();
+    bool dual = dual_mode();
     bool p1_ground = read_field<uint8_t>(self, fields::kIsOnGround) != 0;
+    bool p2_ground = p2 && read_field<uint8_t>(p2, fields::kIsOnGround) != 0;
     g_p1_split = not_buffering(self);
-    g_p2_split = false;  // dual not mapped: see header
+    g_p2_split = p2 && p2 != self && dual && not_buffering(p2);  // as upstream: player 2 splits only in dual mode
     g_p1_pos[0] = read_field<float>(self, kPosX), g_p1_pos[1] = read_field<float>(self, kPosY);
+    if (p2) g_p2_pos[0] = read_field<float>(p2, kPosX), g_p2_pos[1] = read_field<float>(p2, kPosY);
     g_mid = true;
-    if (g_p1_split) {
-        float f = float(g_in.frac);
-        float first = dt * f, rest = dt * (1.0f - f);
-        g_rot_delta = first;
-        o_playerUpdate(self, first);
-        if ((read_field<double>(self, fields::kYVelocity) < 0) ^ (read_field<uint8_t>(self, fields::kIsUpsideDown) != 0))
-            write_field<uint8_t>(self, fields::kIsOnGround, p1_ground ? 1 : 0);
-        bool slope = read_field<uint8_t>(self, kIsOnSlope) != 0, dart = read_field<uint8_t>(self, fields::kIsDart) != 0;
-        f_checkCollisions(g_layer, self, (!slope || dart) ? 0.0f : dt, true);
-        o_updateRotation(self, first);
-        reset_collision_log(self);
-        apply_input();
-        g_rot_delta = rest;
-        o_playerUpdate(self, rest);
-        ++g_splits;
-    } else {
-        apply_input();  // buffering: click-on-steps behaviour (input, then a full step)
-        o_playerUpdate(self, dt);
-        ++g_buffered;
-    }
-    if (p2 && p2 != self) {  // as CBF: player 2 advances here (full step, not split) and skips its own call
-        o_playerUpdate(p2, dt);
+    float f = float(g_in.frac);
+    float first = dt * f, rest = dt * (1.0f - f);
+    auto first_sub = [&](void* p, bool started_on_ground) {  // update(dt*f) + the between-substep fixes
+        o_playerUpdate(p, first);
+        if ((read_field<double>(p, fields::kYVelocity) < 0) ^ (read_field<uint8_t>(p, fields::kIsUpsideDown) != 0))
+            write_field<uint8_t>(p, fields::kIsOnGround, started_on_ground ? 1 : 0);
+        bool slope = read_field<uint8_t>(p, kIsOnSlope) != 0, dart = read_field<uint8_t>(p, fields::kIsDart) != 0;
+        f_checkCollisions(g_layer, p, (!slope || dart) ? 0.0f : dt, true);
+        o_updateRotation(p, first);
+        reset_collision_log(p);
+    };
+    // upstream loop, first queue entry: p1 sub-step, then p2 sub-step (each only if split)
+    g_rot_delta = first;
+    if (g_p1_split) first_sub(self, p1_ground);
+    if (g_p2_split) first_sub(p2, p2_ground);
+    // second queue entry: the input is applied, then the end sub-steps (or full steps for unsplit players)
+    apply_input();
+    g_rot_delta = rest;
+    if (g_p1_split) { o_playerUpdate(self, rest); ++g_splits; }
+    else { o_playerUpdate(self, dt); ++g_buffered; }  // buffering: click-on-steps behaviour
+    if (p2 && p2 != self) {  // player 2 advances inside player 1's update and skips its own call this tick
+        o_playerUpdate(p2, g_p2_split ? rest : dt);
         g_p2_done = true;
     }
     g_mid = false;
@@ -132,6 +132,13 @@ void __fastcall h_updateRotation(void* self, float t) {
         write_field<float>(self, kLastPosition, g_p1_pos[0]);
         write_field<float>(self, kLastPosition + 4, g_p1_pos[1]);
         g_p1_split = false;
+        return;
+    }
+    if (g_layer && !g_mid && g_p2_split && self == player2()) {
+        o_updateRotation(self, g_rot_delta);
+        write_field<float>(self, kLastPosition, g_p2_pos[0]);
+        write_field<float>(self, kLastPosition + 4, g_p2_pos[1]);
+        g_p2_split = false;
         return;
     }
     o_updateRotation(self, t);
@@ -172,7 +179,7 @@ void cbf_settle() {
     }
 }
 
-void cbf_clear() { g_in.armed = false; g_p1_split = false; g_p2_done = false; g_mid = false; }
+void cbf_clear() { g_in.armed = false; g_p1_split = false; g_p2_split = false; g_p2_done = false; g_mid = false; }
 
 // User rule: vanilla Click Between Steps and Click On Steps are always off.
 void cbf_force_vanilla_click_off() {

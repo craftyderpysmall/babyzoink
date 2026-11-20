@@ -155,6 +155,16 @@ void __fastcall h_destroyPlayer(void* self, void* player, void* obj) {
         }
     }
     if (!g_controlled && g_tick > 20) GLOG("PlayLayer::destroyPlayer object=%p tick=%lld", obj, g_tick);
+    if (obj != g_anticheat_obj && !g_death.set) {  // M9: which player died, on what (first real death per episode)
+        g_death.set = true;
+        g_death.player = player && player == player2() ? 2 : 1;
+        g_death.obj_id = obj ? read_field<int>(obj, fields::kObjID) : 0;
+        g_death.obj_type = obj ? read_field<int>(obj, fields::kObjType) : 0;
+        g_death.uid = obj ? read_field<int>(obj, fields::kObjUniqueID) : 0;
+        g_death.x = player ? read_field<float>(player, fields::kPosTickX) : 0.0f;
+        g_death.y = player ? read_field<float>(player, fields::kPosTickY) : 0.0f;
+        g_death.tick = g_tick;
+    }
     o_destroyPlayer(self, player, obj);
 }
 
